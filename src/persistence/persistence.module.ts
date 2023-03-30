@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
+import { AccountRespositoryModule } from './account/account-respository.module';
 
 @Module({
-  imports: [],
-  exports: [],
+  imports: [AccountRespositoryModule],
+  exports: [AccountRespositoryModule],
 })
 export class PersistenceModule {}

@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AccountModule } from './domain/account/account.module';
 import { AccountRespositoryModule } from './persistence/account/account-respository.module';
+import { DatabaseModule } from './infrastructure/database/database.module';
+import { PersistenceModule } from './persistence/persistence.module';
+import { AuthModule } from './domain/auth/auth.module';
+import { JwtModule } from './infrastructure/services/jwt/jwt.module';
 
 @Module({
   imports: [
@@ -10,6 +13,10 @@ import { AccountRespositoryModule } from './persistence/account/account-resposit
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
     AccountRespositoryModule,
+    PersistenceModule,
+    DatabaseModule,
+    AuthModule,
+    JwtModule,
   ],
   controllers: [],
   providers: [],
