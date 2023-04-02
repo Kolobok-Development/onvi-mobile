@@ -53,19 +53,33 @@ export class AccountRespository implements IAccountRepository {
   async findOneByPhoneNumber(phone: any): Promise<any> {
     //TODO
     // 1) Find customer by phone number
+    /*
     const maxCardBalance: any = this.cardRepository
       .createQueryBuilder('maxClient')
       .leftJoin('maxClient.cards', 'maxCards')
       .where('maxClient.correctPhone = :phone', { phone: phone })
       .addSelect('MAX(maxCards.balance', 'maxBalance');
+
+     */
     const client: ClientEntity = await this.clientRepository
       .createQueryBuilder('client')
-      .leftJoin('client.cards', 'cards')
+      .leftJoinAndSelect('client.cards', 'cards1')
+      .leftJoin(
+        (qb) =>
+          qb
+            .select('cards2.clientId', 'clientId')
+            .addSelect('MAX(cards2.balance)', 'maxBalance')
+            .from(CardEntity, 'cards2')
+            .groupBy('cards2.clientId'),
+        'maxCards',
+        'maxCards.clientId = client.id',
+      )
+      .leftJoinAndSelect(
+        'client.cards',
+        'cards2',
+        'cards2.balance = maxCards.maxBalance',
+      )
       .where('client.correctPhone = :phone', { phone: phone })
-      .andWhere('cards.balance = :maxBalance', {
-        maxBalance: maxCardBalance.getQuery(),
-      })
-      .select(['client'])
       .getOne();
 
     return client;

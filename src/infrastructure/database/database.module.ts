@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Client } from '../../domain/account/model/client';
 import { Card } from '../../domain/account/model/card';
+import { OtpEntity } from '../otp/entity/otp.entity';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { Card } from '../../domain/account/model/card';
         password: configService.get('DB_PASSWORD'),
         sid: configService.get('DB_SID'),
         synchronize: false,
-        entities: [Client, Card],
+        entities: [Client, Card, OtpEntity],
       }),
       inject: [ConfigService],
     }),

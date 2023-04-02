@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AccountRespositoryModule } from './persistence/account/account-respository.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
-import { PersistenceModule } from './persistence/persistence.module';
-import { AuthModule } from './domain/auth/auth.module';
 import { JwtModule } from './infrastructure/services/jwt/jwt.module';
+import { AccountModule } from './infrastructure/account/account.module';
+import { AuthModule } from './infrastructure/auth/auth.module';
+import { OtpModule } from './infrastructure/otp/otp.module';
 
 @Module({
   imports: [
@@ -12,11 +12,11 @@ import { JwtModule } from './infrastructure/services/jwt/jwt.module';
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
-    AccountRespositoryModule,
-    PersistenceModule,
     DatabaseModule,
-    AuthModule,
+    AccountModule,
     JwtModule,
+    AuthModule,
+    OtpModule,
   ],
   controllers: [],
   providers: [],
