@@ -84,4 +84,8 @@ export class AccountRespository implements IAccountRepository {
 
     return client;
   }
+
+  setRefreshToken(phone: string, token: string): Promise<any> {
+    return Promise.resolve(undefined);
+  }
 }

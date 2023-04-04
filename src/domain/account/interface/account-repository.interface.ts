@@ -6,4 +6,5 @@ export interface IAccountRepository {
   update(client: Client): Promise<Client>;
   getBalance(cardNumber: string): Promise<Card>;
   findOneByPhoneNumber(phone: string): Promise<any>;
+  setRefreshToken(phone: string, token: string): Promise<any>;
 }
