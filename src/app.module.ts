@@ -6,19 +6,22 @@ import { AccountModule } from './infrastructure/account/account.module';
 import { AuthModule } from './infrastructure/auth/auth.module';
 import { OtpModule } from './infrastructure/otp/otp.module';
 import { DateModule } from './infrastructure/services/date/date.module';
+import { EnvConfigModule } from './infrastructure/config/env-config/env-config.module';
+import { BcryptModule } from './infrastructure/services/bcrypt/bcrypt.module';
+import { PassportModule } from '@nestjs/passport';
+import { LocalStrategy } from './infrastructure/common/strategies/local.strategy';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: `.env.${process.env.NODE_ENV}`,
-    }),
+    PassportModule.register({}),
     DatabaseModule,
     AccountModule,
     JwtModule,
     AuthModule,
     OtpModule,
     DateModule,
+    EnvConfigModule,
+    BcryptModule,
   ],
   controllers: [],
   providers: [],

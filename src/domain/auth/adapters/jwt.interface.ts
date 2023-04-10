@@ -2,9 +2,9 @@ export interface IJwtServicePayload {
   phone: string;
 }
 
-export interface IJwtService {
-  validateToken(token: string): Promise<any>;
-  signToken(
+export abstract class IJwtService {
+  abstract validateToken(token: string): Promise<any>;
+  abstract signToken(
     payload: IJwtServicePayload,
     secret: string,
     expiresIn: string,

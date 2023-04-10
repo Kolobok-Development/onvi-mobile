@@ -1,30 +1,32 @@
 import { IAccountRepository } from '../../../domain/account/interface/account-repository.interface';
 import { Inject, Injectable } from '@nestjs/common';
-import {IJwtService, IJwtServicePayload} from '../../../domain/auth/adapters/jwt.interface';
+import {
+  IJwtService,
+  IJwtServicePayload,
+} from '../../../domain/auth/adapters/jwt.interface';
 import { IOtpRepository } from '../../../domain/otp/adapter/otp-repository.interface';
 import { IDate } from '../../../infrastructure/common/interfaces/date.interface';
 import { OTP_EXPIRY_TIME } from '../../../infrastructure/common/constants/constants';
-
-const AccountRepo = () => Inject('AccountRepository');
-const JwtService = () => Inject('JwtTokenService');
-const OtpRepo = () => Inject('OtpRepository');
-const DateService = () => Inject('DateService');
+import { IJwtConfig } from '../../../domain/config/jwt-config.interface';
+import { IBcrypt } from '../../../domain/auth/adapters/bcrypt.interface';
 
 @Injectable()
 export class AuthUsecase {
   /*
         TODO
-          1) Update jwt and refresh secret, expiry date
+          1) Update jwt and refresh secret, expiry date [Completed]
           2) Convert ClientEntity --> Client domain
           3) Add login time
-          4) Complete setRefresh token
-          5) Add bycrypt to hash refresh token
+          4) Complete setRefresh token [Completed]
+          5) Add bycrypt to hash refresh token.  [Completed]
      */
   constructor(
-    @AccountRepo() private readonly accountRepository: IAccountRepository,
-    @JwtService() private readonly jwtService: IJwtService,
-    @OtpRepo() private readonly otpRepository: IOtpRepository,
-    @DateService() private readonly dateService: IDate,
+    private readonly accountRepository: IAccountRepository,
+    private readonly jwtService: IJwtService,
+    private readonly otpRepository: IOtpRepository,
+    private readonly dateService: IDate,
+    private readonly jwtConfig: IJwtConfig,
+    private readonly bcryptService: IBcrypt,
   ) {}
 
   public async isAuthenticated(phone: string) {}
@@ -71,22 +73,28 @@ export class AuthUsecase {
 
   public async signAccessToken(phone: any) {
     const payload: IJwtServicePayload = { phone: phone };
-    const secret = '';
-    const expiresIn = '';
+    const secret = this.jwtConfig.getJwtSecret();
+    const expiresIn = this.jwtConfig.getJwtExpirationTime();
     const token = this.jwtService.signToken(payload, secret, expiresIn);
     return token;
   }
 
   public async signRefreshToken(phone: any) {
     const payload: IJwtServicePayload = { phone: phone };
-    const secret = '';
-    const expiresIn = '';
+    const secret = this.jwtConfig.getJwtRefreshSecret();
+    const expiresIn = this.jwtConfig.getJwtRefreshExpirationTime();
     const token = this.jwtService.signToken(payload, secret, expiresIn);
     await this.setCurrentRefreshToken(phone, token);
     return token;
   }
 
-  public async setCurrentRefreshToken(phone: string, refreshToken: string) {}
+  public async setCurrentRefreshToken(
+    phone: string,
+    refreshToken: string,
+  ): Promise<void> {
+    const hashedRefreshToken = await this.bcryptService.hash(refreshToken);
+    await this.accountRepository.setRefreshToken(phone, hashedRefreshToken);
+  }
 
   public async getAccountIfRefreshTokenMatches(
     refreshToken: string,
@@ -96,10 +104,16 @@ export class AuthUsecase {
     if (!account) {
       return null;
     }
-    if (refreshToken != account.refreshToken) {
-      return null;
+
+    const isRefreshingTokenMatching = await this.bcryptService.compare(
+      refreshToken,
+      account.refreshToken,
+    );
+
+    if (isRefreshingTokenMatching) {
+      return account;
     }
-    return account;
+    return null;
   }
 
   public async logout(phone: string) {}

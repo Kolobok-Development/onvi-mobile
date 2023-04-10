@@ -6,6 +6,7 @@ import { ClientEntity } from '../entity/client.entity';
 import { IAccountRepository } from '../../../domain/account/interface/account-repository.interface';
 import { Client } from '../../../domain/account/model/client';
 import { Card } from '../../../domain/account/model/card';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class AccountRespository implements IAccountRepository {
@@ -53,39 +54,36 @@ export class AccountRespository implements IAccountRepository {
   async findOneByPhoneNumber(phone: any): Promise<any> {
     //TODO
     // 1) Find customer by phone number
+
     /*
-    const maxCardBalance: any = this.cardRepository
+       const maxCardBalance: any = this.cardRepository
       .createQueryBuilder('maxClient')
       .leftJoin('maxClient.cards', 'maxCards')
       .where('maxClient.correctPhone = :phone', { phone: phone })
       .addSelect('MAX(maxCards.balance', 'maxBalance');
-
      */
-    const client: ClientEntity = await this.clientRepository
+
+    const client: any = await this.clientRepository
       .createQueryBuilder('client')
-      .leftJoinAndSelect('client.cards', 'cards1')
-      .leftJoin(
-        (qb) =>
-          qb
-            .select('cards2.clientId', 'clientId')
-            .addSelect('MAX(cards2.balance)', 'maxBalance')
-            .from(CardEntity, 'cards2')
-            .groupBy('cards2.clientId'),
-        'maxCards',
-        'maxCards.clientId = client.id',
-      )
-      .leftJoinAndSelect(
-        'client.cards',
-        'cards2',
-        'cards2.balance = maxCards.maxBalance',
-      )
+      .innerJoin('client.cards', 'card')
       .where('client.correctPhone = :phone', { phone: phone })
+      .select(['client', 'card'])
+      .orderBy('card.balance', 'DESC')
+      .limit(1)
       .getOne();
 
-    return client;
+    return plainToClass(Client, ClientEntity);
   }
 
-  setRefreshToken(phone: string, token: string): Promise<any> {
-    return Promise.resolve(undefined);
+  async setRefreshToken(phone: string, token: string): Promise<any> {
+    const client: ClientEntity = await this.findOneByPhoneNumber(phone);
+
+    if (!client) {
+      return null;
+    }
+
+    client.refreshToken = token;
+
+    return this.clientRepository.save(client);
   }
 }

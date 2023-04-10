@@ -1,3 +1,3 @@
-export interface IDate {
-  isExpired(timestamp: Date, expiryTime: number): boolean;
+export abstract class IDate {
+  abstract isExpired(timestamp: Date, expiryTime: number): boolean;
 }

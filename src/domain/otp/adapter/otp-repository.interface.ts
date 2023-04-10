@@ -1,8 +1,8 @@
 import { Otp } from '../model/otp';
 
-export interface IOtpRepository {
-  create(opt: Otp): Promise<any>;
-  findOne(phone: string): Promise<Otp>;
-  removeOne(phone: string): Promise<void>;
-  send(otp: Otp): Promise<any>;
+export abstract class IOtpRepository {
+  abstract create(opt: Otp): Promise<any>;
+  abstract findOne(phone: string): Promise<Otp>;
+  abstract removeOne(phone: string): Promise<void>;
+  abstract send(otp: Otp): Promise<any>;
 }
