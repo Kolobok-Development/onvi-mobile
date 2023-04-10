@@ -19,6 +19,9 @@ export class AuthUsecase {
           3) Add login time
           4) Complete setRefresh token [Completed]
           5) Add bycrypt to hash refresh token.  [Completed]
+          6) Add response serialization [Completed]
+          7) Add excepiton filter [Completed]
+          8)
      */
   constructor(
     private readonly accountRepository: IAccountRepository,
@@ -33,14 +36,6 @@ export class AuthUsecase {
 
   public async register(phone: string): Promise<any> {}
 
-  /*
-      TODO
-      1) Convert ClientEntity --> Client domain
-      2) Add login time
-      3) Complete setRefresh token
-      4) Add bycrypt to hash refresh token
-
-   */
   public async validateUserForLocalStrategy(
     phone: string,
     otp: string,

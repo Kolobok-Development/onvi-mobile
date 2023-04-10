@@ -12,14 +12,20 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(phone: string, otp: string) {
+  async validate(
+    phone: string,
+    otp: string,
+    done: (error: Error, data) => Record<string, unknown>,
+  ) {
     const client = await this.authService.validateUserForLocalStrategy(
       phone,
       otp,
     );
 
-    if (!client) return null;
+    if (!client) {
+      return done(null, { register: true });
+    }
 
-    return client;
+    return done(null, client);
   }
 }

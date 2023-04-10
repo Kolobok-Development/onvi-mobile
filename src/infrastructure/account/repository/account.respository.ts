@@ -72,7 +72,7 @@ export class AccountRespository implements IAccountRepository {
       .limit(1)
       .getOne();
 
-    return plainToClass(Client, ClientEntity);
+    return client;
   }
 
   async setRefreshToken(phone: string, token: string): Promise<any> {
