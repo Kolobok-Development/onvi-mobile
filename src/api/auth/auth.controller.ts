@@ -52,7 +52,7 @@ export class AuthController {
   async register(@Body() auth: RegisterRequestDto, @Request() req: any) {
     try {
       const { newAccount, accessToken, refreshToken } =
-        await this.authUsecase.register(auth.phone, auth.opt);
+        await this.authUsecase.register(auth.phone, auth.otp);
 
       return new RegisterResponseDto({
         client: newAccount,

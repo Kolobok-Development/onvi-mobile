@@ -1,6 +1,6 @@
 export class RegisterRequestDto {
   phone: string;
-  opt: string;
+  otp: string;
   isTermsAccepted?: boolean;
   isPromoTermsAccepted?: boolean;
 }
