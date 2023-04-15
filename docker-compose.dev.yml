@@ -4,3 +4,5 @@ services:
   onvi-api:
     command: npm run start:dev
     env_file: ./.env.development
+    ports:
+      - "5070:5070"

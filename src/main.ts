@@ -11,6 +11,8 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new AllExceptionFilter());
   app.setGlobalPrefix('/api/v2');
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(process.env.PORT, () => {
+    console.log(`Onvi started in port ${process.env.PORT}`);
+  });
 }
 bootstrap();
