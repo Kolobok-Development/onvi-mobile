@@ -1,30 +1,4 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
 ## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 ## Installation
 
@@ -45,29 +19,196 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Test
 
-```bash
-# unit tests
-$ npm run test
+## API Reference
 
-# e2e tests
-$ npm run test:e2e
+#### Registrate new account
 
-# test coverage
-$ npm run test:cov
+```http
+  POST /auth/register
 ```
 
-## Support
+| Body | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `phone` | `string` | **Required** Ex. '+79215431345' |
+| `otp` | `string` | **Required** Ex. '1234' |
+| `isTermsAccepted` | `boolean` | **Required** |
+| `isPromoTermsAccepted` | `boolean` | **Required** |
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+#### Respons 201
 
-## Stay in touch
+```json
+  {
+    "data": {
+        "client": {
+            "clientId": 490664,
+            "name": "Новый пользователь",
+            "inn": null,
+            "email": null,
+            "phone": "79215431345",
+            "birthday": null,
+            "clientTypeId": 1,
+            "note": null,
+            "isActivated": 1,
+            "genderId": null,
+            "correctPhone": "+79215431345",
+            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+            "isTokeValid": "1",
+            "activatedDate": "2023-04-15T16:40:28.152Z",
+            "isLk": null,
+            "tag": null,
+            "cards": [
+                {
+                    "cardId": 1372734,
+                    "isLocked": 0,
+                    "dateBegin": null,
+                    "dateEnd": null,
+                    "cardTypeId": 2086,
+                    "devNomer": "79276745356",
+                    "isDel": null,
+                    "cmnCity": null,
+                    "realBalance": null,
+                    "airBalance": null,
+                    "nomer": "79276745356",
+                    "note": null,
+                    "tag": null,
+                    "mainCardId": null
+                }
+            ]
+        },
+        "tokens": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+        },
+        "type": "register-success"
+    },
+    "path": "/api/v2/auth/register",
+    "duration": "443ms",
+    "method": "POST"
+}
+```
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+#### Login
 
-## License
+```http
+  POST /auth/login
+```
 
-Nest is [MIT licensed](LICENSE).
+| Body | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `phone` | `string` | **Required** Ex. '+79215431345' |
+| `otp` | `string` | **Required** Ex. '1234' |
+
+#### Response 200
+
+```json
+      "data": {
+        "client": {
+            "clientId": 490664,
+            "name": "Новый пользователь",
+            "inn": null,
+            "email": null,
+            "phone": "79215431345",
+            "birthday": null,
+            "insDate": "2023-04-15",
+            "updDate": "2023-04-15",
+            "insUserId": null,
+            "updUserId": null,
+            "clientTypeId": 1,
+            "note": null,
+            "avto": null,
+            "isActivated": 1,
+            "discount": null,
+            "genderId": null,
+            "correctPhone": "+79215431345",
+            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+            "tokenId": null,
+            "isTokeValid": "1",
+            "activatedDate": "2023-04-15",
+            "isActiveLight": null,
+            "activatedDateLight": null,
+            "isLk": null,
+            "tag": null,
+            "cards": [
+                {
+                    "cardId": 1372734,
+                    "balance": 0,
+                    "isLocked": 0,
+                    "dateBegin": "2023-04-15",
+                    "dateEnd": null,
+                    "cardTypeId": 2086,
+                    "devNomer": "79215431345",
+                    "isDel": null,
+                    "avto": null,
+                    "monthLimit": null,
+                    "discount": null,
+                    "gosNomer": null,
+                    "cmnCity": null,
+                    "realBalance": null,
+                    "airBalance": null,
+                    "keyBalance": null,
+                    "nomer": "79215431345",
+                    "modelID": null,
+                    "note": null,
+                    "tag": null,
+                    "dayLimit": null,
+                    "mainCardId": null
+                }
+            ]
+        },
+        "tokens": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+        },
+        "type": "login-success"
+    },
+    "path": "/api/v2/auth/login",
+    "duration": "1ms",
+    "method": "POST"
+```
+#### Response 200 (Needs to register)
+```json
+  {
+    "data": {
+        "client": null,
+        "tokens": null,
+        "type": "register-required"
+    },
+    "path": "/api/v2/auth/login",
+    "duration": "0ms",
+    "method": "POST"
+}
+```
+
+#### Send Otp
+
+```http
+  POST /auth/send/otp
+```
+
+| Body | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `phone` | `string` | **Required** Ex. '+79215431345' |
+
+#### Response 201
+```json
+ {
+    "data": {
+        "status": "sent_success",
+        "target": "+79276745356"
+    },
+    "path": "/api/v2/auth/send/otp",
+    "duration": "201ms",
+    "method": "POST"
+}
+```
+
+#### Refresh
+
+```http
+  GET /auth/refresh
+```
+| Body | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `refreshToken` | `string` | **Required** Ex. '+79215431345' |
+

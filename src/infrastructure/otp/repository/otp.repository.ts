@@ -12,13 +12,11 @@ export class OtpRepository implements IOtpRepository {
     private readonly otpRepository: Repository<OtpEntity>,
   ) {}
 
-  async create({ phone, otp, expireDate }: Otp): Promise<any> {
-    const otpObject = await this.otpRepository.create({
-      phone,
-      otp,
-      expireDate,
-    });
-    return this.otpRepository.save(otpObject);
+  async create(otp: Otp): Promise<any> {
+    const otpEntity = this.toOtpEntity(otp);
+    const newOtpEntity = await this.otpRepository.save(otpEntity);;
+    const newOtp = this.toOtp(newOtpEntity);
+    return newOtp;
   }
 
   async findOne(phone: string): Promise<Otp> {
@@ -29,7 +27,28 @@ export class OtpRepository implements IOtpRepository {
     await this.otpRepository.delete({ phone: phone });
   }
 
-  send(otp: Otp): Promise<any> {
+  async send(otp: Otp): Promise<any> {
     return Promise.resolve(undefined);
+  }
+
+  private toOtp(otpEntity: OtpEntity): Otp {
+    const otp = new Otp(
+      otpEntity.id,
+      otpEntity.phone,
+      otpEntity.otp,
+      otpEntity.expireDate,
+    );
+
+    return otp;
+  }
+
+  private toOtpEntity(otp: Otp): OtpEntity {
+    const otpEntity = new OtpEntity();
+
+    otpEntity.otp = otp.otp;
+    otpEntity.phone = otp.phone;
+    otpEntity.expireDate = otp.expireDate;
+
+    return otpEntity;
   }
 }

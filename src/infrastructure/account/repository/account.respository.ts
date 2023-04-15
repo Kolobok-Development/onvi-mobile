@@ -20,29 +20,19 @@ export class AccountRespository implements IAccountRepository {
   async create(card: Card, client: Client): Promise<any> {
     //TODO
     //1) Create client
-    const clientObject: ClientEntity = this.clientRepository.create({
-      name: client.name,
-      phone: client.phone,
-      correctPhone: client.correctPhone,
-      clientTypeId: client.clientTypeId,
-      isActivated: client.isActivated,
-      activatedDate: new Date(Date.now()),
-    });
+    const clientEntity = this.toClientEntity(client);
+    const newClientE = await this.clientRepository.save(clientEntity);
 
-    //2) Save client id
-    const newClient: ClientEntity = await this.clientRepository.save(
-      clientObject,
-    );
+    const cardEntity = this.toCardEntity(card);
+    cardEntity.client = newClientE;
 
-    //3) Create new Card
-    const cardObject: CardEntity = this.cardRepository.create({
-      nomer: card.nomer,
-      devNomer: card.devNomer,
-      cardTypeId: card.cardTypeId,
-      client: newClient,
-    });
-    //4) return client entity
-    await this.cardRepository.save(cardObject);
+    const newCardE = await this.cardRepository.save(cardEntity);
+
+    const newClient = this.toClient(newClientE);
+    const newCard = this.toCard(newCardE);
+
+    newClient.cards = [newCard];
+
     return newClient;
   }
   update(client: Client): Promise<Client> {
@@ -85,5 +75,87 @@ export class AccountRespository implements IAccountRepository {
     client.refreshToken = token;
 
     return this.clientRepository.save(client);
+  }
+
+  private toClient(clientEntity: ClientEntity): Client {
+    return new Client(
+      clientEntity.clientId,
+      clientEntity.name,
+      clientEntity.inn,
+      clientEntity.email,
+      clientEntity.phone,
+      clientEntity.birthday,
+      clientEntity.insDate,
+      clientEntity.updDate,
+      clientEntity.clientTypeId,
+      clientEntity.note,
+      clientEntity.isActivated,
+      clientEntity.genderId,
+      clientEntity.correctPhone,
+      clientEntity.refreshToken,
+      clientEntity.tokenId,
+      clientEntity.isTokeValid,
+      clientEntity.activatedDate,
+      clientEntity.isLk,
+      clientEntity.tag,
+      clientEntity.cards,
+    );
+  }
+  private toClientEntity(client: Client): ClientEntity {
+    const clientEntity: ClientEntity = new ClientEntity();
+
+    clientEntity.name = client.name;
+    clientEntity.inn = client.email;
+    clientEntity.email = client.email;
+    clientEntity.phone = client.phone;
+    clientEntity.birthday = client.birthday;
+    clientEntity.clientTypeId = client.clientTypeId;
+    clientEntity.note = client.note;
+    clientEntity.isActivated = client.isActivated;
+    clientEntity.genderId = client.genderId;
+    clientEntity.correctPhone = client.correctPhone;
+    clientEntity.refreshToken = client.refreshToken;
+    clientEntity.isTokeValid = client.isTokeValid;
+    clientEntity.activatedDate = client.activatedDate;
+    clientEntity.isLk = client.isLk;
+    clientEntity.tag = client.tag;
+
+    return clientEntity;
+  }
+
+  private toCard(cardEntity: CardEntity): Card {
+    return new Card(
+      cardEntity.cardId,
+      cardEntity.balance,
+      cardEntity.isLocked,
+      cardEntity.dateBegin,
+      cardEntity.dateEnd,
+      cardEntity.cardTypeId,
+      cardEntity.devNomer,
+      cardEntity.isDel,
+      cardEntity.cmnCity,
+      cardEntity.realBalance,
+      cardEntity.airBalance,
+      cardEntity.nomer,
+      cardEntity.note,
+      cardEntity.tag,
+      cardEntity.mainCardId,
+    );
+  }
+
+  private toCardEntity(card: Card): Card {
+    const cardEntity: CardEntity = new CardEntity();
+
+    cardEntity.isLocked = card.isLocked;
+    cardEntity.dateEnd = card.dateEnd;
+    cardEntity.cardTypeId = card.cardTypeId;
+    cardEntity.devNomer = card.devNomer;
+    cardEntity.isDel = card.isDel;
+    cardEntity.cmnCity = card.cmnCity;
+    cardEntity.nomer = card.nomer;
+    cardEntity.note = card.note;
+    cardEntity.tag = card.tag;
+
+    return cardEntity;
   }
 }
