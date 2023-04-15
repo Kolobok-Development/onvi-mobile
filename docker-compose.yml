@@ -1,0 +1,7 @@
+version: "3"
+
+services:
+  onvi-api:
+    container_name: onvi-api
+    build: .
+    restart: unless-stopped
