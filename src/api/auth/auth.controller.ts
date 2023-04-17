@@ -1,11 +1,14 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   HttpCode,
+  InternalServerErrorException,
+  NotFoundException,
   Post,
   Req,
-  Request,
+  Request, UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthUsecase } from '../../application/usecases/auth/auth.usecase';
@@ -18,6 +21,9 @@ import { OtpRequestDto } from './dto/otp-request.dto';
 import { OtpResponseDto } from './dto/response/otp-response.dto';
 import { OtpStatus } from '../../domain/otp/enums/otp-status.enum';
 import { RegisterRequestDto } from './dto/register-request.dto';
+import { InvalidOtpException } from '../../domain/auth/exceptions/invalid-otp.exception';
+import { AccountNotFoundExceptions } from '../../domain/account/exceptions/account-not-found.exceptions';
+import { OtpInternalExceptions } from '../../domain/otp/exceptions/otp-internal.exceptions';
 
 @Controller('auth')
 export class AuthController {
@@ -27,24 +33,31 @@ export class AuthController {
   @HttpCode(200)
   @Post('/login')
   async login(@Body() auth: LoginRequestDto, @Request() req: any) {
-    const { user } = req;
-    if (user.register) {
+    try {
+      const { user } = req;
+      if (user.register) {
+        return new LoginResponseDto({
+          client: null,
+          tokens: null,
+          type: AuthType.REGISTER_REQUIRED,
+        });
+      }
+      const accessToken = await this.authUsecase.signAccessToken(auth.phone);
+      const refreshToken = await this.authUsecase.signRefreshToken(auth.phone);
       return new LoginResponseDto({
-        client: null,
-        tokens: null,
-        type: AuthType.REGISTER_REQUIRED,
+        client: user,
+        tokens: {
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+        },
+        type: AuthType.LOGIN_SUCCESS,
       });
+    } catch (e) {
+      throw new InternalServerErrorException(
+        { message: e.message },
+        { cause: e },
+      );
     }
-    const accessToken = await this.authUsecase.signAccessToken(auth.phone);
-    const refreshToken = await this.authUsecase.signRefreshToken(auth.phone);
-    return new LoginResponseDto({
-      client: user,
-      tokens: {
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      },
-      type: AuthType.LOGIN_SUCCESS,
-    });
   }
 
   @Post('/register')
@@ -63,7 +76,30 @@ export class AuthController {
         type: AuthType.REGISTER_SUCCESS,
       });
     } catch (e) {
-      console.log(e);
+      if (e instanceof InvalidOtpException) {
+        throw new UnprocessableEntityException(
+          {
+            innerCode: e.innerCode,
+            message: e.message,
+            type: e.type,
+          },
+          { cause: e },
+        );
+      } else if (e instanceof AccountNotFoundExceptions) {
+        throw new NotFoundException(
+          {
+            innerCode: e.innerCode,
+            message: e.message,
+            type: e.type,
+          },
+          { cause: e },
+        );
+      } else {
+        throw new InternalServerErrorException(
+          { message: e.message },
+          { cause: e },
+        );
+      }
     }
   }
 
@@ -78,7 +114,21 @@ export class AuthController {
         target: otp.phone,
       });
     } catch (e) {
-      console.log(e);
+      if (e instanceof OtpInternalExceptions) {
+        throw new InternalServerErrorException(
+          {
+            innerCode: e.innerCode,
+            message: e.message,
+            type: e.type,
+          },
+          { cause: e },
+        );
+      } else {
+        throw new InternalServerErrorException(
+          { message: e.message },
+          { cause: e },
+        );
+      }
     }
   }
 

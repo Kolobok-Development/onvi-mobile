@@ -14,6 +14,12 @@ import { Card } from '../../../domain/account/model/card';
 import { ClientType } from '../../../domain/account/enum/clinet-type.enum';
 import { CardType } from '../../../domain/account/enum/card-type.enum';
 import { Otp } from '../../../domain/otp/model/otp';
+import { InvalidOtpException } from '../../../domain/auth/exceptions/invalid-otp.exception';
+import { ConflictEntityException } from '../../../domain/shared/excpetions/conflict-entity.exception';
+import { EntityNotFoundExceptions } from '../../../domain/shared/excpetions/entity-not-found.exceptions';
+import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
+import { AccountExistsException } from '../../../domain/account/exceptions/account-exists.exception';
+import { OtpInternalExceptions } from '../../../domain/otp/exceptions/otp-internal.exceptions';
 
 @Injectable()
 export class AuthUsecase {
@@ -48,14 +54,14 @@ export class AuthUsecase {
       this.dateService.isExpired(currentOtp.expireDate, OTP_EXPIRY_TIME) ||
       currentOtp.otp != otp
     ) {
-      return null;
+      throw new InvalidOtpException(phone);
     }
 
     //Check if user already exists
     const account = await this.accountRepository.findOneByPhoneNumber(phone);
 
     if (account) {
-      return null;
+      throw new AccountExistsException(phone);
     }
 
     //Generate token
@@ -122,7 +128,7 @@ export class AuthUsecase {
       this.dateService.isExpired(currentOtp.expireDate, OTP_EXPIRY_TIME) ||
       currentOtp.otp != otp
     ) {
-      return null;
+      throw new InvalidOtpException(phone);
     }
 
     const account = await this.accountRepository.findOneByPhoneNumber(phone);
@@ -201,6 +207,12 @@ export class AuthUsecase {
     //Remove any existing otp
     await this.otpRepository.removeOne(phone);
     //Save new otp and return
-    return await this.otpRepository.create(otp);
+    const newOtp = await this.otpRepository.create(otp);
+
+    if (!newOtp) {
+      throw new OtpInternalExceptions(phone, otp.otp);
+    }
+
+    return newOtp;
   }
 }

@@ -1,26 +1,29 @@
 ## Description
 
-## Installation
-
-```bash
-$ npm install
-```
-
-## Running the app
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-
 ## API Reference
+
+### Error codes
+
+| Internal Code | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `40` | `api_client` | Request validation errors  |
+| `4` | `api_not_found` | Account not foud error |
+| `5` | `api_authentication` | Invalid otp error|
+| `6` | `server` | Faild to send otp |
+| `41` | `api_client` | Account already exists error |
+| `null` | `server` | Unkown internal server error  |
+
+#### Error response body
+
+```json
+{
+    "code": number | null,
+    "type": string,
+    "message": string,
+    "timestamp": string,
+    "path": string
+}
+```
 
 #### Registrate new account
 
@@ -87,6 +90,43 @@ $ npm run start:prod
     "method": "POST"
 }
 ```
+
+#### Error response 400 (Invalid request body)
+
+```json
+{
+    "code": 40,
+    "type": "api_client",
+    "message": "Otp must be valid,Otp must be valid,otp must be a number string",
+    "timestamp": "2023-04-17T20:00:34.855Z",
+    "path": "/api/v2/auth/register"
+}
+```
+
+#### Error response 422
+
+```json
+{
+    "code": 5,
+    "type": "api_authentication",
+    "message": "Client +79219174645 invalid otp code",
+    "timestamp": "2023-04-17T20:01:30.153Z",
+    "path": "/api/v2/auth/register"
+}
+```
+
+#### Error response 500
+
+```json
+{
+    "code": null,
+    "type": "server,
+    "message": "Internal server error",
+    "timestamp": "2023-04-17T20:01:30.153Z",
+    "path": "/api/v2/auth/register"
+}
+```
+
 
 #### Login
 
@@ -180,6 +220,55 @@ $ npm run start:prod
 }
 ```
 
+#### Error response 400 (Invalid request body)
+
+```json
+{
+    "code": 40,
+    "type": "api_client",
+    "message": "Otp must be valid,Otp must be valid,otp must be a number string",
+    "timestamp": "2023-04-17T20:00:34.855Z",
+    "path": "/api/v2/auth/register"
+}
+```
+
+#### Error response 404 (Account not found)
+
+```json
+{
+    "code": 4,
+    "type": "api_not_found",
+    "message": "Account phone= +79219174645  is not found",
+    "timestamp": "2023-04-17T20:00:34.855Z",
+    "path": "/api/v2/auth/register"
+}
+```
+
+#### Error response 422
+
+```json
+{
+    "code": 5,
+    "type": "api_authentication",
+    "message": "Client +79219174645 invalid otp code",
+    "timestamp": "2023-04-17T20:01:30.153Z",
+    "path": "/api/v2/auth/register"
+}
+```
+
+#### Error response 500
+
+```json
+{
+    "code": null,
+    "type": "server,
+    "message": "Internal server error",
+    "timestamp": "2023-04-17T20:01:30.153Z",
+    "path": "/api/v2/auth/register"
+}
+```
+
+
 #### Send Otp
 
 ```http
@@ -203,6 +292,45 @@ $ npm run start:prod
 }
 ```
 
+#### Error response 400 (Invalid request body)
+
+```json
+{
+    "code": 40,
+    "type": "api_client",
+    "message": "Phone number must be valid",
+    "timestamp": "2023-04-17T20:04:02.006Z",
+    "path": "/api/v2/auth/send/otp"
+}
+```
+
+#### Error response 500
+
+```json
+{
+    "code": 6,
+    "type": "server",
+    "message": "Failed to send otp= 1234 target= +79276745356
+",
+    "timestamp": "2023-04-17T20:01:30.153Z",
+    "path": "/api/v2/auth/register"
+}
+```
+
+#### Error response 500 (unkown error)
+
+```json
+{
+    "code": null,
+    "type": "server,
+    "message": "Internal server error",
+    "timestamp": "2023-04-17T20:01:30.153Z",
+    "path": "/api/v2/auth/register"
+}
+```
+
+
+
 #### Refresh
 
 ```http
@@ -211,4 +339,3 @@ $ npm run start:prod
 | Body | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
 | `refreshToken` | `string` | **Required** Ex. '+79215431345' |
-
