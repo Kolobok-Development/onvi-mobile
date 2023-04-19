@@ -20,6 +20,7 @@ import { EntityNotFoundExceptions } from '../../../domain/shared/excpetions/enti
 import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
 import { AccountExistsException } from '../../../domain/account/exceptions/account-exists.exception';
 import { OtpInternalExceptions } from '../../../domain/otp/exceptions/otp-internal.exceptions';
+import { InvalidRefreshException } from '../../../domain/auth/exceptions/invalid-refresh.exception';
 
 @Injectable()
 export class AuthUsecase {
@@ -115,6 +116,8 @@ export class AuthUsecase {
     //Create card in the database
     const newAccount = await this.accountRepository.create(card, client);
 
+    await this.setCurrentRefreshToken(phone, refreshToken);
+
     return { newAccount, accessToken, refreshToken };
   }
 
@@ -190,7 +193,8 @@ export class AuthUsecase {
     if (isRefreshingTokenMatching) {
       return account;
     }
-    return null;
+
+    throw new InvalidRefreshException(phone);
   }
 
   private formatPhone(phone): string {

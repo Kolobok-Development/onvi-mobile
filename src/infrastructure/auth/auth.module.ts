@@ -9,6 +9,7 @@ import { EnvConfigModule } from '../config/env-config/env-config.module';
 import { JwtProvider } from '../services/jwt/jwt.provider';
 import { AuthController } from '../../api/auth/auth.controller';
 import { LocalStrategy } from '../common/strategies/local.strategy';
+import { JwtRefreshStrategy } from '../common/strategies/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { LocalStrategy } from '../common/strategies/local.strategy';
     BcryptModule,
   ],
   controllers: [AuthController],
-  providers: [AuthUsecase, JwtProvider, LocalStrategy],
+  providers: [AuthUsecase, JwtProvider, LocalStrategy, JwtRefreshStrategy],
   exports: [AuthUsecase],
 })
 export class AuthModule {}

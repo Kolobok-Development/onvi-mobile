@@ -8,7 +8,8 @@ import {
   NotFoundException,
   Post,
   Req,
-  Request, UnprocessableEntityException,
+  Request,
+  UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthUsecase } from '../../application/usecases/auth/auth.usecase';
@@ -24,6 +25,9 @@ import { RegisterRequestDto } from './dto/register-request.dto';
 import { InvalidOtpException } from '../../domain/auth/exceptions/invalid-otp.exception';
 import { AccountNotFoundExceptions } from '../../domain/account/exceptions/account-not-found.exceptions';
 import { OtpInternalExceptions } from '../../domain/otp/exceptions/otp-internal.exceptions';
+import { RefreshGuard } from '../../infrastructure/common/guards/refresh.guard';
+import { RefreshRequestDto } from './dto/refresh-request.dto';
+import { RefreshResponseDto } from './dto/response/refresh-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -44,6 +48,7 @@ export class AuthController {
       }
       const accessToken = await this.authUsecase.signAccessToken(auth.phone);
       const refreshToken = await this.authUsecase.signRefreshToken(auth.phone);
+      await this.authUsecase.setCurrentRefreshToken(auth.phone, refreshToken);
       return new LoginResponseDto({
         client: user,
         tokens: {
@@ -133,8 +138,13 @@ export class AuthController {
   }
 
   @HttpCode(200)
+  @UseGuards(RefreshGuard)
   @Get('refresh')
-  async refresh(@Req() req: any) {
-    return 'token';
+  async refresh(@Body() RefreshRequestDto: any, @Req() request: any) {
+    const { user } = request;
+    const accessToken = await this.authUsecase.signAccessToken(
+      user.correctPhone,
+    );
+    return new RefreshResponseDto({ accessToken });
   }
 }

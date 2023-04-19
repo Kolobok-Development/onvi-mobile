@@ -10,7 +10,7 @@ import { EnvConfigService } from './env-config.service';
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
   ],
-  providers: [EnvConfigProvider],
-  exports: [EnvConfigProvider],
+  providers: [EnvConfigProvider, EnvConfigService],
+  exports: [EnvConfigProvider, EnvConfigService],
 })
 export class EnvConfigModule {}

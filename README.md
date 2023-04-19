@@ -338,4 +338,35 @@
 ```
 | Body | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
-| `refreshToken` | `string` | **Required** Ex. '+79215431345' |
+| `refreshToken` | `string` | **Required** Ex. '' |
+
+#### Response 200
+```json
+ {
+    "data": {
+        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+    },
+    "path": "/api/v2/auth/refresh",
+    "duration": "1ms",
+    "method": "GET"
+}
+```
+
+#### Error response 401
+
+```json
+
+```
+
+
+#### Error response 500 (unkown error)
+
+```json
+{
+    "code": null,
+    "type": "server,
+    "message": "Internal server error",
+    "timestamp": "2023-04-17T20:01:30.153Z",
+    "path": "/api/v2/auth/register"
+}
+```
