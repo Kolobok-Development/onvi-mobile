@@ -62,7 +62,7 @@ export class AccountRespository implements IAccountRepository {
       .limit(1)
       .getOne();
 
-    return client;
+    return this.toClient(client);
   }
 
   async setRefreshToken(phone: string, token: string): Promise<any> {
@@ -81,7 +81,6 @@ export class AccountRespository implements IAccountRepository {
     return new Client(
       clientEntity.clientId,
       clientEntity.name,
-      clientEntity.inn,
       clientEntity.email,
       clientEntity.phone,
       clientEntity.birthday,
@@ -93,8 +92,6 @@ export class AccountRespository implements IAccountRepository {
       clientEntity.genderId,
       clientEntity.correctPhone,
       clientEntity.refreshToken,
-      clientEntity.tokenId,
-      clientEntity.isTokeValid,
       clientEntity.activatedDate,
       clientEntity.isLk,
       clientEntity.tag,
@@ -105,7 +102,6 @@ export class AccountRespository implements IAccountRepository {
     const clientEntity: ClientEntity = new ClientEntity();
 
     clientEntity.name = client.name;
-    clientEntity.inn = client.email;
     clientEntity.email = client.email;
     clientEntity.phone = client.phone;
     clientEntity.birthday = client.birthday;
@@ -115,7 +111,6 @@ export class AccountRespository implements IAccountRepository {
     clientEntity.genderId = client.genderId;
     clientEntity.correctPhone = client.correctPhone;
     clientEntity.refreshToken = client.refreshToken;
-    clientEntity.isTokeValid = client.isTokeValid;
     clientEntity.activatedDate = client.activatedDate;
     clientEntity.isLk = client.isLk;
     clientEntity.tag = client.tag;
@@ -139,7 +134,6 @@ export class AccountRespository implements IAccountRepository {
       cardEntity.nomer,
       cardEntity.note,
       cardEntity.tag,
-      cardEntity.mainCardId,
     );
   }
 

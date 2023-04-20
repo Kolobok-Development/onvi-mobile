@@ -16,7 +16,6 @@ export class Card {
   nomer: string;
   note?: string;
   tag?: string;
-  mainCardId?: number;
 
   constructor(
     cardId: number,
@@ -33,7 +32,6 @@ export class Card {
     nomer: string,
     note: string,
     tag: string,
-    mainCardId: number,
   ) {
     this.cardId = cardId;
     this.balance = balance;
@@ -49,6 +47,5 @@ export class Card {
     this.nomer = nomer;
     this.note = note;
     this.tag = tag;
-    this.mainCardId = mainCardId;
   }
 }

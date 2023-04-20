@@ -15,12 +15,10 @@ import { ClientType } from '../../../domain/account/enum/clinet-type.enum';
 import { CardType } from '../../../domain/account/enum/card-type.enum';
 import { Otp } from '../../../domain/otp/model/otp';
 import { InvalidOtpException } from '../../../domain/auth/exceptions/invalid-otp.exception';
-import { ConflictEntityException } from '../../../domain/shared/excpetions/conflict-entity.exception';
-import { EntityNotFoundExceptions } from '../../../domain/shared/excpetions/entity-not-found.exceptions';
-import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
 import { AccountExistsException } from '../../../domain/account/exceptions/account-exists.exception';
 import { OtpInternalExceptions } from '../../../domain/otp/exceptions/otp-internal.exceptions';
 import { InvalidRefreshException } from '../../../domain/auth/exceptions/invalid-refresh.exception';
+import * as ms from 'ms';
 
 @Injectable()
 export class AuthUsecase {
@@ -76,7 +74,6 @@ export class AuthUsecase {
       null,
       'Новый пользователь',
       null,
-      null,
       formattedPhoneNumber,
       null,
       new Date(Date.now()),
@@ -86,9 +83,7 @@ export class AuthUsecase {
       1,
       null,
       phone,
-      refreshToken,
-      null,
-      '1',
+      refreshToken.token,
       new Date(Date.now()),
       null,
       null,
@@ -111,12 +106,11 @@ export class AuthUsecase {
       formattedPhoneNumber,
       null,
       null,
-      null,
     );
     //Create card in the database
     const newAccount = await this.accountRepository.create(card, client);
 
-    await this.setCurrentRefreshToken(phone, refreshToken);
+    await this.setCurrentRefreshToken(phone, refreshToken.token);
 
     return { newAccount, accessToken, refreshToken };
   }
@@ -156,7 +150,10 @@ export class AuthUsecase {
     const secret = this.jwtConfig.getJwtSecret();
     const expiresIn = this.jwtConfig.getJwtExpirationTime();
     const token = this.jwtService.signToken(payload, secret, expiresIn);
-    return token;
+    const expirationDate = new Date(
+      new Date().getTime() + Math.floor(ms(expiresIn) / 1000) * 1000,
+    ).toISOString();
+    return { token, expirationDate };
   }
 
   public async signRefreshToken(phone: any) {
@@ -164,8 +161,11 @@ export class AuthUsecase {
     const secret = this.jwtConfig.getJwtRefreshSecret();
     const expiresIn = this.jwtConfig.getJwtRefreshExpirationTime();
     const token = this.jwtService.signToken(payload, secret, expiresIn);
-    //await this.setCurrentRefreshToken(phone, token);
-    return token;
+    const expirationDate = new Date(
+      new Date().getTime() + Math.floor(ms(expiresIn) / 1000) * 1000,
+    ).toISOString();
+
+    return { token, expirationDate };
   }
 
   public async setCurrentRefreshToken(

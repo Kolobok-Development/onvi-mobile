@@ -28,6 +28,7 @@ import { OtpInternalExceptions } from '../../domain/otp/exceptions/otp-internal.
 import { RefreshGuard } from '../../infrastructure/common/guards/refresh.guard';
 import { RefreshRequestDto } from './dto/refresh-request.dto';
 import { RefreshResponseDto } from './dto/response/refresh-response.dto';
+import { use } from 'passport';
 
 @Controller('auth')
 export class AuthController {
@@ -48,12 +49,31 @@ export class AuthController {
       }
       const accessToken = await this.authUsecase.signAccessToken(auth.phone);
       const refreshToken = await this.authUsecase.signRefreshToken(auth.phone);
-      await this.authUsecase.setCurrentRefreshToken(auth.phone, refreshToken);
+      await this.authUsecase.setCurrentRefreshToken(
+        auth.phone,
+        refreshToken.token,
+      );
+
+      const shortUser = Object.assign(
+        {},
+        {
+          ...user,
+          refreshToken: undefined,
+          activatedDate: undefined,
+          isLk: undefined,
+          tag: undefined,
+          genderId: undefined,
+          note: undefined,
+          updDate: undefined,
+        },
+      );
       return new LoginResponseDto({
-        client: user,
+        client: shortUser,
         tokens: {
-          accessToken: accessToken,
-          refreshToken: refreshToken,
+          accessToken: accessToken.token,
+          accessTokenExp: accessToken.expirationDate,
+          refreshToken: refreshToken.token,
+          refreshTokenExp: refreshToken.expirationDate,
         },
         type: AuthType.LOGIN_SUCCESS,
       });
@@ -72,8 +92,21 @@ export class AuthController {
       const { newAccount, accessToken, refreshToken } =
         await this.authUsecase.register(auth.phone, auth.otp);
 
+      const shortUser = Object.assign(
+        {},
+        {
+          ...newAccount,
+          refreshToken: undefined,
+          activatedDate: undefined,
+          isLk: undefined,
+          tag: undefined,
+          genderId: undefined,
+          note: undefined,
+          updDate: undefined,
+        },
+      );
       return new RegisterResponseDto({
-        client: newAccount,
+        client: shortUser,
         tokens: {
           accessToken: accessToken,
           refreshToken: refreshToken,
@@ -139,12 +172,15 @@ export class AuthController {
 
   @HttpCode(200)
   @UseGuards(RefreshGuard)
-  @Get('refresh')
+  @Post('refresh')
   async refresh(@Body() RefreshRequestDto: any, @Req() request: any) {
     const { user } = request;
     const accessToken = await this.authUsecase.signAccessToken(
       user.correctPhone,
     );
-    return new RefreshResponseDto({ accessToken });
+    return new RefreshResponseDto({
+      accessToken: accessToken.token,
+      accessTokenExp: accessToken.expirationDate,
+    });
   }
 }
