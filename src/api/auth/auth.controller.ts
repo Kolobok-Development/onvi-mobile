@@ -48,25 +48,11 @@ export class AuthController {
         });
       }
       const accessToken = await this.authUsecase.signAccessToken(auth.phone);
-      const refreshToken = await this.authUsecase.signRefreshToken(auth.phone);
-      await this.authUsecase.setCurrentRefreshToken(
-        auth.phone,
-        refreshToken.token,
-      );
+      const refresh = await this.authUsecase.signRefreshToken(auth.phone);
+      await this.authUsecase.setCurrentRefreshToken(auth.phone, refresh.token);
 
-      const shortUser = Object.assign(
-        {},
-        {
-          ...user,
-          refreshToken: undefined,
-          activatedDate: undefined,
-          isLk: undefined,
-          tag: undefined,
-          genderId: undefined,
-          note: undefined,
-          updDate: undefined,
-        },
-      );
+      const { refreshToken, ...shortUser } = user.getAccountInfo();
+
       return new LoginResponseDto({
         client: shortUser,
         tokens: {
@@ -89,27 +75,15 @@ export class AuthController {
   @HttpCode(201)
   async register(@Body() auth: RegisterRequestDto, @Request() req: any) {
     try {
-      const { newAccount, accessToken, refreshToken } =
+      const { newAccount, accessToken, refresh } =
         await this.authUsecase.register(auth.phone, auth.otp);
 
-      const shortUser = Object.assign(
-        {},
-        {
-          ...newAccount,
-          refreshToken: undefined,
-          activatedDate: undefined,
-          isLk: undefined,
-          tag: undefined,
-          genderId: undefined,
-          note: undefined,
-          updDate: undefined,
-        },
-      );
+      const { refreshToken, ...shortUser } = newAccount.getAccountInfo();
       return new RegisterResponseDto({
-        client: shortUser,
+        client: shortUser.getAccountInfo(),
         tokens: {
           accessToken: accessToken,
-          refreshToken: refreshToken,
+          refreshToken: refresh,
         },
         type: AuthType.REGISTER_SUCCESS,
       });

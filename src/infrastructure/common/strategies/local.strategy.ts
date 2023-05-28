@@ -7,6 +7,7 @@ import {
 import { AuthUsecase } from '../../../application/usecases/auth/auth.usecase';
 import { Strategy } from 'passport-local';
 import { InvalidOtpException } from '../../../domain/auth/exceptions/invalid-otp.exception';
+import { Client } from '../../../domain/account/client/model/client';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -23,10 +24,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     done: (error: Error, data) => Record<string, unknown>,
   ) {
     try {
-      const client = await this.authService.validateUserForLocalStrategy(
-        phone,
-        otp,
-      );
+      const client: Client =
+        await this.authService.validateUserForLocalStrategy(phone, otp);
 
       if (!client) {
         return done(null, { register: true });

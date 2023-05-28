@@ -10,6 +10,7 @@ import { JwtProvider } from '../services/jwt/jwt.provider';
 import { AuthController } from '../../api/auth/auth.controller';
 import { LocalStrategy } from '../common/strategies/local.strategy';
 import { JwtRefreshStrategy } from '../common/strategies/jwt-refresh.strategy';
+import { JwtStrategy } from '../common/strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -21,7 +22,13 @@ import { JwtRefreshStrategy } from '../common/strategies/jwt-refresh.strategy';
     BcryptModule,
   ],
   controllers: [AuthController],
-  providers: [AuthUsecase, JwtProvider, LocalStrategy, JwtRefreshStrategy],
+  providers: [
+    AuthUsecase,
+    JwtProvider,
+    LocalStrategy,
+    JwtRefreshStrategy,
+    JwtStrategy,
+  ],
   exports: [AuthUsecase],
 })
 export class AuthModule {}

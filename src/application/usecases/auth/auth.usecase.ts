@@ -1,5 +1,5 @@
 import { IAccountRepository } from '../../../domain/account/interface/account-repository.interface';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   IJwtService,
   IJwtServicePayload,
@@ -9,16 +9,18 @@ import { IDate } from '../../../infrastructure/common/interfaces/date.interface'
 import { OTP_EXPIRY_TIME } from '../../../infrastructure/common/constants/constants';
 import { IJwtConfig } from '../../../domain/config/jwt-config.interface';
 import { IBcrypt } from '../../../domain/auth/adapters/bcrypt.interface';
-import { Client } from '../../../domain/account/model/client';
-import { Card } from '../../../domain/account/model/card';
-import { ClientType } from '../../../domain/account/enum/clinet-type.enum';
-import { CardType } from '../../../domain/account/enum/card-type.enum';
+import { ClientType } from '../../../domain/account/client/enum/clinet-type.enum';
 import { Otp } from '../../../domain/otp/model/otp';
 import { InvalidOtpException } from '../../../domain/auth/exceptions/invalid-otp.exception';
 import { AccountExistsException } from '../../../domain/account/exceptions/account-exists.exception';
 import { OtpInternalExceptions } from '../../../domain/otp/exceptions/otp-internal.exceptions';
 import { InvalidRefreshException } from '../../../domain/auth/exceptions/invalid-refresh.exception';
 import * as ms from 'ms';
+import { ICreateClientDto } from '../../../domain/account/client/dto/create-client.dto';
+import { ICreateCardDto } from '../../../domain/account/card/dto/create-card.dto';
+import { CardType } from '../../../domain/account/card/enum/card-type.enum';
+import { AuthenticationException } from '../../../domain/shared/excpetions/base.exceptions';
+import { InvalidAccessException } from '../../../domain/auth/exceptions/invalida-token.excpetion';
 
 @Injectable()
 export class AuthUsecase {
@@ -67,48 +69,16 @@ export class AuthUsecase {
     const accessToken = await this.signAccessToken(phone);
     const refreshToken = await this.signRefreshToken(phone);
 
-    //Format phone
-    const formattedPhoneNumber = this.formatPhone(phone);
     // Create new client model
-    const client = new Client(
-      null,
-      'Новый пользователь',
-      null,
-      formattedPhoneNumber,
-      null,
-      new Date(Date.now()),
-      null,
-      ClientType.INDIVIDUAL,
-      null,
-      1,
-      null,
-      phone,
-      refreshToken.token,
-      new Date(Date.now()),
-      null,
-      null,
-      null,
-    );
 
-    //Create card model
-    const card = new Card(
-      null,
-      0,
-      0,
-      new Date(Date.now()),
-      null,
-      CardType.ONVI,
-      formattedPhoneNumber,
-      null,
-      null,
-      0,
-      0,
-      formattedPhoneNumber,
-      null,
-      null,
-    );
+    const clientData: ICreateClientDto = {
+      rawPhone: phone,
+      clientType: ClientType.INDIVIDUAL,
+      refreshToken: refreshToken.token,
+    };
+
     //Create card in the database
-    const newAccount = await this.accountRepository.create(card, client);
+    const newAccount = await this.accountRepository.create(clientData);
 
     await this.setCurrentRefreshToken(phone, refreshToken.token);
 
@@ -140,7 +110,7 @@ export class AuthUsecase {
   public async validateUserForJwtStrategy(phone: string): Promise<any> {
     const account = await this.accountRepository.findOneByPhoneNumber(phone);
     if (!account) {
-      return null;
+      throw new InvalidAccessException(phone);
     }
     return account;
   }

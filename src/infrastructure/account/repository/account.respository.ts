@@ -1,39 +1,44 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CardEntity } from '../entity/card.entity';
-import { Repository } from 'typeorm';
-import { ClientEntity } from '../entity/client.entity';
 import { IAccountRepository } from '../../../domain/account/interface/account-repository.interface';
-import { Client } from '../../../domain/account/model/client';
-import { Card } from '../../../domain/account/model/card';
-import { plainToClass } from 'class-transformer';
+import { Client } from '../../../domain/account/client/model/client';
+import { Card } from '../../../domain/account/card/model/card';
+import { CardRepository } from './card.repository';
+import { ClientRepository } from './client.repository';
+import { ICreateCardDto } from '../../../domain/account/card/dto/create-card.dto';
+import { ICreateClientDto } from '../../../domain/account/client/dto/create-client.dto';
+import { CardType } from '../../../domain/account/card/enum/card-type.enum';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CardHistEntity } from '../entity/card-hist.enity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AccountRespository implements IAccountRepository {
   constructor(
-    @InjectRepository(CardEntity)
-    private readonly cardRepository: Repository<CardEntity>,
-    @InjectRepository(ClientEntity)
-    private readonly clientRepository: Repository<ClientEntity>,
+    @InjectRepository(CardHistEntity)
+    private readonly cardHistoryRepository: Repository<CardHistEntity>,
+    private readonly cardRepository: CardRepository,
+    private readonly clientRepository: ClientRepository,
   ) {}
 
-  async create(card: Card, client: Client): Promise<any> {
-    //TODO
-    //1) Create client
-    const clientEntity = this.toClientEntity(client);
-    const newClientE = await this.clientRepository.save(clientEntity);
+  async create(clientData: ICreateClientDto): Promise<any> {
+    const client: Client = Client.create(clientData);
+    const newClient = await this.clientRepository.create(client);
 
-    const cardEntity = this.toCardEntity(card);
-    cardEntity.client = newClientE;
+    const cardData: ICreateCardDto = {
+      clientId: newClient.clientId,
+      nomer: newClient.correctPhone,
+      devNomer: newClient.correctPhone,
+      cardTypeId: CardType.ONVI,
+      beginDate: new Date(Date.now()),
+    };
 
-    const newCardE = await this.cardRepository.save(cardEntity);
+    const card: Card = Card.create(cardData);
 
-    const newClient = this.toClient(newClientE);
-    const newCard = this.toCard(newCardE);
+    const newCard = await this.cardRepository.create(card, newClient);
 
-    newClient.cards = [newCard];
+    client.addCard(newCard);
 
-    return newClient;
+    return client;
   }
   update(client: Client): Promise<Client> {
     return null;
@@ -41,18 +46,17 @@ export class AccountRespository implements IAccountRepository {
   getBalance(cardNumber: string): Promise<Card> {
     return null;
   }
+
+  async getCardHisotry(): Promise<any> {
+
+  }
   async findOneByPhoneNumber(phone: any): Promise<any> {
     //TODO
     // 1) Find customer by phone number
 
-    /*
-       const maxCardBalance: any = this.cardRepository
-      .createQueryBuilder('maxClient')
-      .leftJoin('maxClient.cards', 'maxCards')
-      .where('maxClient.correctPhone = :phone', { phone: phone })
-      .addSelect('MAX(maxCards.balance', 'maxBalance');
-     */
+    const client = await this.clientRepository.findOneByPhone(phone);
 
+    /*
     const client: any = await this.clientRepository
       .createQueryBuilder('client')
       .innerJoin('client.cards', 'card')
@@ -63,93 +67,13 @@ export class AccountRespository implements IAccountRepository {
       .getOne();
 
     return this.toClient(client);
+
+     */
+
+    return client;
   }
 
   async setRefreshToken(phone: string, token: string): Promise<any> {
-    const client: ClientEntity = await this.findOneByPhoneNumber(phone);
-
-    if (!client) {
-      return null;
-    }
-
-    client.refreshToken = token;
-
-    return this.clientRepository.save(client);
-  }
-
-  private toClient(clientEntity: ClientEntity): Client {
-    return new Client(
-      clientEntity.clientId,
-      clientEntity.name,
-      clientEntity.email,
-      clientEntity.phone,
-      clientEntity.birthday,
-      clientEntity.insDate,
-      clientEntity.updDate,
-      clientEntity.clientTypeId,
-      clientEntity.note,
-      clientEntity.isActivated,
-      clientEntity.genderId,
-      clientEntity.correctPhone,
-      clientEntity.refreshToken,
-      clientEntity.activatedDate,
-      clientEntity.isLk,
-      clientEntity.tag,
-      clientEntity.cards,
-    );
-  }
-  private toClientEntity(client: Client): ClientEntity {
-    const clientEntity: ClientEntity = new ClientEntity();
-
-    clientEntity.name = client.name;
-    clientEntity.email = client.email;
-    clientEntity.phone = client.phone;
-    clientEntity.birthday = client.birthday;
-    clientEntity.clientTypeId = client.clientTypeId;
-    clientEntity.note = client.note;
-    clientEntity.isActivated = client.isActivated;
-    clientEntity.genderId = client.genderId;
-    clientEntity.correctPhone = client.correctPhone;
-    clientEntity.refreshToken = client.refreshToken;
-    clientEntity.activatedDate = client.activatedDate;
-    clientEntity.isLk = client.isLk;
-    clientEntity.tag = client.tag;
-
-    return clientEntity;
-  }
-
-  private toCard(cardEntity: CardEntity): Card {
-    return new Card(
-      cardEntity.cardId,
-      cardEntity.balance,
-      cardEntity.isLocked,
-      cardEntity.dateBegin,
-      cardEntity.dateEnd,
-      cardEntity.cardTypeId,
-      cardEntity.devNomer,
-      cardEntity.isDel,
-      cardEntity.cmnCity,
-      cardEntity.realBalance,
-      cardEntity.airBalance,
-      cardEntity.nomer,
-      cardEntity.note,
-      cardEntity.tag,
-    );
-  }
-
-  private toCardEntity(card: Card): Card {
-    const cardEntity: CardEntity = new CardEntity();
-
-    cardEntity.isLocked = card.isLocked;
-    cardEntity.dateEnd = card.dateEnd;
-    cardEntity.cardTypeId = card.cardTypeId;
-    cardEntity.devNomer = card.devNomer;
-    cardEntity.isDel = card.isDel;
-    cardEntity.cmnCity = card.cmnCity;
-    cardEntity.nomer = card.nomer;
-    cardEntity.note = card.note;
-    cardEntity.tag = card.tag;
-
-    return cardEntity;
+    await this.clientRepository.setRefreshToken(phone, token);
   }
 }
