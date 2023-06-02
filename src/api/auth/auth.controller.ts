@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   InternalServerErrorException,
   NotFoundException,
   Post,
@@ -29,6 +30,7 @@ import { RefreshGuard } from '../../infrastructure/common/guards/refresh.guard';
 import { RefreshRequestDto } from './dto/refresh-request.dto';
 import { RefreshResponseDto } from './dto/response/refresh-response.dto';
 import { use } from 'passport';
+import { CustomHttpException } from '../../infrastructure/common/exceptions/custom-http.exception';
 
 @Controller('auth')
 export class AuthController {
@@ -64,10 +66,10 @@ export class AuthController {
         type: AuthType.LOGIN_SUCCESS,
       });
     } catch (e) {
-      throw new InternalServerErrorException(
-        { message: e.message },
-        { cause: e },
-      );
+      throw new CustomHttpException({
+        message: e.message,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
     }
   }
 
@@ -89,28 +91,24 @@ export class AuthController {
       });
     } catch (e) {
       if (e instanceof InvalidOtpException) {
-        throw new UnprocessableEntityException(
-          {
-            innerCode: e.innerCode,
-            message: e.message,
-            type: e.type,
-          },
-          { cause: e },
-        );
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.UNPROCESSABLE_ENTITY,
+        });
       } else if (e instanceof AccountNotFoundExceptions) {
-        throw new NotFoundException(
-          {
-            innerCode: e.innerCode,
-            message: e.message,
-            type: e.type,
-          },
-          { cause: e },
-        );
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.NOT_FOUND,
+        });
       } else {
-        throw new InternalServerErrorException(
-          { message: e.message },
-          { cause: e },
-        );
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
       }
     }
   }
@@ -127,19 +125,17 @@ export class AuthController {
       });
     } catch (e) {
       if (e instanceof OtpInternalExceptions) {
-        throw new InternalServerErrorException(
-          {
-            innerCode: e.innerCode,
-            message: e.message,
-            type: e.type,
-          },
-          { cause: e },
-        );
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
       } else {
-        throw new InternalServerErrorException(
-          { message: e.message },
-          { cause: e },
-        );
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
       }
     }
   }

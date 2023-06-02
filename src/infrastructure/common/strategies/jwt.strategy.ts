@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthUsecase } from '../../../application/usecases/auth/auth.usecase';
@@ -7,6 +7,7 @@ import { Request } from 'express';
 import { TokenPaload } from '../../../domain/auth/model/auth';
 import { Client } from '../../../domain/account/client/model/client';
 import { InvalidAccessException } from '../../../domain/auth/exceptions/invalida-token.excpetion';
+import { CustomHttpException } from '../exceptions/custom-http.exception';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -29,7 +30,17 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       return account;
     } catch (e) {
       if (e instanceof InvalidAccessException) {
-        console.log(e);
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.UNAUTHORIZED,
+        });
+      } else {
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
       }
     }
   }

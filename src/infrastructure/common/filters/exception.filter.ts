@@ -6,6 +6,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ValidationException } from '../exceptions/validation.exception';
+import { CustomHttpException } from '../exceptions/custom-http.exception';
+import { SERVER_ERROR } from '../constants/constants';
 
 interface IError {
   type: string;
@@ -33,8 +35,12 @@ export class AllExceptionFilter implements ExceptionFilter {
         ? HttpStatus.BAD_REQUEST
         : HttpStatus.INTERNAL_SERVER_ERROR;
     const errorResponse =
-      exception instanceof HttpException
-        ? (exception.getResponse() as IError)
+      exception instanceof CustomHttpException
+        ? {
+            type: exception.type,
+            innerCode: exception.innerCode,
+            message: exception.getResponse().toString(),
+          }
         : exception instanceof ValidationException
         ? {
             type: exception.type,
@@ -42,8 +48,8 @@ export class AllExceptionFilter implements ExceptionFilter {
             message: exception.message,
           }
         : {
-            type: 'api.internal',
-            innerCode: null,
+            type: 'api_server',
+            innerCode: SERVER_ERROR,
             message: (exception as Error).message,
           };
     const message = errorResponse.message;
@@ -62,7 +68,7 @@ export class AllExceptionFilter implements ExceptionFilter {
       },
     };
 
-    //console.log(exception.getResponse().message);
+    console.log(exception);
     response.status(status).json(responseData);
   }
 }

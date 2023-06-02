@@ -10,9 +10,10 @@ import { CardType } from '../../../domain/account/card/enum/card-type.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CardHistEntity } from '../entity/card-hist.enity';
 import { Repository } from 'typeorm';
+import { CardHist } from '../../../domain/account/card/model/cardHist';
 
 @Injectable()
-export class AccountRespository implements IAccountRepository {
+export class AccountRepository implements IAccountRepository {
   constructor(
     @InjectRepository(CardHistEntity)
     private readonly cardHistoryRepository: Repository<CardHistEntity>,
@@ -47,8 +48,21 @@ export class AccountRespository implements IAccountRepository {
     return null;
   }
 
-  async getCardHisotry(): Promise<any> {
+  async getCardHistory(
+    unqNumber: string,
+    size: number,
+    page: number,
+  ): Promise<CardHist[]> {
+    const [hisotry, total] = await this.cardHistoryRepository.findAndCount({
+      where: { devNomer: unqNumber, operTypeId: 5 },
+      order: { operDate: 'DESC' },
+      take: size,
+      skip: page,
+    });
 
+    if (hisotry.length == 0) return [];
+
+    return hisotry.map((transaction, i) => CardHist.fromEntity(transaction));
   }
   async findOneByPhoneNumber(phone: any): Promise<any> {
     //TODO
@@ -56,19 +70,7 @@ export class AccountRespository implements IAccountRepository {
 
     const client = await this.clientRepository.findOneByPhone(phone);
 
-    /*
-    const client: any = await this.clientRepository
-      .createQueryBuilder('client')
-      .innerJoin('client.cards', 'card')
-      .where('client.correctPhone = :phone', { phone: phone })
-      .select(['client', 'card'])
-      .orderBy('card.balance', 'DESC')
-      .limit(1)
-      .getOne();
-
-    return this.toClient(client);
-
-     */
+    if (!client) return null;
 
     return client;
   }

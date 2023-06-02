@@ -1,5 +1,6 @@
 import { PassportStrategy } from '@nestjs/passport';
 import {
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   UnprocessableEntityException,
@@ -8,6 +9,7 @@ import { AuthUsecase } from '../../../application/usecases/auth/auth.usecase';
 import { Strategy } from 'passport-local';
 import { InvalidOtpException } from '../../../domain/auth/exceptions/invalid-otp.exception';
 import { Client } from '../../../domain/account/client/model/client';
+import {CustomHttpException} from "../exceptions/custom-http.exception";
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -34,19 +36,17 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       return done(null, client);
     } catch (e) {
       if (e instanceof InvalidOtpException) {
-        throw new UnprocessableEntityException(
-          {
-            innerCode: e.innerCode,
-            message: e.message,
-            type: e.type,
-          },
-          { cause: e },
-        );
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.UNPROCESSABLE_ENTITY,
+        });
       } else {
-        throw new InternalServerErrorException(
-          { message: e.message },
-          { cause: e },
-        );
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
       }
     }
   }

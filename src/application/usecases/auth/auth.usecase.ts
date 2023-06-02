@@ -19,7 +19,7 @@ import * as ms from 'ms';
 import { ICreateClientDto } from '../../../domain/account/client/dto/create-client.dto';
 import { ICreateCardDto } from '../../../domain/account/card/dto/create-card.dto';
 import { CardType } from '../../../domain/account/card/enum/card-type.enum';
-import { AuthenticationException } from '../../../domain/shared/excpetions/base.exceptions';
+import { AuthenticationException } from '../../../infrastructure/common/exceptions/base.exceptions';
 import { InvalidAccessException } from '../../../domain/auth/exceptions/invalida-token.excpetion';
 
 @Injectable()

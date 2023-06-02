@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { OtpEntity } from '../otp/entity/otp.entity';
 import { ClientEntity } from '../account/entity/client.entity';
 import { CardEntity } from '../account/entity/card.entity';
+import { CardHistEntity } from '../account/entity/card-hist.enity';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { CardEntity } from '../account/entity/card.entity';
         password: configService.get('DB_PASSWORD'),
         sid: configService.get('DB_SID'),
         synchronize: false,
-        entities: [ClientEntity, CardEntity, OtpEntity],
+        entities: [ClientEntity, CardEntity, OtpEntity, CardHistEntity],
       }),
       inject: [ConfigService],
     }),

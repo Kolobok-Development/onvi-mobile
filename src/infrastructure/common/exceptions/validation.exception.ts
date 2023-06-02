@@ -1,5 +1,5 @@
 import { ValidationError } from '@nestjs/common';
-import { ClientException } from '../../../domain/shared/excpetions/base.exceptions';
+import { ClientException } from './base.exceptions';
 
 export const VALIDATION_ERROR_CODE = 40;
 

@@ -1,5 +1,6 @@
-import { ServerException } from '../../shared/excpetions/base.exceptions';
-const OTP_INTERNAL_SERVER_ERROR_CODE = 6;
+import { ServerException } from '../../../infrastructure/common/exceptions/base.exceptions';
+import { OTP_INTERNAL_SERVER_ERROR_CODE } from '../../../infrastructure/common/constants/constants';
+
 export class OtpInternalExceptions extends ServerException {
   constructor(otp: string, phone: string) {
     super(

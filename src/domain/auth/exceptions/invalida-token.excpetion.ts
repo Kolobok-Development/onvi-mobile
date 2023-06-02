@@ -1,5 +1,6 @@
-import { AuthenticationException } from '../../shared/excpetions/base.exceptions';
-export const INVALID_ACCESS_AUTHENTIFICATION_ERROR_CODE = 52;
+import { AuthenticationException } from '../../../infrastructure/common/exceptions/base.exceptions';
+import { INVALID_ACCESS_AUTHENTIFICATION_ERROR_CODE } from '../../../infrastructure/common/constants/constants';
+
 export class InvalidAccessException extends AuthenticationException {
   constructor(phone: string) {
     super(
