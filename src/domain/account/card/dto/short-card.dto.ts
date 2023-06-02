@@ -1,7 +1,7 @@
 export interface ShortCardDto {
   number: string;
   unqNumber: string;
-  balamce: number;
+  balance: number;
   isLocked: number | null;
   dateBegin: Date;
 }

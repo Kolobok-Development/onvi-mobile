@@ -103,7 +103,7 @@ export class Client {
       cards: {
         number: mainCard.nomer,
         unqNumber: mainCard.devNomer,
-        balamce: mainCard.balance,
+        balance: mainCard.balance,
         isLocked: mainCard.isLocked,
         dateBegin: mainCard.dateBegin,
       },
