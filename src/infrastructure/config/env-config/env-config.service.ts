@@ -21,4 +21,15 @@ export class EnvConfigService implements IJwtConfig {
   getJwtSecret(): string {
     return this.configService.get<string>('JWT_SECRET');
   }
+  getDsCloudBaseUrl(): string {
+    return this.configService.get<string>('DS_CLOUD_URL');
+  }
+
+  getDsCloudApiKey(): string {
+    return this.configService.get<string>('DS_CLOUD_API_KEY');
+  }
+
+  getDsCloudSourceId(): number {
+    return this.configService.get<number>('DS_CLOUD_SOURCE');
+  }
 }

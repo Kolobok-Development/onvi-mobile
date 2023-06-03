@@ -81,6 +81,22 @@ export class Client {
     this.cards.push(card);
   }
 
+  public getCard(): Card {
+    let mainCard: Card;
+    if (this.cards.length > 0) {
+      const activeCards: Card[] = this.cards.filter(
+        (card) => card.isDel === null || card.isDel === 0,
+      );
+      mainCard = activeCards.reduce((prev: Card, curr: Card) => {
+        return (prev.balance ?? 0) > (curr.balance ?? 0) ? prev : curr;
+      });
+    } else {
+      mainCard = this.cards[0];
+    }
+
+    return mainCard;
+  }
+
   public getAccountInfo(): ShortClientDto {
     let mainCard: Card;
     if (this.cards.length > 0) {

@@ -81,6 +81,7 @@ export class AuthController {
         await this.authUsecase.register(auth.phone, auth.otp);
 
       const { refreshToken, ...shortUser } = newAccount.getAccountInfo();
+      console.log(refresh);
       return new RegisterResponseDto({
         client: shortUser.getAccountInfo(),
         tokens: {

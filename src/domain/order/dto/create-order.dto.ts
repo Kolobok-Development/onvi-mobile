@@ -1,12 +1,11 @@
-import { PaymentType } from '../enum/payment-type.enum';
 import { Card } from '../../account/card/model/card';
 
 export interface ICreateOrderDto {
   card: Card;
-  externalId?: string;
-  orderSum: number;
+  transactionId?: string;
+  sum: number;
   promoCodeId?: number;
-  paymentType: PaymentType;
+  rewardPointsUsed?: number;
   carWashId: number;
   bayNumber: number;
 }

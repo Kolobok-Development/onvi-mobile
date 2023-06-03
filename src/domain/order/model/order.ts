@@ -1,88 +1,123 @@
 import { OrderStatus } from '../enum/order-status.enum';
-import { PaymentType } from '../enum/payment-type.enum';
 import { ICreateOrderDto } from '../dto/create-order.dto';
+import { Card } from '../../account/card/model/card';
+import { OrderEntity } from '../../../infrastructure/order/entity/order.entity';
+import {OrderProcessingException} from "../exceptions/order-processing.exception";
 
 interface OrderOptions {
   id?: number;
-  externalId?: string;
+  card?: Card;
+  transactionId?: string;
+  rewardPointsUsed?: number;
   promoCodeId?: number;
+  discountAmount?: number;
   excecutionError?: string;
-  completedAt?: Date;
 }
 export class Order {
   id?: number;
-  cardUnqNumber: string;
-  externalId?: string;
+  card?: Card;
+  transactionId?: string;
   createdAt: Date;
-  orderSum: number;
+  sum: number;
   promoCodeId?: number;
+  discountAmount?: number;
   orderStatus: OrderStatus;
-  paymentType: PaymentType;
+  rewardPointsUsed?: number;
   carWashId: number;
   bayNumber: number;
   excecutionError?: string;
-  completedAt?: Date;
 
   private constructor(
-    cardUnqNumber: string,
     createdAt: Date,
-    orderSum: number,
+    sum: number,
     orderStatus: OrderStatus,
-    paymentType: PaymentType,
     carWashId: number,
     bayNumber: number,
-    { id, externalId, promoCodeId, excecutionError, completedAt }: OrderOptions,
+    {
+      id,
+      transactionId,
+      rewardPointsUsed,
+      promoCodeId,
+      discountAmount,
+      excecutionError,
+      card,
+    }: OrderOptions,
   ) {
     this.id = id;
-    this.cardUnqNumber = cardUnqNumber;
+    this.card = card;
     this.createdAt = createdAt;
-    this.orderSum = orderSum;
+    this.sum = sum;
     this.orderStatus = orderStatus;
-    this.paymentType = paymentType;
     this.carWashId = carWashId;
     this.bayNumber = bayNumber;
     this.excecutionError = excecutionError;
-    this.completedAt = completedAt;
-    this.externalId = externalId;
+    this.transactionId = transactionId;
     this.promoCodeId = promoCodeId;
+    this.rewardPointsUsed = rewardPointsUsed;
+    this.discountAmount = discountAmount;
   }
 
   public static create(data: ICreateOrderDto): Order {
     const {
       card,
-      externalId,
-      orderSum,
+      transactionId,
+      sum,
       promoCodeId,
-      paymentType,
       carWashId,
       bayNumber,
+      rewardPointsUsed,
     } = data;
 
-    const createdAt: Date = new Date(Date.now());
-    const orderStatus: OrderStatus = OrderStatus.CREATED;
+    const createdAt: Date = new Date();
 
-    if (paymentType === PaymentType.POINTS && card.balance < orderSum) {
-      throw new Error('Balance too low');
+    if (rewardPointsUsed > 0) {
+      if (card.balance < sum) {
+        throw new OrderProcessingException()
+      }
+
+      if (rewardPointsUsed <= 0) {
+        throw new OrderProcessingException()
+      }
     } else if (card.isLocked === 1) {
-      throw new Error('Card is locked');
-    } else if (paymentType === PaymentType.BANKCARD && !externalId) {
-      throw new Error('Unable to process payment');
-    } else if (orderSum < 0) {
-      throw new Error('Negative sum error');
+      throw new OrderProcessingException()
+    } else if (!transactionId) {
+      throw new OrderProcessingException()
+    } else if (sum < 0) {
+      throw new OrderProcessingException()
     }
 
-    return new Order(
-      card.devNomer,
-      createdAt,
-      orderSum,
+    const orderStatus: OrderStatus = OrderStatus.CREATED;
+
+    return new Order(createdAt, sum, orderStatus, carWashId, bayNumber, {
+      transactionId,
+      promoCodeId,
+      rewardPointsUsed,
+      card: card,
+    });
+  }
+
+  public static fromEntity(entity: OrderEntity): Order {
+    const statusMappings = {
+      CREATED: OrderStatus.CREATED,
+      CANCELED: OrderStatus.CANCELED,
+      COMPLETED: OrderStatus.COMPLETED,
+    };
+    const orderStatus = statusMappings[entity.orderStatus];
+    const order = new Order(
+      entity.createdAt,
+      entity.sum,
       orderStatus,
-      paymentType,
-      carWashId,
-      bayNumber,
+      entity.carWashId,
+      entity.bayNumber,
       {
-        externalId,
-        promoCodeId,
+        id: entity.id,
+        transactionId: entity.transactionId,
+        rewardPointsUsed: entity.rewardPointsUsed,
+        discountAmount: entity.discountAmount,
+        excecutionError: entity.excecutionError,
       },
     );
+
+    return order;
   }
 }

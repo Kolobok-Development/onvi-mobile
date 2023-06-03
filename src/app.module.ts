@@ -10,6 +10,7 @@ import { EnvConfigModule } from './infrastructure/config/env-config/env-config.m
 import { BcryptModule } from './infrastructure/services/bcrypt/bcrypt.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './infrastructure/common/strategies/local.strategy';
+import { OrderModule } from './infrastructure/order/order.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { LocalStrategy } from './infrastructure/common/strategies/local.strategy
     DateModule,
     EnvConfigModule,
     BcryptModule,
+    OrderModule,
   ],
   controllers: [],
   providers: [],
