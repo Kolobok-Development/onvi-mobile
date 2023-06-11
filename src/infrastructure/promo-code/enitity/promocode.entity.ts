@@ -4,13 +4,13 @@ import {PromoCodeUsageEntity} from "./promo-code-usage.entity";
 
 @Entity({ name: 'MOBILE_PROMO_CODE', synchronize: false })
 export class PromoCodeEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ name: 'ID'})
   id: number;
 
-  @Column({ type: 'varchar2', length: 100 })
+  @Column({ type: 'varchar2', length: 100, name: 'CODE' })
   code: string;
 
-  @Column({ type: 'number' })
+  @Column({ type: 'number', name: 'DISCOUNT' })
   discount: number;
 
   @Column({ name: 'DISCOUNT_TYPE', type: 'number' })

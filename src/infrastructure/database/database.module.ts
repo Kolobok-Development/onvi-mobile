@@ -6,9 +6,9 @@ import { ClientEntity } from '../account/entity/client.entity';
 import { CardEntity } from '../account/entity/card.entity';
 import { CardHistEntity } from '../account/entity/card-hist.enity';
 import { OrderEntity } from '../order/entity/order.entity';
-import { PromoCodeEntity } from '../promo_code/enitity/promocode.entity';
-import { PromoCodeLocationEntity } from '../promo_code/enitity/promo-code-location.entity';
-import { PromoCodeUsageEntity } from '../promo_code/enitity/promo-code-usage.entity';
+import { PromoCodeEntity } from '../promo-code/enitity/promocode.entity';
+import { PromoCodeLocationEntity } from '../promo-code/enitity/promo-code-location.entity';
+import { PromoCodeUsageEntity } from '../promo-code/enitity/promo-code-usage.entity';
 
 @Module({
   imports: [

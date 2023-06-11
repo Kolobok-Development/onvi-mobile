@@ -10,10 +10,20 @@ import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
 import { BayBusyException } from '../../../domain/order/exceptions/bay-busy.exception';
 import { CarwashUnavalibleException } from '../../../domain/order/exceptions/carwash-unavalible.exception';
 import { OrderProcessingException } from '../../../domain/order/exceptions/order-processing.exception';
+import { IPromoCodeRepository } from '../../../domain/promo-code/promo-code-repository.abstract';
+import { VerifyPromoDto } from './dto/verify-promo.dto';
+import { PromoCodeLocation } from '../../../domain/promo-code/model/promo-code-location';
+import { PromoVerificationResponseDto } from './dto/promo-verification-response.dto';
+import { PromoCode } from '../../../domain/promo-code/model/promo-code.model';
+import { InvalidPromoCodeException } from '../../../domain/promo-code/exceptions/invalid-promo-code.exception';
+import { PromoCodeNotFoundException } from '../../../domain/promo-code/exceptions/promo-code-not-found.exception';
 
 @Injectable()
 export class OrderUsecase {
-  constructor(private readonly orderRepository: IOrderRepository) {}
+  constructor(
+    private readonly orderRepository: IOrderRepository,
+    private readonly promoCodeRepository: IPromoCodeRepository,
+  ) {}
 
   async create(
     data: CreateOrderDto,
@@ -41,7 +51,25 @@ export class OrderUsecase {
       bayNumber: data.bayNumber,
     });
 
+    const promoCode: PromoCode = await this.promoCodeRepository.findOneById(
+      order.promoCodeId,
+    );
+
+    if (!promoCode) throw new OrderProcessingException();
+
+    if (promoCode.discountType === 1) {
+      order.discountAmount = order.sum - promoCode.discount;
+    } else if (promoCode.discountType === 2) {
+      order.discountAmount = Math.round((promoCode.discount / 100) * order.sum);
+    }
+
     const newOrder = await this.orderRepository.create(order);
+
+    await this.promoCodeRepository.apply(
+      promoCode,
+      account.getCard(),
+      order.carWashId,
+    );
 
     if (!newOrder) throw new OrderProcessingException();
 
@@ -68,5 +96,48 @@ export class OrderUsecase {
       OrderStatus.COMPLETED,
     );
     return carWashResponse;
+  }
+
+  async validatePromo(
+    data: VerifyPromoDto,
+    client: Client,
+  ): Promise<PromoVerificationResponseDto> {
+    const card = client.getCard();
+    const promoCode = await this.promoCodeRepository.findOneByCode(
+      data.promoCode,
+    );
+    const currentDate = new Date();
+
+    if (!PromoCode) throw new PromoCodeNotFoundException(promoCode.code);
+
+    //validate promocode date
+    if (promoCode.isActive == 0 || promoCode.expiryDate < currentDate) {
+      throw new InvalidPromoCodeException(promoCode.code);
+    }
+
+    //check for usage of promocode
+    const isUsed = await this.promoCodeRepository.validateUsageByCard(
+      card.cardId,
+    );
+
+    if (!isUsed) {
+      throw new InvalidPromoCodeException(promoCode.code);
+    }
+
+    // check if promocode is allowed for location
+    const isLocationAllowed = promoCode.locations.some(
+      (location: PromoCodeLocation) => location.carWashId === data.carWashId,
+    );
+
+    if (!isLocationAllowed) {
+      throw new InvalidPromoCodeException(promoCode.code);
+    }
+
+    return {
+      valid: true,
+      id: promoCode.id,
+      type: promoCode.discountType,
+      discount: promoCode.discount,
+    };
   }
 }

@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ClientEntity } from './client.entity';
-import { PromoCodeUsageEntity } from '../../promo_code/enitity/promo-code-usage.entity';
+import { PromoCodeUsageEntity } from '../../promo-code/enitity/promo-code-usage.entity';
 
 @Entity({ name: 'CRDCARD', synchronize: false })
 export class CardEntity {

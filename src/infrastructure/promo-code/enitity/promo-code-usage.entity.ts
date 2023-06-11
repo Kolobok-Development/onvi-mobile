@@ -20,7 +20,7 @@ export class PromoCodeUsageEntity {
   promoCode: PromoCodeEntity;
 
   @Column({ name: 'CARWASH_ID', nullable: false })
-  carWash: number;
+  carWashId: number;
 
   @ManyToOne(() => CardEntity, (card) => card.promoUsages, { nullable: false })
   @JoinColumn({ name: 'CARD_ID', referencedColumnName: 'cardId' })
