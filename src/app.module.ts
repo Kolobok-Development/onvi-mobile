@@ -11,6 +11,7 @@ import { BcryptModule } from './infrastructure/services/bcrypt/bcrypt.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './infrastructure/common/strategies/local.strategy';
 import { OrderModule } from './infrastructure/order/order.module';
+import { PromocodeModule } from './infrastructure/promo_code/promocode.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { OrderModule } from './infrastructure/order/order.module';
     EnvConfigModule,
     BcryptModule,
     OrderModule,
+    PromocodeModule,
   ],
   controllers: [],
   providers: [],

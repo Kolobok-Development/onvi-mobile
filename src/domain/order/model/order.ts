@@ -2,7 +2,7 @@ import { OrderStatus } from '../enum/order-status.enum';
 import { ICreateOrderDto } from '../dto/create-order.dto';
 import { Card } from '../../account/card/model/card';
 import { OrderEntity } from '../../../infrastructure/order/entity/order.entity';
-import {OrderProcessingException} from "../exceptions/order-processing.exception";
+import { OrderProcessingException } from '../exceptions/order-processing.exception';
 
 interface OrderOptions {
   id?: number;
@@ -72,18 +72,18 @@ export class Order {
 
     if (rewardPointsUsed > 0) {
       if (card.balance < sum) {
-        throw new OrderProcessingException()
+        throw new OrderProcessingException();
       }
 
       if (rewardPointsUsed <= 0) {
-        throw new OrderProcessingException()
+        throw new OrderProcessingException();
       }
     } else if (card.isLocked === 1) {
-      throw new OrderProcessingException()
+      throw new OrderProcessingException();
     } else if (!transactionId) {
-      throw new OrderProcessingException()
+      throw new OrderProcessingException();
     } else if (sum < 0) {
-      throw new OrderProcessingException()
+      throw new OrderProcessingException();
     }
 
     const orderStatus: OrderStatus = OrderStatus.CREATED;

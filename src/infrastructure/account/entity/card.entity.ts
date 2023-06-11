@@ -3,9 +3,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ClientEntity } from './client.entity';
+import { PromoCodeUsageEntity } from '../../promo_code/enitity/promo-code-usage.entity';
 
 @Entity({ name: 'CRDCARD', synchronize: false })
 export class CardEntity {
@@ -78,4 +80,7 @@ export class CardEntity {
 
   @Column({ type: 'number', name: 'MAIN_CARD_ID', nullable: true })
   mainCardId: number;
+
+  @OneToMany(() => PromoCodeUsageEntity, (usage) => usage.card)
+  promoUsages: PromoCodeUsageEntity[];
 }
