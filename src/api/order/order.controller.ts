@@ -46,7 +46,7 @@ export class OrderController {
   }
 
   @UseGuards(JwtGuard)
-  @Get('promo/validate')
+  @Post('promo/validate')
   @HttpCode(200)
   async validatePromoCode(@Body() data: VerifyPromoDto, @Req() req: any) {
     try {
