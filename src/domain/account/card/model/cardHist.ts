@@ -1,29 +1,76 @@
 import { CardHistEntity } from '../../../../infrastructure/account/entity/card-hist.enity';
 
 export class CardHist {
-  transactionId?: number;
+  cardId: number;
+  unqCardNumber: string;
+  name: string;
+  phone: string;
   operDate: Date;
-  sum: number;
+  operSum: number;
+  cashBackAmount: number;
+  operType: string;
   carWash: string;
+  bay: string;
+  address: string;
   city: string;
 
   constructor(
+    cardId: number,
+    unqCardNumber: string,
+    name: string,
+    phone: string,
     operDate: Date,
-    sum: number,
+    operSum: number,
+    cashBackAmount: number,
+    operType: string,
     carWash: string,
+    bay: string,
+    address: string,
     city: string,
-    transactionId?: number,
   ) {
+    this.cardId = cardId;
+    this.unqCardNumber = unqCardNumber;
+    this.name = name;
+    this.phone = phone;
     this.operDate = operDate;
-    this.sum = sum;
+    this.operSum = operSum;
+    this.cashBackAmount = cashBackAmount;
+    this.operType = operType;
     this.carWash = carWash;
+    this.bay = bay;
+    this.address = address;
     this.city = city;
-    this.transactionId = transactionId;
   }
 
   public static fromEntity(cardHistEntity: CardHistEntity): CardHist {
-    const { operId, operDate, operSum, cwName, ctName } = cardHistEntity;
+    const {
+      cardId,
+      unqCardNumber,
+      name,
+      phone,
+      operDate,
+      operSum,
+      cashBackAmount,
+      operType,
+      carWash,
+      address,
+      city,
+      bay,
+    } = cardHistEntity;
 
-    return new CardHist(operDate, operSum, cwName, ctName, operId);
+    return new CardHist(
+      cardId,
+      unqCardNumber,
+      name,
+      phone,
+      operDate,
+      operSum,
+      cashBackAmount,
+      operType,
+      carWash,
+      bay,
+      address,
+      city,
+    );
   }
 }

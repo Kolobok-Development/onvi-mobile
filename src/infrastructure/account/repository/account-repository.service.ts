@@ -54,7 +54,7 @@ export class AccountRepository implements IAccountRepository {
     page: number,
   ): Promise<CardHist[]> {
     const [hisotry, total] = await this.cardHistoryRepository.findAndCount({
-      where: { devNomer: unqNumber, operTypeId: 5 },
+      where: { unqCardNumber: unqNumber },
       order: { operDate: 'DESC' },
       take: size,
       skip: page,
