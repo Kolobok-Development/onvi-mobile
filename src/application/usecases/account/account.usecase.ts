@@ -3,6 +3,8 @@ import { IAccountRepository } from '../../../domain/account/interface/account-re
 import { IDate } from '../../../infrastructure/common/interfaces/date.interface';
 import { CardHist } from '../../../domain/account/card/model/cardHist';
 import { Client } from '../../../domain/account/client/model/client';
+import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
+import { TariffResponseDto } from './dto/tariff-response.dto';
 
 @Injectable()
 export class AccountUsecase {
@@ -22,5 +24,16 @@ export class AccountUsecase {
       size,
       page,
     );
+  }
+
+  async getCardTariff(client: Client): Promise<TariffResponseDto> {
+    const card = client.getCard();
+    const tariff = await this.accountRepository.findCardTariff(card);
+
+    if (!tariff) throw new AccountNotFoundExceptions(client.correctPhone);
+
+    return {
+      cashBack: tariff.bonus,
+    };
   }
 }

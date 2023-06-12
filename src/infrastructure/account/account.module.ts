@@ -9,10 +9,16 @@ import { AccountController } from '../../api/account/account.controller';
 import { CardHistEntity } from './entity/card-hist.enity';
 import { AccountUsecase } from '../../application/usecases/account/account.usecase';
 import { DateModule } from '../services/date/date.module';
+import { TariffEntity } from './entity/tariff.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CardEntity, ClientEntity, CardHistEntity]),
+    TypeOrmModule.forFeature([
+      CardEntity,
+      ClientEntity,
+      CardHistEntity,
+      TariffEntity,
+    ]),
     DateModule,
   ],
   controllers: [AccountController],

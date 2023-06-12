@@ -11,12 +11,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CardHistEntity } from '../entity/card-hist.enity';
 import { Repository } from 'typeorm';
 import { CardHist } from '../../../domain/account/card/model/cardHist';
+import { TariffEntity } from '../entity/tariff.entity';
+import {Tariff} from "../../../domain/account/card/model/tariff";
 
 @Injectable()
 export class AccountRepository implements IAccountRepository {
   constructor(
     @InjectRepository(CardHistEntity)
     private readonly cardHistoryRepository: Repository<CardHistEntity>,
+    @InjectRepository(TariffEntity)
+    private readonly tariffRepository: Repository<TariffEntity>,
     private readonly cardRepository: CardRepository,
     private readonly clientRepository: ClientRepository,
   ) {}
@@ -63,6 +67,17 @@ export class AccountRepository implements IAccountRepository {
     if (hisotry.length == 0) return [];
 
     return hisotry.map((transaction, i) => CardHist.fromEntity(transaction));
+  }
+  async findCardTariff(card: Card) {
+    const tariff = await this.tariffRepository.findOne({
+      where: {
+        cardTypeId: card.cardTypeId,
+      },
+    });
+
+    if (!tariff) return null;
+
+    return Tariff.fromEntity(tariff);
   }
   async findOneByPhoneNumber(phone: any): Promise<any> {
     //TODO

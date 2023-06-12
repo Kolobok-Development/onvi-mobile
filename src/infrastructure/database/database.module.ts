@@ -9,6 +9,7 @@ import { OrderEntity } from '../order/entity/order.entity';
 import { PromoCodeEntity } from '../promo-code/enitity/promocode.entity';
 import { PromoCodeLocationEntity } from '../promo-code/enitity/promo-code-location.entity';
 import { PromoCodeUsageEntity } from '../promo-code/enitity/promo-code-usage.entity';
+import { TariffEntity } from '../account/entity/tariff.entity';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { PromoCodeUsageEntity } from '../promo-code/enitity/promo-code-usage.ent
           PromoCodeEntity,
           PromoCodeLocationEntity,
           PromoCodeUsageEntity,
+          TariffEntity,
         ],
       }),
       inject: [ConfigService],

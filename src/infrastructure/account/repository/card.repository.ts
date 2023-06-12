@@ -59,6 +59,8 @@ export class CardRepository implements ICardRepository {
     return Promise.resolve(undefined);
   }
 
+
+
   private toCardEntity(card: Card): CardEntity {
     const cardEntity: CardEntity = new CardEntity();
 

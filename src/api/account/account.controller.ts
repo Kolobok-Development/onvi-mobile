@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   Query,
+  Req,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +13,7 @@ import { AccountUsecase } from '../../application/usecases/account/account.useca
 import { JwtGuard } from '../../infrastructure/common/guards/jwt.guard';
 import { CustomHttpException } from '../../infrastructure/common/exceptions/custom-http.exception';
 import { HistOptionsDto } from './dto/hist-options.dto';
+import { AccountNotFoundExceptions } from '../../domain/account/exceptions/account-not-found.exceptions';
 
 @Controller('account')
 export class AccountController {
@@ -55,9 +57,27 @@ export class AccountController {
     }
   }
 
-  @Get('/notifications')
+  @UseGuards(JwtGuard)
+  @Get('/tariff')
   @HttpCode(200)
-  async getAccountNotifications(@Request() request: any): Promise<any> {
-    return 'notifications';
+  async getAccountNotifications(@Req() request: any): Promise<any> {
+    try {
+      const { user } = request;
+      return await this.acountUsecase.getCardTariff(user);
+    } catch (e) {
+      if (e instanceof AccountNotFoundExceptions) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.NOT_FOUND,
+        });
+      } else {
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
+      }
+    }
   }
 }
