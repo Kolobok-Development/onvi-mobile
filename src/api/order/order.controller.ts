@@ -25,6 +25,7 @@ export class OrderController {
   @Post('create')
   @HttpCode(201)
   async create(@Body() data: CreateOrderDto, @Req() req: any): Promise<any> {
+    console.log(data);
     try {
       const { user } = req;
       return await this.orderUsecase.create(data, user);
