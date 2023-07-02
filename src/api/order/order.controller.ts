@@ -24,8 +24,7 @@ export class OrderController {
   @UseGuards(JwtGuard)
   @Post('create')
   @HttpCode(201)
-  async create(@Body() data: CreateOrderDto, @Req() req: any): Promise<any> {
-    console.log(data);
+  async create(@Body() data: CreateOrderDto, @Req() req: any): Promise<any> {;
     try {
       const { user } = req;
       return await this.orderUsecase.create(data, user);

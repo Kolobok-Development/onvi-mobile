@@ -29,11 +29,16 @@ export class OrderUsecase {
     data: CreateOrderDto,
     account: Client,
   ): Promise<CarwashResponseDto> {
+    let newOrder;
+    console.log(`Begin`);
+    console.log(data);
     //ping carwash
     const bay: BayResponseDto = await this.orderRepository.ping(
       data.carWashId,
       data.bayNumber,
     );
+
+    console.log(bay);
 
     if (bay.status === 'Busy') {
       throw new BayBusyException(data.bayNumber);
@@ -45,32 +50,38 @@ export class OrderUsecase {
       card: account.getCard(),
       transactionId: data.transactionId,
       sum: data.sum,
-      promoCodeId: data.promoCodeId,
+      promoCodeId: data.promoCodeId ?? null,
       rewardPointsUsed: data.rewardPointsUsed,
       carWashId: data.carWashId,
       bayNumber: data.bayNumber,
     });
+    console.log(`ORDER: ${order}`);
 
-    const promoCode: PromoCode = await this.promoCodeRepository.findOneById(
-      order.promoCodeId,
-    );
+    if (order.promoCodeId) {
+      const promoCode: PromoCode = await this.promoCodeRepository.findOneById(
+        order.promoCodeId,
+      );
 
-    if (!promoCode) throw new OrderProcessingException();
+      if (!promoCode) throw new OrderProcessingException();
 
-    if (promoCode.discountType === 1) {
-      order.discountAmount = order.sum - promoCode.discount;
-    } else if (promoCode.discountType === 2) {
-      order.discountAmount = Math.round((promoCode.discount / 100) * order.sum);
+      if (promoCode.discountType === 1) {
+        order.discountAmount = order.sum - promoCode.discount;
+      } else if (promoCode.discountType === 2) {
+        order.discountAmount = Math.round(
+          (promoCode.discount / 100) * order.sum,
+        );
+      }
+
+      newOrder = await this.orderRepository.create(order);
+
+      await this.promoCodeRepository.apply(
+        promoCode,
+        account.getCard(),
+        order.carWashId,
+      );
+    } else {
+      newOrder = await this.orderRepository.create(order);
     }
-
-    const newOrder = await this.orderRepository.create(order);
-
-    await this.promoCodeRepository.apply(
-      promoCode,
-      account.getCard(),
-      order.carWashId,
-    );
-
     if (!newOrder) throw new OrderProcessingException();
 
     const carWashResponse: CarwashResponseDto = await this.orderRepository.send(
