@@ -4,7 +4,9 @@ export class RegisterResponseDto {
   client: any;
   tokens: {
     accessToken: string;
+    accessTokenExp: string;
     refreshToken: string;
+    refreshTokenExp: string;
   };
   type: AuthType;
 

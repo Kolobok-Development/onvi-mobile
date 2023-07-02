@@ -51,7 +51,10 @@ export class AuthController {
       }
       const accessToken = await this.authUsecase.signAccessToken(auth.phone);
       const refreshToken = await this.authUsecase.signRefreshToken(auth.phone);
-      await this.authUsecase.setCurrentRefreshToken(auth.phone, refreshToken.token);
+      await this.authUsecase.setCurrentRefreshToken(
+        auth.phone,
+        refreshToken.token,
+      );
 
       const shortUser = user.getAccountInfo();
       delete shortUser['refreshToken'];
@@ -86,8 +89,10 @@ export class AuthController {
       return new RegisterResponseDto({
         client: shortUser,
         tokens: {
-          accessToken: accessToken,
-          refreshToken: refreshToken,
+          accessToken: accessToken.token,
+          accessTokenExp: accessToken.expirationDate,
+          refreshToken: refreshToken.token,
+          refreshTokenExp: refreshToken.expirationDate,
         },
         type: AuthType.REGISTER_SUCCESS,
       });
