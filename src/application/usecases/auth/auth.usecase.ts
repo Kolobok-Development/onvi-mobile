@@ -80,7 +80,7 @@ export class AuthUsecase {
     //Create card in the database
     const newAccount = await this.accountRepository.create(clientData);
 
-    await this.setCurrentRefreshToken(phone, refreshToken.token);
+    //await this.setCurrentRefreshToken(phone, refreshToken.token);
 
     return { newAccount, accessToken, refreshToken };
   }

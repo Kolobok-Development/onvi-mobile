@@ -72,6 +72,9 @@ export class CardRepository implements ICardRepository {
     cardEntity.cmnCity = card.cmnCity;
     cardEntity.nomer = card.nomer;
     cardEntity.tag = card.tag;
+    cardEntity.balance = card.balance;
+    cardEntity.realBalance = card.realBalance;
+    cardEntity.airBalance = card.airBalance;
 
     return cardEntity;
   }

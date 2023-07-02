@@ -50,10 +50,11 @@ export class AuthController {
         });
       }
       const accessToken = await this.authUsecase.signAccessToken(auth.phone);
-      const refresh = await this.authUsecase.signRefreshToken(auth.phone);
-      await this.authUsecase.setCurrentRefreshToken(auth.phone, refresh.token);
+      const refreshToken = await this.authUsecase.signRefreshToken(auth.phone);
+      await this.authUsecase.setCurrentRefreshToken(auth.phone, refreshToken.token);
 
-      const { refreshToken, ...shortUser } = user.getAccountInfo();
+      const shortUser = user.getAccountInfo();
+      delete shortUser['refreshToken'];
 
       return new LoginResponseDto({
         client: shortUser,
@@ -77,16 +78,16 @@ export class AuthController {
   @HttpCode(201)
   async register(@Body() auth: RegisterRequestDto, @Request() req: any) {
     try {
-      const { newAccount, accessToken, refresh } =
+      const { newAccount, accessToken, refreshToken } =
         await this.authUsecase.register(auth.phone, auth.otp);
 
-      const { refreshToken, ...shortUser } = newAccount.getAccountInfo();
-      console.log(refresh);
+      const shortUser = newAccount.getAccountInfo();
+      delete shortUser['refreshToken'];
       return new RegisterResponseDto({
-        client: shortUser.getAccountInfo(),
+        client: shortUser,
         tokens: {
           accessToken: accessToken,
-          refreshToken: refresh,
+          refreshToken: refreshToken,
         },
         type: AuthType.REGISTER_SUCCESS,
       });
