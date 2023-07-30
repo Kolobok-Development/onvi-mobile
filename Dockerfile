@@ -18,6 +18,8 @@ RUN yum update -y && \
 
 RUN npm install --save
 
+RUN npm link webpack
+
 COPY . .
 
 RUN npm run build
