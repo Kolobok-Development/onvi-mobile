@@ -8,7 +8,7 @@ export const PaymentToken = 'PAYMENT_GATEWAY';
 export const PaymentGatewayProvider: Provider = {
   provide: PaymentToken,
   useFactory: (env: EnvConfigService) => {
-    const shopId = '168905';
+    const shopId = String(env.getPaymentGatewayStoreId());
     const secretKey = env.getPaymentGatewayApiKey();
 
     // Initialize YooKassa instance here

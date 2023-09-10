@@ -36,4 +36,8 @@ export class EnvConfigService implements IJwtConfig {
   getPaymentGatewayApiKey(): string {
     return this.configService.get<string>('PAYMENT_GATEWAY_API_KEY');
   }
+
+  getPaymentGatewayStoreId(): number {
+    return this.configService.get<number>('PAYMENT_GATEWAY_STORE_ID');
+  }
 }
