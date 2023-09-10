@@ -81,8 +81,8 @@ export class OrderController {
   @UseGuards(JwtGuard)
   async pingCarWash(@Query() query: any){
     return await this.orderUsecase.pingCarWash(
-      query.carWashId,
-      query.bayNumber,
+      Number(query.carWashId),
+      Number(query.bayNumber),
     );
   }
 }
