@@ -6,7 +6,7 @@ import {
   UseGuards,
   Request,
   HttpStatus,
-  Req, Get,
+  Req, Get, Query,
 } from '@nestjs/common';
 import { OrderUsecase } from '../../application/usecases/order/order.usecase';
 import { JwtGuard } from '../../infrastructure/common/guards/jwt.guard';
@@ -75,5 +75,14 @@ export class OrderController {
         });
       }
     }
+  }
+
+  @Get('/ping')
+  @UseGuards(JwtGuard)
+  async pingCarWash(@Query() query: any){
+    return await this.orderUsecase.pingCarWash(
+      query.carWashId,
+      query.bayNumber,
+    );
   }
 }

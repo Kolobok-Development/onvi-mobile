@@ -151,4 +151,13 @@ export class OrderUsecase {
       discount: promoCode.discount,
     };
   }
+
+  async pingCarWash(carWashId: number, bayNumber: number) {
+    const bay: BayResponseDto = await this.orderRepository.ping(
+      carWashId,
+      bayNumber,
+    );
+
+    return { carWashId, bayNumber, status: bay.status };
+  }
 }
