@@ -12,6 +12,7 @@ import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './infrastructure/common/strategies/local.strategy';
 import { OrderModule } from './infrastructure/order/order.module';
 import { PromocodeModule } from './infrastructure/promo-code/promocode.module';
+import { PaymentModule } from './infrastructure/payment/payment.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PromocodeModule } from './infrastructure/promo-code/promocode.module';
     BcryptModule,
     OrderModule,
     PromocodeModule,
+    PaymentModule,
   ],
   controllers: [],
   providers: [],

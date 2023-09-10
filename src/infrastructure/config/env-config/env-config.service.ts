@@ -32,4 +32,8 @@ export class EnvConfigService implements IJwtConfig {
   getDsCloudSourceId(): number {
     return this.configService.get<number>('DS_CLOUD_SOURCE');
   }
+
+  getPaymentGatewayApiKey(): string {
+    return this.configService.get<string>('PAYMENT_GATEWAY_API_KEY');
+  }
 }
