@@ -45,8 +45,8 @@ export class AccountRepository implements IAccountRepository {
 
     return client;
   }
-  update(client: Client): Promise<Client> {
-    return null;
+  async update(client: Client): Promise<Client> {
+    return await this.clientRepository.update(client);
   }
   getBalance(cardNumber: string): Promise<Card> {
     return null;
