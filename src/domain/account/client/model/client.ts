@@ -111,6 +111,7 @@ export class Client {
     }
 
     return {
+      id: this.clientId,
       name: this.name,
       phone: this.correctPhone,
       email: this.email,
