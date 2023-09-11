@@ -90,11 +90,7 @@ export class AccountController {
     const { user } = req;
 
     try {
-      const client = await this.acountUsecase.updateAccountInfo(body, user);
-
-      return {
-        client: client.getAccountInfo(),
-      };
+      return await this.acountUsecase.updateAccountInfo(body, user);
     } catch (e: any) {
       console.log(e);
       if (e instanceof AccountNotFoundExceptions) {
