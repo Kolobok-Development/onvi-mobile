@@ -53,7 +53,7 @@ export class ClientRepository implements IClientRepository {
       updatedData,
     });
 
-    if (!client) return null;
+    if (!updatedClient) return null;
 
     return Client.fromEntity(updatedClient);
   }
