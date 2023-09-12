@@ -44,18 +44,20 @@ export class ClientRepository implements IClientRepository {
     await this.clientRepository.save(client);
   }
 
-  async update(client: Client): Promise<Client> {
+  async update(client: Client): Promise<any> {
     const clientEntity = ClientRepository.toClientEntity(client);
     const { clientId, ...updatedData } = clientEntity;
 
-    const updatedClient = await this.clientRepository.save({
-      clientId: clientId,
+    const updatedClient = await this.clientRepository.update(
+      {
+        clientId: clientId,
+      },
       updatedData,
-    });
+    );
 
     if (!updatedClient) return null;
 
-    return Client.fromEntity(updatedClient);
+    return updatedClient;
   }
 
   public static toClientEntity(client: Client): ClientEntity {

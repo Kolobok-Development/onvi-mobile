@@ -7,7 +7,7 @@ import {Tariff} from "../card/model/tariff";
 
 export abstract class IAccountRepository {
   abstract create(clientData: ICreateClientDto): Promise<any>;
-  abstract update(client: Client): Promise<Client>;
+  abstract update(client: Client): Promise<any>;
   abstract getCardHistory(
     unqNumber: string,
     size: number,
