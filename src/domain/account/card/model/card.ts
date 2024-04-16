@@ -78,8 +78,6 @@ export class Card {
     );
   }
 
-
-
   public static fromEntity(entity: CardEntity): Card {
     const {
       cardId,

@@ -21,6 +21,10 @@ import { ICreateCardDto } from '../../../domain/account/card/dto/create-card.dto
 import { CardType } from '../../../domain/account/card/enum/card-type.enum';
 import { AuthenticationException } from '../../../infrastructure/common/exceptions/base.exceptions';
 import { InvalidAccessException } from '../../../domain/auth/exceptions/invalida-token.excpetion';
+import * as otpGenerator from 'otp-generator';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { CardRepository } from '../../../infrastructure/account/repository/card.repository';
 
 @Injectable()
 export class AuthUsecase {
@@ -44,7 +48,7 @@ export class AuthUsecase {
     private readonly bcryptService: IBcrypt,
   ) {}
 
-  public async isAuthenticated(phone: string) {}
+  //public async isAuthenticated(phone: string) {}
 
   public async register(phone: string, otp: string): Promise<any> {
     // Validate OTP
@@ -77,8 +81,13 @@ export class AuthUsecase {
       refreshToken: refreshToken.token,
     };
 
+    const uniqNomer = await this.generateNomerCard();
+
     //Create card in the database
-    const newAccount = await this.accountRepository.create(clientData);
+    const newAccount = await this.accountRepository.create(
+      clientData,
+      uniqNomer,
+    );
 
     //await this.setCurrentRefreshToken(phone, refreshToken.token);
 
@@ -172,21 +181,46 @@ export class AuthUsecase {
   }
 
   public async sendOtp(phone: string): Promise<any> {
-    //TODO
     //1) Send otp through sms
     //Generate expitry time
     const otpTime = this.dateService.generateOtpTime();
     //Create new otp model
-    const otp = new Otp(null, phone, '0000', otpTime);
+    const otpCode = this.generateOtp();
+    console.log(otpCode);
+    const otp = new Otp(null, phone, otpCode, otpTime);
     //Remove any existing otp
     await this.otpRepository.removeOne(phone);
     //Save new otp and return
     const newOtp = await this.otpRepository.create(otp);
+    await this.otpRepository.send(newOtp);
 
     if (!newOtp) {
       throw new OtpInternalExceptions(phone, otp.otp);
     }
 
     return newOtp;
+  }
+
+  private generateOtp() {
+    return otpGenerator.generate(4, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+      lowerCaseAlphabets: false,
+    });
+  }
+
+  private async generateNomerCard() {
+    let newNomer = '';
+    do {
+      newNomer = this.generateRandom12DigitNumber();
+      console.log(newNomer);
+    } while (await this.accountRepository.findOneByDevNomer(newNomer));
+    return newNomer;
+  }
+  private generateRandom12DigitNumber() {
+    const min = 100000000000; // Минимальное 12-значное число
+    const max = 999999999999; // Максимальное 12-значное число
+    const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+    return randomNumber.toString(); // Преобразование числа в строку
   }
 }

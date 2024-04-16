@@ -7,7 +7,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ClientEntity } from './client.entity';
-import { PromoCodeUsageEntity } from '../../promo-code/enitity/promo-code-usage.entity';
+import { PromoCodeUsageEntity } from '../../promo-code/entity/promo-code-usage.entity';
+import { PromotionUsageEntity } from '../../promotion/entity/promotion-usage.entity';
 
 @Entity({ name: 'CRDCARD', synchronize: false })
 export class CardEntity {
@@ -83,4 +84,7 @@ export class CardEntity {
 
   @OneToMany(() => PromoCodeUsageEntity, (usage) => usage.card)
   promoUsages: PromoCodeUsageEntity[];
+
+  @OneToMany(() => PromotionUsageEntity, (usage) => usage.card)
+  promotionUsages: PromotionUsageEntity[];
 }

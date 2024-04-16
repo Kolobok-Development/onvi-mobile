@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { PromoCodeLocationEntity } from './promo-code-location.entity';
-import {PromoCodeUsageEntity} from "./promo-code-usage.entity";
+import { PromoCodeUsageEntity } from './promo-code-usage.entity';
 
 @Entity({ name: 'MOBILE_PROMO_CODE', synchronize: false })
 export class PromoCodeEntity {

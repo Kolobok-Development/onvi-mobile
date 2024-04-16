@@ -9,7 +9,7 @@ import { AuthUsecase } from '../../../application/usecases/auth/auth.usecase';
 import { Strategy } from 'passport-local';
 import { InvalidOtpException } from '../../../domain/auth/exceptions/invalid-otp.exception';
 import { Client } from '../../../domain/account/client/model/client';
-import {CustomHttpException} from "../exceptions/custom-http.exception";
+import { CustomHttpException } from '../exceptions/custom-http.exception';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -29,6 +29,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       const client: Client =
         await this.authService.validateUserForLocalStrategy(phone, otp);
 
+      console.log(client);
       if (!client) {
         return done(null, { register: true });
       }

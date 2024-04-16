@@ -3,9 +3,6 @@ import { INVALID_PROMO_CODE_ERROR_CODE } from '../../../infrastructure/common/co
 
 export class InvalidPromoCodeException extends ClientException {
   constructor(promoCode: string) {
-    super(
-      INVALID_PROMO_CODE_ERROR_CODE,
-      `Промокод ${promoCode} не действительный`,
-    );
+    super(INVALID_PROMO_CODE_ERROR_CODE, `Promo code ${promoCode} not valid`);
   }
 }

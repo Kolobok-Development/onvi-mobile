@@ -3,6 +3,6 @@ import { BAY_IS_BUSY_ERROR_CODE } from '../../../infrastructure/common/constants
 
 export class BayBusyException extends ClientException {
   constructor(bayNumber: number) {
-    super(BAY_IS_BUSY_ERROR_CODE, `Пост № ${bayNumber} занят`);
+    super(BAY_IS_BUSY_ERROR_CODE, `Post № ${bayNumber} busy`);
   }
 }

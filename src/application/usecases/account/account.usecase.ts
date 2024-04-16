@@ -6,6 +6,8 @@ import { Client } from '../../../domain/account/client/model/client';
 import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
 import { TariffResponseDto } from './dto/tariff-response.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { IPromotionRepository } from '../../../domain/promotion/promotion-repository.abstract';
+import { PromotionHist } from '../../../domain/promotion/model/promotionHist';
 
 @Injectable()
 export class AccountUsecase {
@@ -50,5 +52,10 @@ export class AccountUsecase {
       throw new AccountNotFoundExceptions(client.correctPhone);
 
     return updatedClient;
+  }
+
+  async getPromotionHistory(client: Client): Promise<PromotionHist[]> {
+    const card = client.getCard();
+    return await this.accountRepository.getPromotionHistory(card);
   }
 }

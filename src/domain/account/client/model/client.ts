@@ -18,6 +18,7 @@ export class Client {
   updDate?: Date;
   clientTypeId: ClientType;
   isActivated?: number;
+  userOnvi: number;
   activatedDate?: Date;
   genderId?: GenderType;
   refreshToken?: string;
@@ -29,6 +30,7 @@ export class Client {
     phone: string,
     clientType: ClientType,
     refreshToken: string,
+    userOnvi: number,
     {
       clientId,
       email,
@@ -62,6 +64,7 @@ export class Client {
     this.insDate = insDate;
     this.updDate = updDate;
     this.isActivated = isActivated;
+    this.userOnvi = userOnvi;
     this.activatedDate = activationDate;
     this.genderId = genderId;
     this.clientId = clientId;
@@ -71,7 +74,7 @@ export class Client {
     const { rawPhone, clientType, refreshToken, cards } = data;
     const phone: string = this.formatPhone(rawPhone);
     const name: string = this.generateDefaultName(phone);
-    return new Client(name, rawPhone, phone, clientType, refreshToken, {
+    return new Client(name, rawPhone, phone, clientType, refreshToken, 1, {
       cards,
     });
   }
@@ -147,6 +150,7 @@ export class Client {
       updDate,
       clientTypeId,
       isActivated,
+      userOnvi,
       activatedDate,
       genderId,
       refreshToken,
@@ -164,6 +168,7 @@ export class Client {
       correctPhone,
       clientTypeId,
       refreshToken,
+      userOnvi,
       {
         clientId,
         email,

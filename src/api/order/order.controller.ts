@@ -6,7 +6,9 @@ import {
   UseGuards,
   Request,
   HttpStatus,
-  Req, Get, Query,
+  Req,
+  Get,
+  Query,
 } from '@nestjs/common';
 import { OrderUsecase } from '../../application/usecases/order/order.usecase';
 import { JwtGuard } from '../../infrastructure/common/guards/jwt.guard';
@@ -24,7 +26,7 @@ export class OrderController {
   @UseGuards(JwtGuard)
   @Post('create')
   @HttpCode(201)
-  async create(@Body() data: CreateOrderDto, @Req() req: any): Promise<any> {;
+  async create(@Body() data: CreateOrderDto, @Req() req: any): Promise<any> {
     try {
       const { user } = req;
       return await this.orderUsecase.create(data, user);
@@ -53,7 +55,7 @@ export class OrderController {
       const { user } = req;
       return await this.orderUsecase.validatePromo(data, user);
     } catch (e) {
-      console.log(e)
+      console.log(e);
       if (e instanceof PromoCodeNotFoundException) {
         throw new CustomHttpException({
           type: e.type,
@@ -79,7 +81,7 @@ export class OrderController {
 
   @Get('/ping')
   @UseGuards(JwtGuard)
-  async pingCarWash(@Query() query: any){
+  async pingCarWash(@Query() query: any) {
     return await this.orderUsecase.pingCarWash(
       Number(query.carWashId),
       Number(query.bayNumber),

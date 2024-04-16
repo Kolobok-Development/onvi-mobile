@@ -24,6 +24,7 @@ export class ClientRepository implements IClientRepository {
       .leftJoin('client.cards', 'cards')
       .where('client.correctPhone = :phone', { phone: phone })
       .select(['client', 'cards'])
+      .andWhere('client.userOnvi = :userOnvi', { userOnvi: 1 })
       .orderBy('INS_DATE', 'DESC')
       .limit(1)
       .getOne();
@@ -74,6 +75,7 @@ export class ClientRepository implements IClientRepository {
     clientEntity.correctPhone = client.correctPhone;
     clientEntity.refreshToken = client.refreshToken;
     clientEntity.activatedDate = client.activatedDate;
+    clientEntity.userOnvi = client.userOnvi;
 
     return clientEntity;
   }

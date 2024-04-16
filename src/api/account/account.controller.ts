@@ -20,7 +20,7 @@ import { UpdateAccountDto } from '../../application/usecases/account/dto/update-
 
 @Controller('account')
 export class AccountController {
-  constructor(private readonly acountUsecase: AccountUsecase) {}
+  constructor(private readonly accountUsecase: AccountUsecase) {}
 
   @UseGuards(JwtGuard)
   @Get('/me')
@@ -47,7 +47,7 @@ export class AccountController {
     try {
       const { size, page } = options;
       const { user } = request;
-      return await this.acountUsecase.getCardTransactionsHistory(
+      return await this.accountUsecase.getCardTransactionsHistory(
         user,
         size,
         page,
@@ -66,7 +66,31 @@ export class AccountController {
   async getAccountNotifications(@Req() request: any): Promise<any> {
     try {
       const { user } = request;
-      return await this.acountUsecase.getCardTariff(user);
+      return await this.accountUsecase.getCardTariff(user);
+    } catch (e) {
+      if (e instanceof AccountNotFoundExceptions) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.NOT_FOUND,
+        });
+      } else {
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
+      }
+    }
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('/promotion')
+  @HttpCode(200)
+  async getPromotionHistory(@Req() request: any): Promise<any> {
+    try {
+      const { user } = request;
+      return await this.accountUsecase.getPromotionHistory(user);
     } catch (e) {
       if (e instanceof AccountNotFoundExceptions) {
         throw new CustomHttpException({
@@ -90,7 +114,7 @@ export class AccountController {
     const { user } = req;
 
     try {
-      return await this.acountUsecase.updateAccountInfo(body, user);
+      return await this.accountUsecase.updateAccountInfo(body, user);
     } catch (e: any) {
       console.log(e);
       if (e instanceof AccountNotFoundExceptions) {

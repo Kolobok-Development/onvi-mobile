@@ -6,10 +6,13 @@ import { ClientEntity } from '../account/entity/client.entity';
 import { CardEntity } from '../account/entity/card.entity';
 import { CardHistEntity } from '../account/entity/card-hist.enity';
 import { OrderEntity } from '../order/entity/order.entity';
-import { PromoCodeEntity } from '../promo-code/enitity/promocode.entity';
-import { PromoCodeLocationEntity } from '../promo-code/enitity/promo-code-location.entity';
-import { PromoCodeUsageEntity } from '../promo-code/enitity/promo-code-usage.entity';
+import { PromoCodeEntity } from '../promo-code/entity/promocode.entity';
+import { PromoCodeLocationEntity } from '../promo-code/entity/promo-code-location.entity';
+import { PromoCodeUsageEntity } from '../promo-code/entity/promo-code-usage.entity';
 import { TariffEntity } from '../account/entity/tariff.entity';
+import { PromotionEntity } from '../promotion/entity/promotion.entity';
+import { PromotionUsageEntity } from '../promotion/entity/promotion-usage.entity';
+import { PromotionHistEntity } from '../promotion/entity/promotion-hist.entity';
 
 @Module({
   imports: [
@@ -28,10 +31,13 @@ import { TariffEntity } from '../account/entity/tariff.entity';
           CardEntity,
           OtpEntity,
           CardHistEntity,
+          PromotionHistEntity,
           OrderEntity,
           PromoCodeEntity,
           PromoCodeLocationEntity,
           PromoCodeUsageEntity,
+          PromotionEntity,
+          PromotionUsageEntity,
           TariffEntity,
         ],
       }),

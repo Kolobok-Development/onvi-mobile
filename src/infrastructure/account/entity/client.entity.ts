@@ -78,6 +78,9 @@ export class ClientEntity {
   @Column({ name: 'TAG', type: 'varchar2' })
   tag: string;
 
+  @Column({ name: 'USER_ONVI', type: 'number' })
+  userOnvi: number;
+
   @OneToMany(() => CardEntity, (card: CardEntity) => card.client)
   cards: CardEntity[];
 }

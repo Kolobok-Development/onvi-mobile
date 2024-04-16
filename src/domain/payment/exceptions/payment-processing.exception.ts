@@ -3,6 +3,6 @@ import { PAYMENT_PROCESSING_ERROR_CODE } from '../../../infrastructure/common/co
 
 export class PaymentProcessingException extends ClientException {
   constructor() {
-    super(PAYMENT_PROCESSING_ERROR_CODE, 'Ошибка обработки платежа');
+    super(PAYMENT_PROCESSING_ERROR_CODE, 'Payment processing error');
   }
 }

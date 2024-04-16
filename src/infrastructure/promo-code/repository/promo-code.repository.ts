@@ -3,11 +3,11 @@ import { Injectable } from '@nestjs/common';
 import { PromoCode } from '../../../domain/promo-code/model/promo-code.model';
 import { Card } from '../../../domain/account/card/model/card';
 import { PromoCodeLocation } from '../../../domain/promo-code/model/promo-code-location';
-import { PromoCodeEntity } from '../enitity/promocode.entity';
-import { PromoCodeLocationEntity } from '../enitity/promo-code-location.entity';
+import { PromoCodeEntity } from '../entity/promocode.entity';
+import { PromoCodeLocationEntity } from '../entity/promo-code-location.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PromoCodeUsageEntity } from '../enitity/promo-code-usage.entity';
+import { PromoCodeUsageEntity } from '../entity/promo-code-usage.entity';
 import { CardEntity } from '../../account/entity/card.entity';
 
 @Injectable()
@@ -61,12 +61,17 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     return PromoCode.fromEntity(promoCode);
   }
 
-  async validateUsageByCard(cardId: number): Promise<boolean> {
+  /*
+    TODO
+    1) add search by promocode
+   */
+  async validateUsageByCard(cardId: number, id: number): Promise<boolean> {
     const promoCodeHist = await this.promoCodeUsageRepository.find({
       where: {
         card: { cardId },
+        promoCode: { id },
       },
-      relations: ['card'],
+      relations: ['card', 'promoCode'],
     });
 
     if (promoCodeHist.length == 0) return true;

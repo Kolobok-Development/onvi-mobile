@@ -1,4 +1,4 @@
-import { PromoCodeLocationEntity } from '../../../infrastructure/promo-code/enitity/promo-code-location.entity';
+import { PromoCodeLocationEntity } from '../../../infrastructure/promo-code/entity/promo-code-location.entity';
 
 export class PromoCodeLocation {
   id?: number;

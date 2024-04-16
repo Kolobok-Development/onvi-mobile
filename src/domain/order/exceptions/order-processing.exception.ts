@@ -3,6 +3,6 @@ import { ORDER_PROCESSING_ERROR_CODE } from '../../../infrastructure/common/cons
 
 export class OrderProcessingException extends ClientException {
   constructor() {
-    super(ORDER_PROCESSING_ERROR_CODE, `Ошибка обработки заказа`);
+    super(ORDER_PROCESSING_ERROR_CODE, `Order processing error`);
   }
 }

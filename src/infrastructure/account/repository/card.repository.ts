@@ -55,11 +55,22 @@ export class CardRepository implements ICardRepository {
     return Card.fromEntity(card);
   }
 
+  async changeType(cardId: number, newCardTypeId: number): Promise<any> {
+    const card = await this.cardRepository.findOne({
+      where: {
+        cardId: cardId,
+      },
+    });
+
+    if (!card) return null;
+    card.cardTypeId = newCardTypeId;
+    await this.cardRepository.save(card);
+    return card;
+  }
+
   async lock(cardId: number): Promise<void> {
     return Promise.resolve(undefined);
   }
-
-
 
   private toCardEntity(card: Card): CardEntity {
     const cardEntity: CardEntity = new CardEntity();

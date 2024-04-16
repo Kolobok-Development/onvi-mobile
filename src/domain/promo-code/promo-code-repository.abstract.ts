@@ -9,6 +9,6 @@ export abstract class IPromoCodeRepository {
     carWashId: number,
   ): Promise<any>;
   abstract findOneByCode(code: string): Promise<PromoCode>;
-  abstract validateUsageByCard(cardId: number): Promise<boolean>;
+  abstract validateUsageByCard(cardId: number, id: number): Promise<boolean>;
   abstract findOneById(id: number): Promise<PromoCode>;
 }

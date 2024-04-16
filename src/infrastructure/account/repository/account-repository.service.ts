@@ -12,7 +12,9 @@ import { CardHistEntity } from '../entity/card-hist.enity';
 import { Repository } from 'typeorm';
 import { CardHist } from '../../../domain/account/card/model/cardHist';
 import { TariffEntity } from '../entity/tariff.entity';
-import {Tariff} from "../../../domain/account/card/model/tariff";
+import { Tariff } from '../../../domain/account/card/model/tariff';
+import { PromotionHist } from '../../../domain/promotion/model/promotionHist';
+import { PromotionHistEntity } from '../../promotion/entity/promotion-hist.entity';
 
 @Injectable()
 export class AccountRepository implements IAccountRepository {
@@ -21,18 +23,20 @@ export class AccountRepository implements IAccountRepository {
     private readonly cardHistoryRepository: Repository<CardHistEntity>,
     @InjectRepository(TariffEntity)
     private readonly tariffRepository: Repository<TariffEntity>,
+    @InjectRepository(PromotionHistEntity)
+    private readonly promotionHistoryRepository: Repository<PromotionHistEntity>,
     private readonly cardRepository: CardRepository,
     private readonly clientRepository: ClientRepository,
   ) {}
 
-  async create(clientData: ICreateClientDto): Promise<any> {
+  async create(clientData: ICreateClientDto, uniqNomer: string): Promise<any> {
     const client: Client = Client.create(clientData);
     const newClient = await this.clientRepository.create(client);
 
     const cardData: ICreateCardDto = {
       clientId: newClient.clientId,
-      nomer: newClient.correctPhone,
-      devNomer: newClient.correctPhone,
+      nomer: uniqNomer,
+      devNomer: uniqNomer,
       cardTypeId: CardType.ONVI,
       beginDate: new Date(Date.now()),
     };
@@ -90,7 +94,38 @@ export class AccountRepository implements IAccountRepository {
     return client;
   }
 
+  async findOneByDevNomer(uniqNomer: any): Promise<any> {
+    //TODO
+    // 1) Find customer by phone number
+
+    const card = await this.cardRepository.findOneByDevNomer(uniqNomer);
+
+    if (!card) return null;
+
+    return card;
+  }
+
+  async changeTypeCard(cardId: number, newCardTypeId: number): Promise<any> {
+    const card = await this.cardRepository.changeType(cardId, newCardTypeId);
+    return card;
+  }
+
   async setRefreshToken(phone: string, token: string): Promise<any> {
     await this.clientRepository.setRefreshToken(phone, token);
+  }
+
+  async getPromotionHistory(card: Card): Promise<PromotionHist[]> {
+    const [hisotry, total] = await this.promotionHistoryRepository.findAndCount(
+      {
+        where: { cardId: card.cardId },
+        order: { usageDate: 'DESC' },
+      },
+    );
+
+    if (hisotry.length == 0) return [];
+
+    return hisotry.map((transaction, i) =>
+      PromotionHist.fromEntity(transaction),
+    );
   }
 }

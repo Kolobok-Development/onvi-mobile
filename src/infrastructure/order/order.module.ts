@@ -17,6 +17,6 @@ import { PromocodeModule } from '../promo-code/promocode.module';
   ],
   controllers: [OrderController],
   providers: [OrderRepositoryProvider, OrderUsecase],
-  exports: [],
+  exports: [OrderRepositoryProvider],
 })
 export class OrderModule {}

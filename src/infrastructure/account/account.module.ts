@@ -10,6 +10,7 @@ import { CardHistEntity } from './entity/card-hist.enity';
 import { AccountUsecase } from '../../application/usecases/account/account.usecase';
 import { DateModule } from '../services/date/date.module';
 import { TariffEntity } from './entity/tariff.entity';
+import { PromotionHistEntity } from '../promotion/entity/promotion-hist.entity';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { TariffEntity } from './entity/tariff.entity';
       CardEntity,
       ClientEntity,
       CardHistEntity,
+      PromotionHistEntity,
       TariffEntity,
     ]),
     DateModule,

@@ -119,16 +119,20 @@ export class OrderUsecase {
     );
     const currentDate = new Date();
 
-    if (!PromoCode) throw new PromoCodeNotFoundException(promoCode.code);
+    if (!PromoCode) throw new PromoCodeNotFoundException(data.promoCode);
 
     //validate promocode date
-    if (promoCode.isActive == 0 || promoCode.expiryDate < currentDate) {
+    if (
+      promoCode.isActive == 0 ||
+      new Date(promoCode.expiryDate) < currentDate
+    ) {
       throw new InvalidPromoCodeException(promoCode.code);
     }
 
     //check for usage of promocode
     const isUsed = await this.promoCodeRepository.validateUsageByCard(
       card.cardId,
+      promoCode.id,
     );
 
     if (!isUsed) {

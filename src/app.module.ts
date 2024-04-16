@@ -13,6 +13,7 @@ import { LocalStrategy } from './infrastructure/common/strategies/local.strategy
 import { OrderModule } from './infrastructure/order/order.module';
 import { PromocodeModule } from './infrastructure/promo-code/promocode.module';
 import { PaymentModule } from './infrastructure/payment/payment.module';
+import { PromotionModule } from './infrastructure/promotion/promotion.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PaymentModule } from './infrastructure/payment/payment.module';
     OrderModule,
     PromocodeModule,
     PaymentModule,
+    PromotionModule,
   ],
   controllers: [],
   providers: [],

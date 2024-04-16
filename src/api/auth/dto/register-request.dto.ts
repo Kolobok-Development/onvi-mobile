@@ -12,7 +12,7 @@ import {
 export class RegisterRequestDto {
   @IsString()
   @IsNotEmpty({ message: 'Phone number is required' })
-  @Matches(/^\+?7(9\d{9})$/, {
+  @Matches(/^\+7(9\d{9})$/, {
     message: 'Phone number must be valid',
   })
   phone: string;
