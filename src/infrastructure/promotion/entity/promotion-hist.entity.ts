@@ -1,4 +1,4 @@
-import { ViewColumn, ViewEntity } from 'typeorm';
+import {Column, ViewColumn, ViewEntity} from 'typeorm';
 import { Exclude } from 'class-transformer';
 
 @ViewEntity({
@@ -27,11 +27,17 @@ export class PromotionHistEntity {
   @ViewColumn({ name: 'TYPE' })
   type: number;
 
+  @ViewColumn({ name: 'IMAGE' })
+  image: string;
+
   @ViewColumn({ name: 'POINT' })
   point: number;
 
   @ViewColumn({ name: 'CASHBACK_TYPE' })
   cashbackType: number;
+
+  @ViewColumn({ name: 'CASHBACK_SUM' })
+  cashbackSum: number;
 
   @ViewColumn({ name: 'PROMOTION_USAGE_ID' })
   promotionUsageId: number;

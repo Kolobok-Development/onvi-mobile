@@ -9,6 +9,9 @@ export class PromotionEntity {
   @Column({ name: 'TYPE', type: 'number' })
   type: number;
 
+  @Column({ name: 'IMAGE', type: 'varchar2', length: 255 })
+  image: string;
+
   @Column({ name: 'CODE', type: 'varchar2', length: 20 })
   code: string;
 
@@ -17,6 +20,9 @@ export class PromotionEntity {
 
   @Column({ name: 'CASHBACK_TYPE', type: 'number' })
   cashbackType: number;
+
+  @Column({ name: 'CASHBACK_SUM', type: 'number' })
+  cashbackSum: number;
 
   @Column({ name: 'EXPIRY_DATE', type: 'date' })
   expiryDate: Date;

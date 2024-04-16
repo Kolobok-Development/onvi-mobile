@@ -3,9 +3,11 @@ import { PromotionEntity } from '../../../infrastructure/promotion/entity/promot
 export class Promotion {
   promotionId?: number;
   type: number;
+  image?: string;
   code: string;
   point: number;
   cashbackType: number;
+  cashbackSum: number;
   expiryDate: Date;
   isActive: number;
   periodUse: number;
@@ -20,6 +22,7 @@ export class Promotion {
     code: string,
     point: number,
     cashbackType: number,
+    cashbackSum: number,
     expiryDate: Date,
     isActive: number,
     periodUse: number,
@@ -28,17 +31,21 @@ export class Promotion {
     title: string,
     description: string,
     {
+      image,
       promotionId,
       updatedAt,
     }: {
+      image?: string;
       promotionId?: number;
       updatedAt?: Date;
     },
   ) {
     this.type = type;
+    this.image = image;
     this.code = code;
     this.point = point;
     this.cashbackType = cashbackType;
+    this.cashbackSum = cashbackSum;
     this.expiryDate = expiryDate;
     this.isActive = isActive;
     this.periodUse = periodUse;
@@ -56,6 +63,7 @@ export class Promotion {
       entity.code,
       entity.point,
       entity.cashbackType,
+      entity.cashbackSum,
       entity.expiryDate,
       entity.isActive,
       entity.periodUse,
@@ -64,6 +72,7 @@ export class Promotion {
       entity.title,
       entity.description,
       {
+        image: entity.image,
         promotionId: entity.promotionId,
         updatedAt: entity.updatedAt,
       },
