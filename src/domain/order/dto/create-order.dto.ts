@@ -8,4 +8,5 @@ export interface ICreateOrderDto {
   rewardPointsUsed?: number;
   carWashId: number;
   bayNumber: number;
+  cashback: number;
 }

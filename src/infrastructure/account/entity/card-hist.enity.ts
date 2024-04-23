@@ -6,8 +6,6 @@ import { Exclude } from 'class-transformer';
   name: 'ONVI_MOBILE_ORDER_HIST',
 })
 export class CardHistEntity {
-  @ViewColumn({ name: 'CARD_ID' })
-  cardId: number;
 
   @ViewColumn({ name: 'UNQCARD_NUMBER' })
   unqCardNumber: string;
@@ -24,11 +22,14 @@ export class CardHistEntity {
   @ViewColumn({ name: 'OPER_SUM' })
   operSum: number;
 
+  @ViewColumn({ name: 'OPER_SUM_REAL' })
+  operSumReal: number;
+
+  @ViewColumn({ name: 'OPER_SUM_POINT' })
+  operSumPoint: number;
+
   @ViewColumn({ name: 'CASHBACK_AMOUNT' })
   cashBackAmount: number;
-
-  @ViewColumn({ name: 'OPER_TYPE' })
-  operType: string;
 
   @ViewColumn({ name: 'CAR_WASH' })
   carWash: string;

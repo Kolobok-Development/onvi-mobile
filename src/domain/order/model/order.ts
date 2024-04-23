@@ -26,6 +26,7 @@ export class Order {
   carWashId: number;
   bayNumber: number;
   excecutionError?: string;
+  cashback: number;
 
   private constructor(
     createdAt: Date,
@@ -33,6 +34,7 @@ export class Order {
     orderStatus: OrderStatus,
     carWashId: number,
     bayNumber: number,
+    cashback: number,
     {
       id,
       transactionId,
@@ -55,6 +57,7 @@ export class Order {
     this.promoCodeId = promoCodeId;
     this.rewardPointsUsed = rewardPointsUsed;
     this.discountAmount = discountAmount;
+    this.cashback = cashback;
   }
 
   public static create(data: ICreateOrderDto): Order {
@@ -66,6 +69,7 @@ export class Order {
       carWashId,
       bayNumber,
       rewardPointsUsed,
+      cashback,
     } = data;
 
     const createdAt: Date = new Date();
@@ -88,7 +92,7 @@ export class Order {
 
     const orderStatus: OrderStatus = OrderStatus.CREATED;
 
-    return new Order(createdAt, sum, orderStatus, carWashId, bayNumber, {
+    return new Order(createdAt, sum, orderStatus, carWashId, bayNumber, cashback,{
       transactionId,
       promoCodeId,
       rewardPointsUsed,
@@ -109,6 +113,7 @@ export class Order {
       orderStatus,
       entity.carWashId,
       entity.bayNumber,
+      entity.cashback,
       {
         id: entity.id,
         transactionId: entity.transactionId,

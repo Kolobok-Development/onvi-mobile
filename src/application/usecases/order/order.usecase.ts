@@ -19,6 +19,7 @@ import { InvalidPromoCodeException } from '../../../domain/promo-code/exceptions
 import { PromoCodeNotFoundException } from '../../../domain/promo-code/exceptions/promo-code-not-found.exception';
 import { PaymentUsecase } from '../payment/payment.usecase';
 import { PaymentStatus } from '../../../domain/payment/model/payment';
+import {IAccountRepository} from "../../../domain/account/interface/account-repository.interface";
 
 @Injectable()
 export class OrderUsecase {
@@ -26,6 +27,7 @@ export class OrderUsecase {
     private readonly orderRepository: IOrderRepository,
     private readonly promoCodeRepository: IPromoCodeRepository,
     private readonly paymentUsecase: PaymentUsecase,
+    private readonly accountRepository: IAccountRepository,
   ) {}
 
   async create(
@@ -53,14 +55,19 @@ export class OrderUsecase {
       throw new OrderProcessingException();
     }
 
+    const card = account.getCard();
+    const tariff = await this.accountRepository.findCardTariff(card);
+    const cashback = Math.ceil(data.sum * tariff.bonus /100)
+
     const order: Order = Order.create({
-      card: account.getCard(),
+      card: card,
       transactionId: data.transactionId,
       sum: data.sum,
       promoCodeId: data.promoCodeId ?? null,
       rewardPointsUsed: data.rewardPointsUsed,
       carWashId: data.carWashId,
       bayNumber: data.bayNumber,
+      cashback: cashback,
     });
 
     if (order.promoCodeId) {

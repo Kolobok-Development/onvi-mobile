@@ -1,41 +1,41 @@
 import { CardHistEntity } from '../../../../infrastructure/account/entity/card-hist.enity';
 
 export class CardHist {
-  cardId: number;
   unqCardNumber: string;
   name: string;
   phone: string;
   operDate: Date;
   operSum: number;
+  operSumReal: number;
+  operSumPoint: number;
   cashBackAmount: number;
-  operType: string;
   carWash: string;
   bay: string;
   address: string;
   city: string;
 
   constructor(
-    cardId: number,
     unqCardNumber: string,
     name: string,
     phone: string,
     operDate: Date,
     operSum: number,
+    operSumReal: number,
+    operSumPoint: number,
     cashBackAmount: number,
-    operType: string,
     carWash: string,
     bay: string,
     address: string,
     city: string,
   ) {
-    this.cardId = cardId;
     this.unqCardNumber = unqCardNumber;
     this.name = name;
     this.phone = phone;
     this.operDate = operDate;
     this.operSum = operSum;
+    this.operSumReal = operSumReal;
+    this.operSumPoint = operSumPoint;
     this.cashBackAmount = cashBackAmount;
-    this.operType = operType;
     this.carWash = carWash;
     this.bay = bay;
     this.address = address;
@@ -44,14 +44,14 @@ export class CardHist {
 
   public static fromEntity(cardHistEntity: CardHistEntity): CardHist {
     const {
-      cardId,
       unqCardNumber,
       name,
       phone,
       operDate,
       operSum,
+      operSumReal,
+      operSumPoint,
       cashBackAmount,
-      operType,
       carWash,
       address,
       city,
@@ -59,14 +59,14 @@ export class CardHist {
     } = cardHistEntity;
 
     return new CardHist(
-      cardId,
       unqCardNumber,
       name,
       phone,
       operDate,
       operSum,
+      operSumReal,
+      operSumPoint,
       cashBackAmount,
-      operType,
       carWash,
       bay,
       address,

@@ -37,4 +37,7 @@ export class OrderEntity {
 
   @Column({ nullable: true, name: 'excecutionError' })
   excecutionError: string;
+
+  @Column({name: 'CASHBACK_AMOUNT'})
+  cashback: number;
 }

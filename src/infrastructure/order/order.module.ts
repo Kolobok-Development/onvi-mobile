@@ -8,6 +8,7 @@ import { OrderUsecase } from '../../application/usecases/order/order.usecase';
 import { OrderEntity } from './entity/order.entity';
 import { PromocodeModule } from '../promo-code/promocode.module';
 import { PaymentModule } from '../payment/payment.module';
+import {AccountModule} from "../account/account.module";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PaymentModule } from '../payment/payment.module';
     PromocodeModule,
     TypeOrmModule.forFeature([OrderEntity]),
     PaymentModule,
+    AccountModule,
   ],
   controllers: [OrderController],
   providers: [OrderRepositoryProvider, OrderUsecase],
