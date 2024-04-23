@@ -7,6 +7,7 @@ import { OrderController } from '../../api/order/order.controller';
 import { OrderUsecase } from '../../application/usecases/order/order.usecase';
 import { OrderEntity } from './entity/order.entity';
 import { PromocodeModule } from '../promo-code/promocode.module';
+import { PaymentModule } from '../payment/payment.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { PromocodeModule } from '../promo-code/promocode.module';
     EnvConfigModule,
     PromocodeModule,
     TypeOrmModule.forFeature([OrderEntity]),
+    PaymentModule,
   ],
   controllers: [OrderController],
   providers: [OrderRepositoryProvider, OrderUsecase],

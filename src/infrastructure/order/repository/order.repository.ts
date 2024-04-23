@@ -154,6 +154,27 @@ export class OrderRepository implements IOrderRepository {
     };
   }
 
+  async withdraw(
+    deviceId: number,
+    cardUnq: string,
+    sum: number,
+    pToken?: string,
+  ): Promise<any> {
+    const withdrawPointsQuery = `begin :p0 := cwash.CARD_PKG.add_oper_json(:p1, :p2, :p3, :p4); end;`;
+
+    const runWithdrawPointsQuery = await this.dataSource.query(
+      withdrawPointsQuery,
+      [
+        { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+        deviceId,
+        cardUnq,
+        sum,
+        pToken,
+      ],
+    );
+    return JSON.parse(runWithdrawPointsQuery[0]);
+  }
+
   private toOrderEntity(order: Order): OrderEntity {
     const orderEntity: OrderEntity = new OrderEntity();
 

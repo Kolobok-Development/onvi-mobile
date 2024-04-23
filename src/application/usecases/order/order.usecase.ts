@@ -17,12 +17,15 @@ import { PromoVerificationResponseDto } from './dto/promo-verification-response.
 import { PromoCode } from '../../../domain/promo-code/model/promo-code.model';
 import { InvalidPromoCodeException } from '../../../domain/promo-code/exceptions/invalid-promo-code.exception';
 import { PromoCodeNotFoundException } from '../../../domain/promo-code/exceptions/promo-code-not-found.exception';
+import { PaymentUsecase } from '../payment/payment.usecase';
+import { PaymentStatus } from '../../../domain/payment/model/payment';
 
 @Injectable()
 export class OrderUsecase {
   constructor(
     private readonly orderRepository: IOrderRepository,
     private readonly promoCodeRepository: IPromoCodeRepository,
+    private readonly paymentUsecase: PaymentUsecase,
   ) {}
 
   async create(
@@ -30,20 +33,24 @@ export class OrderUsecase {
     account: Client,
   ): Promise<CarwashResponseDto> {
     let newOrder;
-    console.log(`Begin`);
-    console.log(data);
+
     //ping carwash
     const bay: BayResponseDto = await this.orderRepository.ping(
       data.carWashId,
       data.bayNumber,
     );
 
-    console.log(bay);
-
     if (bay.status === 'Busy') {
       throw new BayBusyException(data.bayNumber);
     } else if (bay.status === 'Unavailable') {
       throw new CarwashUnavalibleException();
+    }
+
+    //Verify payment
+    const paymentStatus = await this.paymentUsecase.verify(data.transactionId);
+
+    if (paymentStatus.status !== PaymentStatus.SUCCEEDED) {
+      throw new OrderProcessingException();
     }
 
     const order: Order = Order.create({
@@ -55,7 +62,6 @@ export class OrderUsecase {
       carWashId: data.carWashId,
       bayNumber: data.bayNumber,
     });
-    console.log(`ORDER: ${order}`);
 
     if (order.promoCodeId) {
       const promoCode: PromoCode = await this.promoCodeRepository.findOneById(
@@ -82,6 +88,11 @@ export class OrderUsecase {
     } else {
       newOrder = await this.orderRepository.create(order);
     }
+
+    //Widthdraw points from the account
+
+
+    //Apply reward points through transaction
     if (!newOrder) throw new OrderProcessingException();
 
     const carWashResponse: CarwashResponseDto = await this.orderRepository.send(

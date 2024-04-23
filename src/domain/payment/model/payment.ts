@@ -6,6 +6,13 @@ export class Amount {
   currency: string;
 }
 
+export enum PaymentStatus {
+  PENDING = 'pending',
+  WAITING = 'waiting_for_capture ',
+  SUCCEEDED = 'succeeded',
+  CANCELED = 'canceled',
+}
+
 export class Payment {
   paymentToken: string;
   amount: Amount;

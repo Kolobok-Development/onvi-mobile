@@ -12,6 +12,12 @@ export abstract class IOrderRepository {
     promotion: Promotion,
     expId: string,
   ): Promise<any>;
+  abstract withdraw(
+    deviceId: number,
+    cardUnq: string,
+    sum: number,
+    pToken?: string,
+  ): Promise<any>;
   abstract update(order: Order): Promise<void>;
   abstract ping(carWashId: number, bayNumber: number): Promise<any>;
   abstract send(order: Order, bay: any): Promise<any>;

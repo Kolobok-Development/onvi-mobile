@@ -20,4 +20,12 @@ export class PaymentRepository {
 
     return payment;
   }
+
+  public async verify(paymentId: string): Promise<any> {
+    const payment = await this.paymentGateway.getPayment(paymentId);
+
+    return {
+      status: payment.status,
+    };
+  }
 }
