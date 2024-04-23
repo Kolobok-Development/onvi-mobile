@@ -39,6 +39,6 @@ export class PaymentUsecase {
   }
 
   public async verify(paymentId: string): Promise<any> {
-    return await this.paymentRepository.getPayment(paymentId);
+    return await this.paymentRepository.verify(paymentId);
   }
 }
