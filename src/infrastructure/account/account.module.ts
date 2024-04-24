@@ -11,6 +11,9 @@ import { AccountUsecase } from '../../application/usecases/account/account.useca
 import { DateModule } from '../services/date/date.module';
 import { TariffEntity } from './entity/tariff.entity';
 import { PromotionHistEntity } from '../promotion/entity/promotion-hist.entity';
+import {MetadataEntity} from "./entity/metadata.entity";
+import {MetaRepository} from "./repository/meta.repository";
+import {MetaRepositoryProvider} from "./provider/meta-repository.provider";
 
 @Module({
   imports: [
@@ -20,12 +23,14 @@ import { PromotionHistEntity } from '../promotion/entity/promotion-hist.entity';
       CardHistEntity,
       PromotionHistEntity,
       TariffEntity,
+      MetadataEntity,
     ]),
     DateModule,
   ],
   controllers: [AccountController],
   providers: [
     AccountRepositoryProvider,
+      MetaRepositoryProvider,
     ClientRepository,
     CardRepository,
     AccountUsecase,

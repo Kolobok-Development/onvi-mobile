@@ -1,4 +1,5 @@
 import { Client } from './model/client';
+import {OnviMeta} from "./model/onviMeta";
 
 export abstract class IClientRepository {
   abstract create(client: Client): Promise<Client>;
