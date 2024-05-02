@@ -13,9 +13,9 @@ export abstract class IOrderRepository {
     expId: string,
   ): Promise<any>;
   abstract withdraw(
-    deviceId: number,
+    deviceId: string,
     cardUnq: string,
-    sum: number,
+    sum: string,
     pToken?: string,
   ): Promise<any>;
   abstract update(order: Order): Promise<void>;

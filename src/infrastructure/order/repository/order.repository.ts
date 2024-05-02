@@ -155,9 +155,9 @@ export class OrderRepository implements IOrderRepository {
   }
 
   async withdraw(
-    deviceId: number,
+    deviceId: string,
     cardUnq: string,
-    sum: number,
+    sum: string,
     pToken?: string,
   ): Promise<any> {
     const withdrawPointsQuery = `begin :p0 := cwash.CARD_PKG.add_oper_json(:p1, :p2, :p3, :p4); end;`;
@@ -165,7 +165,7 @@ export class OrderRepository implements IOrderRepository {
     const runWithdrawPointsQuery = await this.dataSource.query(
       withdrawPointsQuery,
       [
-        { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+        { dir: oracledb.BIND_OUT, type: oracledb.STRING },
         deviceId,
         cardUnq,
         sum,

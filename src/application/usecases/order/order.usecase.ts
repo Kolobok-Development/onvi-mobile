@@ -33,7 +33,7 @@ export class OrderUsecase {
   async create(
     data: CreateOrderDto,
     account: Client,
-  ): Promise<CarwashResponseDto> {
+  ): Promise<any> {
     let newOrder;
 
     //ping carwash
@@ -96,11 +96,19 @@ export class OrderUsecase {
       newOrder = await this.orderRepository.create(order);
     }
 
-    //Widthdraw points from the account
+    if (!newOrder) throw new OrderProcessingException();
 
+    //Widthdraw points from the account
+    if (card.balance < newOrder.rewardPointsUsed) throw new OrderProcessingException();
+
+    console.log(bay.id);
+    console.log(card.devNomer);
+    console.log(String(newOrder.sum));
+
+    const withdraw = await this.orderRepository.withdraw(bay.id, card.devNomer, newOrder.rewardPointsUsed.toString(), "1");
 
     //Apply reward points through transaction
-    if (!newOrder) throw new OrderProcessingException();
+    if (!withdraw) throw new OrderProcessingException();
 
     const carWashResponse: CarwashResponseDto = await this.orderRepository.send(
       order,
