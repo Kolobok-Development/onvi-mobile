@@ -92,6 +92,9 @@ export class OrderUsecase {
         account.getCard(),
         order.carWashId,
       );
+
+      promoCode.usage = promoCode.usage + 1;
+      await this.promoCodeRepository.usage(promoCode);
     } else {
       newOrder = await this.orderRepository.create(order);
     }
@@ -151,6 +154,12 @@ export class OrderUsecase {
     if (
       promoCode.isActive == 0 ||
       new Date(promoCode.expiryDate) < currentDate
+    ) {
+      throw new InvalidPromoCodeException(promoCode.code);
+    }
+
+    if (
+        promoCode.usageAmount >= promoCode.usage
     ) {
       throw new InvalidPromoCodeException(promoCode.code);
     }

@@ -79,6 +79,17 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     return false;
   }
 
+  async usage(promoCode: PromoCode): Promise<void> {
+    const promoEntity = PromoCodeRepository.toPromoCodeEntity(promoCode);
+    const { id, ...updatedData} = promoEntity;
+
+    await this.promoCodeRepository.update(
+        {
+          id: id
+        },
+        updatedData,
+    )
+  }
   private static toPromoCodeEntity(promoCode: PromoCode): PromoCodeEntity {
     const promoCodeEnitity: PromoCodeEntity = new PromoCodeEntity();
 
@@ -90,6 +101,8 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     promoCodeEnitity.isActive = promoCode.isActive;
     promoCodeEnitity.createdAt = promoCode.createdAt;
     promoCodeEnitity.createdBy = promoCode.createdBy;
+    promoCodeEnitity.usage = promoCode.usage;
+    promoCodeEnitity.usageAmount = promoCode.usageAmount;
 
     return promoCodeEnitity;
   }

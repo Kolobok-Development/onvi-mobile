@@ -31,6 +31,12 @@ export class PromoCodeEntity {
   @Column({ name: 'CREATED_BY' })
   createdBy: number;
 
+  @Column({name: 'USAGE', type: 'number'})
+  usage: number;
+
+  @Column({name: 'USAGE_AMOUNT', type: 'number'})
+  usageAmount: number;
+
   @OneToMany(() => PromoCodeLocationEntity, (location) => location.promoCode)
   locations: PromoCodeLocationEntity[];
 
