@@ -19,7 +19,7 @@ import { InvalidPromoCodeException } from '../../../domain/promo-code/exceptions
 import { PromoCodeNotFoundException } from '../../../domain/promo-code/exceptions/promo-code-not-found.exception';
 import { PaymentUsecase } from '../payment/payment.usecase';
 import { PaymentStatus } from '../../../domain/payment/model/payment';
-import {IAccountRepository} from "../../../domain/account/interface/account-repository.interface";
+import { IAccountRepository } from '../../../domain/account/interface/account-repository.interface';
 
 @Injectable()
 export class OrderUsecase {
@@ -30,10 +30,7 @@ export class OrderUsecase {
     private readonly accountRepository: IAccountRepository,
   ) {}
 
-  async create(
-    data: CreateOrderDto,
-    account: Client,
-  ): Promise<any> {
+  async create(data: CreateOrderDto, account: Client): Promise<any> {
     let newOrder;
 
     //ping carwash
@@ -57,7 +54,7 @@ export class OrderUsecase {
 
     const card = account.getCard();
     const tariff = await this.accountRepository.findCardTariff(card);
-    const cashback = Math.ceil(data.sum * tariff.bonus /100)
+    const cashback = Math.ceil((data.sum * tariff.bonus) / 100);
 
     const order: Order = Order.create({
       card: card,
@@ -99,16 +96,21 @@ export class OrderUsecase {
     if (!newOrder) throw new OrderProcessingException();
 
     //Widthdraw points from the account
-    if (card.balance < newOrder.rewardPointsUsed) throw new OrderProcessingException();
 
-    console.log(bay.id);
-    console.log(card.devNomer);
-    console.log(String(newOrder.sum));
+    if (order.rewardPointsUsed > 0) {
+      if (card.balance < newOrder.rewardPointsUsed)
+        throw new OrderProcessingException();
 
-    const withdraw = await this.orderRepository.withdraw(bay.id, card.devNomer, newOrder.rewardPointsUsed.toString(), "1");
+      const withdraw = await this.orderRepository.withdraw(
+        bay.id,
+        card.devNomer,
+        newOrder.rewardPointsUsed.toString(),
+        '1',
+      );
 
-    //Apply reward points through transaction
-    if (!withdraw) throw new OrderProcessingException();
+      //Apply reward points through transaction
+      if (!withdraw) throw new OrderProcessingException();
+    }
 
     const carWashResponse: CarwashResponseDto = await this.orderRepository.send(
       order,
