@@ -24,6 +24,7 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     promoCode: PromoCode,
     card: Card,
     carWashId: number,
+    usage: number,
   ): Promise<any> {
     const promoCodeUsage = new PromoCodeUsageEntity();
 
@@ -31,6 +32,7 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     promoCodeUsage.carWashId = carWashId;
     promoCodeUsage.card = { cardId: card.cardId } as CardEntity;
     promoCodeUsage.usageDate = new Date(Date.now());
+    promoCodeUsage.usage = usage;
 
     return await this.promoCodeUsageRepository.save(promoCodeUsage);
   }
@@ -79,17 +81,19 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     return false;
   }
 
-  async usage(promoCode: PromoCode): Promise<void> {
-    const promoEntity = PromoCodeRepository.toPromoCodeEntity(promoCode);
-    const { id, ...updatedData} = promoEntity;
+  async findMaxUsageByCard(cardId: number, id: number): Promise<number | null> {
+    const promoCodeUsage = await this.promoCodeUsageRepository.findOne({
+      where: {
+        card: { cardId },
+        promoCode: { id },
+      },
+      relations: ['card', 'promoCode'],
+      order: { usage: 'DESC' }, // Сортировка по usage в убывающем порядке
+    });
 
-    await this.promoCodeRepository.update(
-        {
-          id: id
-        },
-        updatedData,
-    )
+    return promoCodeUsage.usage; // Возвращаем найденную запись или null, если записей нет
   }
+
   private static toPromoCodeEntity(promoCode: PromoCode): PromoCodeEntity {
     const promoCodeEnitity: PromoCodeEntity = new PromoCodeEntity();
 
@@ -101,7 +105,6 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     promoCodeEnitity.isActive = promoCode.isActive;
     promoCodeEnitity.createdAt = promoCode.createdAt;
     promoCodeEnitity.createdBy = promoCode.createdBy;
-    promoCodeEnitity.usage = promoCode.usage;
     promoCodeEnitity.usageAmount = promoCode.usageAmount;
 
     return promoCodeEnitity;

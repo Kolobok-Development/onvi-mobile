@@ -12,7 +12,6 @@ export class PromoCode {
   createdAt: Date;
   updatedAt?: Date;
   createdBy: number;
-  usage: number;
   usageAmount: number;
   locations?: PromoCodeLocation[];
 
@@ -23,7 +22,6 @@ export class PromoCode {
     isActive: number,
     createdAt: Date,
     createdBy: number,
-    usage: number,
     usageAmount: number,
     {
       id,
@@ -47,7 +45,6 @@ export class PromoCode {
     this.discount = discount;
     this.updatedAt = updatedAt;
     this.locations = locations;
-    this.usage = usage;
     this.usageAmount = usageAmount;
   }
 
@@ -71,7 +68,6 @@ export class PromoCode {
       entity.isActive,
       entity.createdAt,
       entity.createdBy,
-      entity.usage,
       entity.usageAmount,
       {
         id: entity.id,

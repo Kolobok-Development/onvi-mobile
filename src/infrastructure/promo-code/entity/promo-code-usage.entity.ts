@@ -28,4 +28,7 @@ export class PromoCodeUsageEntity {
 
   @Column({ name: 'USAGE_DATE', nullable: false })
   usageDate: Date;
+
+  @Column({ name: 'USAGE', type: 'number'})
+  usage: number;
 }

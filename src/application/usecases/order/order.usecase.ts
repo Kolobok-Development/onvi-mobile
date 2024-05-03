@@ -87,14 +87,22 @@ export class OrderUsecase {
 
       newOrder = await this.orderRepository.create(order);
 
+      let promoCodeUsage = await this.promoCodeRepository.findMaxUsageByCard(
+          card.cardId,
+          promoCode.id,
+      );
+      if (promoCodeUsage === null) {
+        promoCodeUsage = 1;
+      } else {
+        promoCodeUsage = promoCodeUsage + 1;
+      }
       await this.promoCodeRepository.apply(
         promoCode,
         account.getCard(),
         order.carWashId,
+        promoCodeUsage
       );
 
-      promoCode.usage = promoCode.usage + 1;
-      await this.promoCodeRepository.usage(promoCode);
     } else {
       newOrder = await this.orderRepository.create(order);
     }
@@ -158,8 +166,12 @@ export class OrderUsecase {
       throw new InvalidPromoCodeException(promoCode.code);
     }
 
+    const promoCodeUsage = await this.promoCodeRepository.findMaxUsageByCard(
+        card.cardId,
+        promoCode.id,
+    );
     if (
-        promoCode.usageAmount >= promoCode.usage
+        promoCodeUsage >= promoCode.usageAmount
     ) {
       throw new InvalidPromoCodeException(promoCode.code);
     }
