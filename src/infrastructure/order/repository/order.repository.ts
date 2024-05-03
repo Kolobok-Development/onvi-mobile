@@ -95,7 +95,7 @@ export class OrderRepository implements IOrderRepository {
     const headersReq: any = this.setHeaders(this.apiKey);
     const body = {
       GVLCardNum: order.card.devNomer,
-      GVLCardSum: order.sum.toString() + order.rewardPointsUsed.toString(),
+      GVLCardSum: (order.sum + order.rewardPointsUsed).toString(),
       GVLSource: this.sourceCode,
     };
     try {
