@@ -175,7 +175,7 @@ export class OrderUsecase {
     ) {
       throw new InvalidPromoCodeException(promoCode.code);
     }
-
+/*
     //check for usage of promocode
     const isUsed = await this.promoCodeRepository.validateUsageByCard(
       card.cardId,
@@ -185,7 +185,7 @@ export class OrderUsecase {
     if (!isUsed) {
       throw new InvalidPromoCodeException(promoCode.code);
     }
-
+*/
     // check if promocode is allowed for location
     const isLocationAllowed = promoCode.locations.some(
       (location: PromoCodeLocation) => location.carWashId === data.carWashId,
