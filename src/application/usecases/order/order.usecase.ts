@@ -84,20 +84,25 @@ export class OrderUsecase {
 
       newOrder = await this.orderRepository.create(order);
 
-      let promoCodeUsage = await this.promoCodeRepository.findMaxUsageByCard(
-        card.cardId,
-        promoCode.id,
-      );
-      if (promoCodeUsage === null) {
-        promoCodeUsage = 1;
+      const promoCodeUsage: any =
+        await this.promoCodeRepository.findMaxUsageByCard(
+          card.cardId,
+          promoCode.id,
+        );
+
+      let usageAmout = 0;
+
+      if (!promoCodeUsage) {
+        usageAmout = 1;
       } else {
-        promoCodeUsage = promoCodeUsage + 1;
+        usageAmout = Number(promoCodeUsage.usage + 1);
       }
+
       await this.promoCodeRepository.apply(
         promoCode,
         account.getCard(),
         order.carWashId,
-        promoCodeUsage,
+        usageAmout,
       );
     } else {
       newOrder = await this.orderRepository.create(order);
@@ -152,12 +157,13 @@ export class OrderUsecase {
     client: Client,
   ): Promise<PromoVerificationResponseDto> {
     const card = client.getCard();
+    const promoCodeValue = data.promoCode.replace(/\s+/g, '');
     const promoCode = await this.promoCodeRepository.findOneByCode(
-      data.promoCode,
+      promoCodeValue,
     );
     const currentDate = new Date();
 
-    if (!PromoCode) throw new PromoCodeNotFoundException(data.promoCode);
+    if (!PromoCode) throw new PromoCodeNotFoundException(promoCodeValue);
 
     //validate promocode date
     if (
