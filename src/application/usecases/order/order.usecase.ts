@@ -84,11 +84,22 @@ export class OrderUsecase {
 
       newOrder = await this.orderRepository.create(order);
 
+      let promoCodeUsage = await this.promoCodeRepository.findMaxUsageByCard(
+          card.cardId,
+          promoCode.id,
+      );
+      if (promoCodeUsage === null) {
+        promoCodeUsage = 1;
+      } else {
+        promoCodeUsage = promoCodeUsage + 1;
+      }
       await this.promoCodeRepository.apply(
         promoCode,
         account.getCard(),
         order.carWashId,
+        promoCodeUsage
       );
+
     } else {
       newOrder = await this.orderRepository.create(order);
     }
@@ -157,6 +168,16 @@ export class OrderUsecase {
       throw new InvalidPromoCodeException(promoCode.code);
     }
 
+    const promoCodeUsage = await this.promoCodeRepository.findMaxUsageByCard(
+        card.cardId,
+        promoCode.id,
+    );
+    if (
+        promoCodeUsage >= promoCode.usageAmount
+    ) {
+      throw new InvalidPromoCodeException(promoCode.code);
+    }
+/*
     //check for usage of promocode
     const isUsed = await this.promoCodeRepository.validateUsageByCard(
       card.cardId,
@@ -166,7 +187,7 @@ export class OrderUsecase {
     if (!isUsed) {
       throw new InvalidPromoCodeException(promoCode.code);
     }
-
+*/
     // check if promocode is allowed for location
     const isLocationAllowed = promoCode.locations.some(
       (location: PromoCodeLocation) => location.carWashId === data.carWashId,

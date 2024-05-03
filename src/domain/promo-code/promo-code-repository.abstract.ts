@@ -7,8 +7,10 @@ export abstract class IPromoCodeRepository {
     promoCode: PromoCode,
     card: Card,
     carWashId: number,
+    usage: number,
   ): Promise<any>;
   abstract findOneByCode(code: string): Promise<PromoCode>;
   abstract validateUsageByCard(cardId: number, id: number): Promise<boolean>;
   abstract findOneById(id: number): Promise<PromoCode>;
+  abstract findMaxUsageByCard(cardId: number, id: number): Promise<number | null>;
 }

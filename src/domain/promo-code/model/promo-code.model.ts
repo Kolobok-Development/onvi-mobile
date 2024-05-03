@@ -12,6 +12,7 @@ export class PromoCode {
   createdAt: Date;
   updatedAt?: Date;
   createdBy: number;
+  usageAmount: number;
   locations?: PromoCodeLocation[];
 
   private constructor(
@@ -21,6 +22,7 @@ export class PromoCode {
     isActive: number,
     createdAt: Date,
     createdBy: number,
+    usageAmount: number,
     {
       id,
       discount,
@@ -43,6 +45,7 @@ export class PromoCode {
     this.discount = discount;
     this.updatedAt = updatedAt;
     this.locations = locations;
+    this.usageAmount = usageAmount;
   }
 
   public validate(): boolean {
@@ -65,6 +68,7 @@ export class PromoCode {
       entity.isActive,
       entity.createdAt,
       entity.createdBy,
+      entity.usageAmount,
       {
         id: entity.id,
         discount: entity.discount,
