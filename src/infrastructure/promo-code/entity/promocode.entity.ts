@@ -4,7 +4,7 @@ import { PromoCodeUsageEntity } from './promo-code-usage.entity';
 
 @Entity({ name: 'MOBILE_PROMO_CODE', synchronize: false })
 export class PromoCodeEntity {
-  @PrimaryGeneratedColumn({ name: 'ID'})
+  @PrimaryGeneratedColumn({ name: 'ID' })
   id: number;
 
   @Column({ type: 'varchar2', length: 100, name: 'CODE' })
@@ -31,7 +31,7 @@ export class PromoCodeEntity {
   @Column({ name: 'CREATED_BY' })
   createdBy: number;
 
-  @Column({name: 'USAGE_AMOUNT', type: 'number'})
+  @Column({ name: 'USAGE_AMOUNT', type: 'number' })
   usageAmount: number;
 
   @OneToMany(() => PromoCodeLocationEntity, (location) => location.promoCode)

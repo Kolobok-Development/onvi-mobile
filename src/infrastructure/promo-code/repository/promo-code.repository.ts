@@ -81,7 +81,7 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     return false;
   }
 
-  async findMaxUsageByCard(cardId: number, id: number): Promise<number | null> {
+  async findMaxUsageByCard(cardId: number, id: number): Promise<any> {
     const promoCodeUsage = await this.promoCodeUsageRepository.findOne({
       where: {
         card: { cardId },
@@ -91,7 +91,7 @@ export class PromoCodeRepository implements IPromoCodeRepository {
       order: { usage: 'DESC' }, // Сортировка по usage в убывающем порядке
     });
 
-    return promoCodeUsage.usage; // Возвращаем найденную запись или null, если записей нет
+    return promoCodeUsage; // Возвращаем найденную запись или null, если записей нет
   }
 
   private static toPromoCodeEntity(promoCode: PromoCode): PromoCodeEntity {
