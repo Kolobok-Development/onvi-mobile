@@ -6,6 +6,7 @@ import { ActivationStatusType } from '../enum/activation-status.enum';
 import { ClientEntity } from '../../../../infrastructure/account/entity/client.entity';
 import { CardEntity } from '../../../../infrastructure/account/entity/card.entity';
 import { ShortClientDto } from '../dto/short-client.dto';
+import {AvatarType} from "../enum/avatar.enum";
 
 export class Client {
   clientId?: number;
@@ -19,6 +20,7 @@ export class Client {
   clientTypeId: ClientType;
   isActivated: number;
   userOnvi: number;
+  avatarOnvi: AvatarType;
   activatedDate?: Date;
   genderId?: GenderType;
   refreshToken?: string;
@@ -32,6 +34,7 @@ export class Client {
     refreshToken: string,
     isActivated: number,
     userOnvi: number,
+    avatarOnvi: AvatarType,
     {
       clientId,
       email,
@@ -64,6 +67,7 @@ export class Client {
     this.updDate = updDate;
     this.isActivated = isActivated;
     this.userOnvi = userOnvi;
+    this.avatarOnvi = avatarOnvi;
     this.activatedDate = activationDate;
     this.genderId = genderId;
     this.clientId = clientId;
@@ -73,7 +77,7 @@ export class Client {
     const { rawPhone, clientType, refreshToken, cards } = data;
     const phone: string = this.formatPhone(rawPhone);
     const name: string = this.generateDefaultName(phone);
-    return new Client(name, rawPhone, phone, clientType, refreshToken, 1, 1, {
+    return new Client(name, rawPhone, phone, clientType, refreshToken, 1, 1, AvatarType.ONE,{
       cards,
     });
   }
@@ -119,6 +123,7 @@ export class Client {
       email: this.email,
       birthday: this.birthday,
       refreshToken: this.refreshToken,
+      avatar: this.avatarOnvi,
       cards: {
         number: mainCard.nomer,
         unqNumber: mainCard.devNomer,
@@ -150,6 +155,7 @@ export class Client {
       clientTypeId,
       isActivated,
       userOnvi,
+      avatarOnvi,
       activatedDate,
       genderId,
       refreshToken,
@@ -169,6 +175,7 @@ export class Client {
       refreshToken,
       isActivated,
       userOnvi,
+      avatarOnvi,
       {
         clientId,
         email,

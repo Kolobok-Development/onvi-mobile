@@ -1,19 +1,19 @@
-import { Injectable } from '@nestjs/common';
-import { IAccountRepository } from '../../../domain/account/interface/account-repository.interface';
-import { IDate } from '../../../infrastructure/common/interfaces/date.interface';
-import { CardHist } from '../../../domain/account/card/model/cardHist';
-import { Client } from '../../../domain/account/client/model/client';
-import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
-import { TariffResponseDto } from './dto/tariff-response.dto';
-import { UpdateAccountDto } from './dto/update-account.dto';
-import { IPromotionRepository } from '../../../domain/promotion/promotion-repository.abstract';
-import { PromotionHist } from '../../../domain/promotion/model/promotionHist';
+import {Injectable} from '@nestjs/common';
+import {IAccountRepository} from '../../../domain/account/interface/account-repository.interface';
+import {IDate} from '../../../infrastructure/common/interfaces/date.interface';
+import {CardHist} from '../../../domain/account/card/model/cardHist';
+import {Client} from '../../../domain/account/client/model/client';
+import {AccountNotFoundExceptions} from '../../../domain/account/exceptions/account-not-found.exceptions';
+import {TariffResponseDto} from './dto/tariff-response.dto';
+import {UpdateAccountDto} from './dto/update-account.dto';
+import {PromotionHist} from '../../../domain/promotion/model/promotionHist';
 import {UpdateMetaDto} from "./dto/update-meta.dto";
 import {IMetaRepositoryAbstract} from "../../../domain/account/client/meta-repository.abstract";
 import {MetaNotFoundExceptions} from "../../../domain/account/exceptions/meta-not-found.exception";
 import {CreateMetaDto} from "./dto/create-meta.dto";
 import {MetaExistsExceptions} from "../../../domain/account/exceptions/meta-exists.exception";
 import {OnviMeta} from "../../../domain/account/client/model/onviMeta";
+import {AvatarType} from "../../../domain/account/client/enum/avatar.enum";
 
 @Injectable()
 export class AccountUsecase {
@@ -48,10 +48,19 @@ export class AccountUsecase {
   }
 
   async updateAccountInfo(body: UpdateAccountDto, client: Client) {
-    const { name, email } = body;
+    const { name, email, avatar } = body;
 
+    let chAvatar = client.avatarOnvi;
+    if (avatar === 1) {
+      chAvatar = AvatarType.ONE
+    } else if (avatar === 2) {
+      chAvatar = AvatarType.TWO
+    } else if (avatar === 3) {
+      chAvatar = AvatarType.THREE
+    }
     client.name = name ? name : client.name;
     client.email = email ? email : client.email;
+    client.avatarOnvi = chAvatar;
 
     const updatedClient = await this.accountRepository.update(client);
 

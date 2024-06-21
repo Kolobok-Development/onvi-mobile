@@ -1,4 +1,5 @@
-import { IsEmail, IsOptional, IsString } from 'class-validator';
+import {IsEmail, IsNumber, IsOptional, IsString} from 'class-validator';
+import {AvatarType} from "../../../../domain/account/client/enum/avatar.enum";
 
 export class UpdateAccountDto {
   @IsOptional()
@@ -7,4 +8,7 @@ export class UpdateAccountDto {
   @IsOptional()
   @IsEmail()
   email?: string;
+  @IsOptional()
+  @IsNumber()
+  avatar?: number;
 }

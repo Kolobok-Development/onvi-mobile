@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CardEntity } from './card.entity';
+import {AvatarType} from "../../../domain/account/client/enum/avatar.enum";
 
 @Entity({ name: 'CRDCLIENT', synchronize: false })
 export class ClientEntity {
@@ -80,6 +81,9 @@ export class ClientEntity {
 
   @Column({ name: 'USER_ONVI', type: 'number' })
   userOnvi: number;
+
+  @Column({ name: 'AVATAR_ONVI', type: 'varchar2'})
+  avatarOnvi: AvatarType;
 
   @OneToMany(() => CardEntity, (card: CardEntity) => card.client)
   cards: CardEntity[];

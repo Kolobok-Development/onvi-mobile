@@ -76,6 +76,7 @@ export class ClientRepository implements IClientRepository {
     clientEntity.refreshToken = client.refreshToken;
     clientEntity.activatedDate = client.activatedDate;
     clientEntity.userOnvi = client.userOnvi;
+    clientEntity.avatarOnvi = client.avatarOnvi;
 
     return clientEntity;
   }

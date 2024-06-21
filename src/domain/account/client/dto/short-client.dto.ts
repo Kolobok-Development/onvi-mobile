@@ -8,5 +8,6 @@ export interface ShortClientDto {
   phone: string;
   birthday: Date;
   refreshToken: string;
+  avatar: string;
   cards: ShortCardDto;
 }
