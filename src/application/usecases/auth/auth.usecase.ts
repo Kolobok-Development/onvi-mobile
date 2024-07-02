@@ -25,6 +25,9 @@ import * as otpGenerator from 'otp-generator';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { CardRepository } from '../../../infrastructure/account/repository/card.repository';
+import {IMetaRepositoryAbstract} from "../../../domain/account/client/meta-repository.abstract";
+import {RegisterDto} from "./dto/register.dto";
+import {OnviMeta} from "../../../domain/account/client/model/onviMeta";
 
 @Injectable()
 export class AuthUsecase {
@@ -46,37 +49,38 @@ export class AuthUsecase {
     private readonly dateService: IDate,
     private readonly jwtConfig: IJwtConfig,
     private readonly bcryptService: IBcrypt,
+    private readonly metadataRepository: IMetaRepositoryAbstract,
   ) {}
 
   //public async isAuthenticated(phone: string) {}
 
-  public async register(phone: string, otp: string): Promise<any> {
+  public async register(body: RegisterDto): Promise<any> {
     // Validate OTP
-    const currentOtp = await this.otpRepository.findOne(phone);
+    const currentOtp = await this.otpRepository.findOne(body.phone);
 
     if (
       !currentOtp ||
       this.dateService.isExpired(currentOtp.expireDate, OTP_EXPIRY_TIME) ||
-      currentOtp.otp != otp
+      currentOtp.otp != body.otp
     ) {
-      throw new InvalidOtpException(phone);
+      throw new InvalidOtpException(body.phone);
     }
 
     //Check if user already exists
-    const account = await this.accountRepository.findOneByPhoneNumber(phone);
+    const account = await this.accountRepository.findOneByPhoneNumber(body.phone);
 
     if (account) {
-      throw new AccountExistsException(phone);
+      throw new AccountExistsException(body.phone);
     }
 
     //Generate token
-    const accessToken = await this.signAccessToken(phone);
-    const refreshToken = await this.signRefreshToken(phone);
+    const accessToken = await this.signAccessToken(body.phone);
+    const refreshToken = await this.signRefreshToken(body.phone);
 
     // Create new client model
 
     const clientData: ICreateClientDto = {
-      rawPhone: phone,
+      rawPhone: body.phone,
       clientType: ClientType.INDIVIDUAL,
       refreshToken: refreshToken.token,
     };
@@ -89,7 +93,23 @@ export class AuthUsecase {
       uniqNomer,
     );
 
+    const client = await this.accountRepository.findOneByPhoneNumber(newAccount.phone);
+
     //await this.setCurrentRefreshToken(phone, refreshToken.token);
+
+    const dataMeta: OnviMeta = OnviMeta.create({
+      deviceId: body.deviceId,
+      model: body.model,
+      name: body.name,
+      platform: body.platform,
+      platformVersion: body.platformVersion,
+      manufacturer: body.manufacturer,
+      appToken: body.appToken,
+      isEmulator: body.isEmulator,
+      mac: body.mac,
+    })
+
+    await this.metadataRepository.create(dataMeta, client);
 
     return { newAccount, accessToken, refreshToken };
   }

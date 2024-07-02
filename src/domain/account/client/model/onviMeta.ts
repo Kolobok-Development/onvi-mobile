@@ -3,28 +3,42 @@ import {MetadataEntity} from "../../../../infrastructure/account/entity/metadata
 
 export class OnviMeta {
     metaId?: number;
-    clientId: number;
-    deviceId: string;
-    model: string;
-    name: string;
-    platform: string;
-    platformVersion: string;
-    manufacturer: string;
-    appToken: string;
+    clientId?: number;
+    deviceId?: string;
+    model?: string;
+    name?: string;
+    platform?: string;
+    platformVersion?: string;
+    manufacturer?: string;
+    appToken?: string;
+    isEmulator?: number;
+    mac?: string;
 
     private constructor(
-        clientId: number,
-        deviceId: string,
-        model: string,
-        name: string,
-        platform: string,
-        platformVersion: string,
-        manufacturer: string,
-        appToken: string,
         {
             metaId,
+            clientId,
+            deviceId,
+            model,
+            name,
+            platform,
+            platformVersion,
+            manufacturer,
+            appToken,
+            isEmulator,
+            mac,
         }: {
-            metaId: number;
+            metaId?: number;
+            clientId?: number;
+            deviceId?: string;
+            model?: string;
+            name?: string;
+            platform?: string;
+            platformVersion?: string;
+            manufacturer?: string;
+            appToken?: string;
+            isEmulator?: number;
+            mac?: string;
         },
     ) {
         this.metaId = metaId;
@@ -36,17 +50,19 @@ export class OnviMeta {
         this.platformVersion = platformVersion;
         this.manufacturer = manufacturer;
         this.appToken =appToken;
+        this.isEmulator = isEmulator;
+        this.mac = mac;
     }
 
     public static create(data: ICreateMetaDto): OnviMeta {
-        const { metaId, clientId, deviceId, model, name,  platform, platformVersion, manufacturer, appToken } = data;
-        return new OnviMeta(clientId, deviceId, model, name, platform, platformVersion, manufacturer, appToken, { metaId });
+        const { metaId, clientId, deviceId, model, name,  platform, platformVersion, manufacturer, appToken, isEmulator, mac } = data;
+        return new OnviMeta({ metaId, clientId, deviceId, model, name, platform, platformVersion, manufacturer, appToken, isEmulator, mac });
     }
 
     public static fromEntity(entity: MetadataEntity): OnviMeta {
         const {
             metaId,
-            clientId,
+            client,
             deviceId,
             model,
             name,
@@ -54,8 +70,10 @@ export class OnviMeta {
             platformVersion,
             manufacturer,
             appToken,
+            isEmulator,
+            mac,
         } = entity;
 
-        return new OnviMeta(clientId, deviceId, model, name, platform, platformVersion, manufacturer, appToken, { metaId });
+        return new OnviMeta({ metaId, deviceId, model, name, platform, platformVersion, manufacturer, appToken, isEmulator, mac });
     }
 }

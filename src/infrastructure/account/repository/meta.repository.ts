@@ -4,6 +4,8 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {MetadataEntity} from "../entity/metadata.entity";
 import {Repository} from "typeorm";
 import {OnviMeta} from "../../../domain/account/client/model/onviMeta";
+import {Client} from "../../../domain/account/client/model/client";
+import {ClientRepository} from "./client.repository";
 
 @Injectable()
 export class MetaRepository implements IMetaRepositoryAbstract {
@@ -12,8 +14,9 @@ export class MetaRepository implements IMetaRepositoryAbstract {
         private readonly metadataRepository: Repository<MetadataEntity>
     ) {}
 
-    async create(meta: OnviMeta): Promise<OnviMeta> {
+    async create(meta: OnviMeta, client: Client): Promise<OnviMeta> {
         const metaEntity = MetaRepository.toMetaEntity(meta);
+        metaEntity.client = ClientRepository.toClientEntity(client);
         const newMeta = await this.metadataRepository.save(metaEntity);
         return OnviMeta.fromEntity(newMeta);
     }
@@ -30,11 +33,10 @@ export class MetaRepository implements IMetaRepositoryAbstract {
     }
 
     async findOneByClientId(clientId: number): Promise<OnviMeta> {
-        const meta = await this.metadataRepository.findOne({
-            where: {
-                clientId: clientId,
-            },
-        });
+        const meta = await this.metadataRepository
+            .createQueryBuilder('meta')
+            .leftJoin('meta.client', 'client')
+            .where('client.clientId = :clientId', { clientId }).getOne();
 
         if (!meta) return null;
         return OnviMeta.fromEntity(meta);
@@ -60,14 +62,16 @@ export class MetaRepository implements IMetaRepositoryAbstract {
         const metaEntity: MetadataEntity = new MetadataEntity();
 
         metaEntity.metaId = meta.metaId ? meta.metaId : null;
-        metaEntity.clientId = meta.clientId;
         metaEntity.deviceId = meta.deviceId;
+        metaEntity.client
         metaEntity.model = meta.model;
         metaEntity.name = meta.name;
         metaEntity.platform = meta.platform;
         metaEntity.platformVersion = meta.platformVersion;
         metaEntity.manufacturer = meta.manufacturer;
         metaEntity.appToken = meta.appToken;
+        metaEntity.mac = meta.mac;
+        metaEntity.isEmulator = meta.isEmulator;
 
         return metaEntity;
     }

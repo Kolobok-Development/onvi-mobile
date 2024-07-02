@@ -1,12 +1,6 @@
 import {IsNotEmpty, IsNumber, IsOptional, IsString} from "class-validator";
 
 export class UpdateMetaDto{
-    @IsNumber()
-    @IsNotEmpty({ message: 'Id is required' })
-    metaId: number;
-    @IsNumber()
-    @IsOptional()
-    clientId?: number;
     @IsString()
     @IsOptional()
     deviceId?: string;
@@ -28,4 +22,10 @@ export class UpdateMetaDto{
     @IsString()
     @IsOptional()
     appToken?: string;
+    @IsNumber()
+    @IsOptional()
+    isEmulator?: number;
+    @IsString()
+    @IsOptional()
+    mac?: string;
 }

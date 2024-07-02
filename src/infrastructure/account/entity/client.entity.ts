@@ -1,6 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn} from 'typeorm';
 import { CardEntity } from './card.entity';
 import {AvatarType} from "../../../domain/account/client/enum/avatar.enum";
+import {MetadataEntity} from "./metadata.entity";
 
 @Entity({ name: 'CRDCLIENT', synchronize: false })
 export class ClientEntity {
@@ -85,6 +86,15 @@ export class ClientEntity {
   @Column({ name: 'AVATAR_ONVI', type: 'varchar2'})
   avatarOnvi: AvatarType;
 
+  @Column({ name: 'AUTH_TOKEN', type: 'varchar2'})
+  authToken: string;
+
+  @Column({ name: 'IS_NOTIFICATIONS', type: 'number'})
+  isNotifications: number;
+
   @OneToMany(() => CardEntity, (card: CardEntity) => card.client)
   cards: CardEntity[];
+
+  @OneToOne(() => MetadataEntity, (meta: MetadataEntity) => meta.client)
+  meta: MetadataEntity;
 }
