@@ -14,6 +14,7 @@ import {CreateMetaDto} from "./dto/create-meta.dto";
 import {MetaExistsExceptions} from "../../../domain/account/exceptions/meta-exists.exception";
 import {OnviMeta} from "../../../domain/account/client/model/onviMeta";
 import {AvatarType} from "../../../domain/account/client/enum/avatar.enum";
+import {UpdateAuthTokenDto} from "../../../api/account/dto/update-auth-token.dto";
 
 @Injectable()
 export class AccountUsecase {
@@ -48,7 +49,7 @@ export class AccountUsecase {
   }
 
   async updateAccountInfo(body: UpdateAccountDto, client: Client) {
-    const { name, email, avatar } = body;
+    const { name, email, avatar, isNotifications } = body;
 
     let chAvatar = client.avatarOnvi;
     if (avatar === 1) {
@@ -61,7 +62,18 @@ export class AccountUsecase {
     client.name = name ? name : client.name;
     client.email = email ? email : client.email;
     client.avatarOnvi = chAvatar;
+    client.isNotifications = isNotifications ? isNotifications : client.isNotifications;
 
+    const updatedClient = await this.accountRepository.update(client);
+
+    if (!updatedClient)
+      throw new AccountNotFoundExceptions(client.correctPhone);
+
+    return updatedClient;
+  }
+
+  async updateAuthToken(body: UpdateAuthTokenDto, client: Client) {
+    client.authToken = body.authToken;
     const updatedClient = await this.accountRepository.update(client);
 
     if (!updatedClient)
@@ -75,26 +87,6 @@ export class AccountUsecase {
     return await this.accountRepository.getPromotionHistory(card);
   }
 
-  async createMeta(body: CreateMetaDto){
-    const checkMeta = await this.metadataRepository.findOneByClientId(body.clientId);
-    if (checkMeta) {
-      throw new MetaExistsExceptions(body.clientId);
-    }
-
-    const meta: OnviMeta = OnviMeta.create({
-      metaId: body.metaId,
-      clientId: body.clientId,
-      deviceId: body.deviceId,
-      model: body.model,
-      name: body.name,
-      platform: body.platform,
-      platformVersion: body.platformVersion,
-      manufacturer: body.manufacturer,
-      appToken: body.appToken,
-    })
-
-    return await this.metadataRepository.create(meta);
-  }
   async getMetaById(metaId: number){
     const meta = await this.metadataRepository.findOneById(metaId);
     if (!meta) {
@@ -103,13 +95,12 @@ export class AccountUsecase {
     return meta;
   }
 
-  async updateMeta(body: UpdateMetaDto){
-    const meta = await this.metadataRepository.findOneById(body.metaId);
+  async updateMeta(body: UpdateMetaDto, client: Client){
+    const meta = await this.metadataRepository.findOneByClientId(client.clientId);
     if (!meta) {
-      throw new MetaNotFoundExceptions(body.metaId);
+      throw new MetaNotFoundExceptions(client.clientId);
     }
     const {
-      clientId,
       deviceId,
       model,
       name,
@@ -117,9 +108,10 @@ export class AccountUsecase {
       platformVersion,
       manufacturer,
       appToken,
+      isEmulator,
+      mac,
     } = body;
 
-    meta.clientId = clientId ? clientId : meta.clientId;
     meta.deviceId = deviceId ? deviceId : meta.deviceId;
     meta.model = model ? model : meta.model;
     meta.name = name ? name : meta.name;
@@ -127,6 +119,8 @@ export class AccountUsecase {
     meta.platformVersion = platformVersion ? platformVersion : meta.platformVersion;
     meta.manufacturer = manufacturer ? manufacturer : meta.manufacturer;
     meta.appToken = appToken ? appToken : meta.appToken;
+    meta.isEmulator = isEmulator ? isEmulator : meta.isEmulator;
+    meta.mac = mac ? mac : meta.mac;
 
     return await this.metadataRepository.update(meta);
   }

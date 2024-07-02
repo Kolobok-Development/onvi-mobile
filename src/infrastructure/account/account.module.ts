@@ -35,6 +35,6 @@ import {MetaRepositoryProvider} from "./provider/meta-repository.provider";
     CardRepository,
     AccountUsecase,
   ],
-  exports: [AccountRepositoryProvider],
+  exports: [AccountRepositoryProvider, MetaRepositoryProvider],
 })
 export class AccountModule {}

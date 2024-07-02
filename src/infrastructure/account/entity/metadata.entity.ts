@@ -1,12 +1,14 @@
-import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn} from "typeorm";
+import {ClientEntity} from "./client.entity";
 
 @Entity({ name: 'CRDCLIENT_ONVI_METADATA', synchronize: false })
 export class MetadataEntity {
     @PrimaryGeneratedColumn({ name: 'ONVI_META_ID', type: 'number' })
     metaId: number;
 
-    @Column({ name: 'CLIENT_ID', type: 'number' })
-    clientId: number;
+    @OneToOne(() => ClientEntity, (client: ClientEntity) => client.meta)
+    @JoinColumn({name: 'CLIENT_ID'})
+    client: ClientEntity;
 
     @Column({ name: 'DEVICE_ID', type: 'nvarchar2' })
     deviceId: string;
@@ -28,4 +30,10 @@ export class MetadataEntity {
 
     @Column({ name: 'APP_TOKEN', type: 'nvarchar2' })
     appToken: string;
+
+    @Column({ name: 'MAC', type: 'nvarchar2' })
+    mac: string;
+
+    @Column({ name: 'IS_EMULATOR', type: 'number' })
+    isEmulator: number;
 }

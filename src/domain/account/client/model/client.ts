@@ -2,11 +2,12 @@ import { Card } from '../../card/model/card';
 import { GenderType } from '../enum/gender.enum';
 import { ClientType } from '../enum/clinet-type.enum';
 import { ICreateClientDto } from '../dto/create-client.dto';
-import { ActivationStatusType } from '../enum/activation-status.enum';
 import { ClientEntity } from '../../../../infrastructure/account/entity/client.entity';
 import { CardEntity } from '../../../../infrastructure/account/entity/card.entity';
 import { ShortClientDto } from '../dto/short-client.dto';
 import {AvatarType} from "../enum/avatar.enum";
+import {OnviMeta} from "./onviMeta";
+import {MetadataEntity} from "../../../../infrastructure/account/entity/metadata.entity";
 
 export class Client {
   clientId?: number;
@@ -25,6 +26,9 @@ export class Client {
   genderId?: GenderType;
   refreshToken?: string;
   cards?: Card[];
+  meta?: OnviMeta;
+  authToken?: string;
+  isNotifications: number;
 
   private constructor(
     name: string,
@@ -35,24 +39,29 @@ export class Client {
     isActivated: number,
     userOnvi: number,
     avatarOnvi: AvatarType,
+    isNotifications: number,
     {
       clientId,
       email,
       birthday,
       cards,
+      meta,
       insDate,
       updDate,
       activationDate,
       genderId,
+      authToken,
     }: {
       clientId?: number;
       email?: string;
       birthday?: Date;
       cards?: Card[];
+      meta?: OnviMeta;
       insDate?: Date;
       updDate?: Date;
       activationDate?: Date;
       genderId?: GenderType;
+      authToken?: string;
     },
   ) {
     this.name = name;
@@ -63,6 +72,7 @@ export class Client {
     this.email = email;
     this.birthday = birthday;
     this.cards = cards;
+    this.meta = meta;
     this.insDate = insDate;
     this.updDate = updDate;
     this.isActivated = isActivated;
@@ -71,13 +81,15 @@ export class Client {
     this.activatedDate = activationDate;
     this.genderId = genderId;
     this.clientId = clientId;
+    this.authToken = authToken;
+    this.isNotifications = isNotifications;
   }
 
   public static create(data: ICreateClientDto): Client {
     const { rawPhone, clientType, refreshToken, cards } = data;
     const phone: string = this.formatPhone(rawPhone);
     const name: string = this.generateDefaultName(phone);
-    return new Client(name, rawPhone, phone, clientType, refreshToken, 1, 1, AvatarType.ONE,{
+    return new Client(name, rawPhone, phone, clientType, refreshToken, 1, 1, AvatarType.ONE,1,{
       cards,
     });
   }
@@ -124,12 +136,25 @@ export class Client {
       birthday: this.birthday,
       refreshToken: this.refreshToken,
       avatar: this.avatarOnvi,
+      authToken: this.authToken,
+      isNotification: this.isNotifications,
       cards: {
         number: mainCard.nomer,
         unqNumber: mainCard.devNomer,
         balance: mainCard.balance,
         isLocked: mainCard.isLocked,
         dateBegin: mainCard.dateBegin,
+      },
+      meta: {
+        deviceId: this.meta.deviceId,
+        model: this.meta.model,
+        name: this.meta.name,
+        platform: this.meta.platform,
+        platformVersion: this.meta.platformVersion,
+        manufacturer: this.meta.manufacturer,
+        appToken: this.meta.appToken,
+        isEmulator: this.meta.isEmulator,
+        mac: this.meta.mac,
       },
     };
   }
@@ -143,6 +168,7 @@ export class Client {
 
   public static fromEntity(entity: ClientEntity): Client {
     let cardModels;
+    let metaModels;
     const {
       clientId,
       name,
@@ -160,12 +186,18 @@ export class Client {
       genderId,
       refreshToken,
       cards,
+      meta,
+      authToken,
+      isNotifications,
     } = entity;
 
     if (cards) {
       cardModels = cards.map((cardEntity: CardEntity) =>
         Card.fromEntity(cardEntity),
       );
+    }
+    if (meta) {
+      metaModels = OnviMeta.fromEntity(meta);
     }
     const client = new Client(
       name,
@@ -176,6 +208,7 @@ export class Client {
       isActivated,
       userOnvi,
       avatarOnvi,
+      isNotifications,
       {
         clientId,
         email,
@@ -185,6 +218,8 @@ export class Client {
         activationDate: activatedDate,
         genderId,
         cards: cardModels,
+        meta: metaModels,
+        authToken,
       },
     );
     return client;

@@ -22,8 +22,9 @@ export class ClientRepository implements IClientRepository {
     const client = await this.clientRepository
       .createQueryBuilder('client')
       .leftJoin('client.cards', 'cards')
+      .leftJoinAndSelect('client.meta', 'meta')
       .where('client.correctPhone = :phone', { phone: phone })
-      .select(['client', 'cards'])
+      .select(['client', 'cards', 'meta'])
       .andWhere('client.userOnvi = :userOnvi', { userOnvi: 1 })
       .orderBy('INS_DATE', 'DESC')
       .limit(1)
@@ -77,6 +78,8 @@ export class ClientRepository implements IClientRepository {
     clientEntity.activatedDate = client.activatedDate;
     clientEntity.userOnvi = client.userOnvi;
     clientEntity.avatarOnvi = client.avatarOnvi;
+    clientEntity.authToken = client.authToken;
+    clientEntity.isNotifications = client.isNotifications;
 
     return clientEntity;
   }

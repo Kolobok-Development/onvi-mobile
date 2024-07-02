@@ -21,6 +21,7 @@ import {CreateMetaDto} from "../../application/usecases/account/dto/create-meta.
 import {MetaExistsExceptions} from "../../domain/account/exceptions/meta-exists.exception";
 import {UpdateMetaDto} from "../../application/usecases/account/dto/update-meta.dto";
 import {MetaNotFoundExceptions} from "../../domain/account/exceptions/meta-not-found.exception";
+import {UpdateAuthTokenDto} from "./dto/update-auth-token.dto";
 
 @Controller('account')
 export class AccountController {
@@ -137,13 +138,15 @@ export class AccountController {
     }
   }
 
-  @Post('/meta/create')
-  @HttpCode(201)
-  async createMeta(@Body() body: CreateMetaDto): Promise<any> {
+  @Patch('/token')
+  @UseGuards(JwtGuard)
+  async updateAuthToken(@Body() body: UpdateAuthTokenDto, @Req() req: any){
+    const { user } = req;
     try {
-      return await this.accountUsecase.createMeta(body);
-    }  catch (e) {
-      if (e instanceof MetaExistsExceptions) {
+      return await this.accountUsecase.updateAuthToken(body, user);
+    } catch (e: any) {
+
+      if (e instanceof AccountNotFoundExceptions) {
         throw new CustomHttpException({
           type: e.type,
           innerCode: e.innerCode,
@@ -159,11 +162,13 @@ export class AccountController {
     }
   }
 
-  @Post('/meta/update')
+  @Patch('/meta')
+  @UseGuards(JwtGuard)
   @HttpCode(201)
-  async updateMeta(@Body() body: UpdateMetaDto): Promise<any> {
+  async updateMeta(@Body() body: UpdateMetaDto, @Req() req: any): Promise<any> {
     try {
-      await this.accountUsecase.updateMeta(body);
+      const { user } = req;
+      await this.accountUsecase.updateMeta(body, user);
       return {status: "SUCCESS"}
     }  catch (e) {
       if (e instanceof MetaNotFoundExceptions) {

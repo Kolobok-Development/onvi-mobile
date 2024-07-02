@@ -5,27 +5,33 @@ export class CreateMetaDto{
     @IsOptional()
     metaId?: number;
     @IsNumber()
-    @IsNotEmpty({ message: 'clientId is required' })
-    clientId: number;
+    @IsOptional()
+    clientId?: number;
     @IsString()
-    @IsNotEmpty({ message: 'deviceId is required' })
-    deviceId: string;
+    @IsOptional()
+    deviceId?: string;
     @IsString()
-    @IsNotEmpty({ message: 'model is required' })
-    model: string;
+    @IsOptional()
+    model?: string;
     @IsString()
-    @IsNotEmpty({ message: 'name is required' })
-    name: string;
+    @IsOptional()
+    name?: string;
     @IsString()
-    @IsNotEmpty({ message: 'platform is required' })
-    platform: string;
+    @IsOptional()
+    platform?: string;
     @IsString()
-    @IsNotEmpty({ message: 'platformVersion is required' })
-    platformVersion: string;
+    @IsOptional()
+    platformVersion?: string;
     @IsString()
-    @IsNotEmpty({ message: 'manufacturer is required' })
-    manufacturer: string;
+    @IsOptional()
+    manufacturer?: string;
     @IsString()
-    @IsNotEmpty({ message: 'appToken is required' })
-    appToken: string;
+    @IsOptional()
+    appToken?: string;
+    @IsNumber()
+    @IsOptional()
+    isEmulator?: number;
+    @IsString()
+    @IsOptional()
+    mac?: string;
 }

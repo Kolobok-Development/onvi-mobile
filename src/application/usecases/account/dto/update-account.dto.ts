@@ -11,4 +11,7 @@ export class UpdateAccountDto {
   @IsOptional()
   @IsNumber()
   avatar?: number;
+  @IsOptional()
+  @IsNumber()
+  isNotifications?: number;
 }

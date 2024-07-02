@@ -1,6 +1,6 @@
-export interface ICreateMetaDto {
-    metaId?: number;
-    clientId?: number;
+export class RegisterDto {
+    phone: string;
+    otp: string;
     deviceId?: string;
     model?: string;
     name?: string;
