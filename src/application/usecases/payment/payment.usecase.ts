@@ -51,5 +51,7 @@ export class PaymentUsecase {
       apiKey: this.env.getPaymentGatewayApiKey(),
       storeId: this.env.getPaymentGatewayStoreId(),
     };
+
+    return credentials;
   }
 }
