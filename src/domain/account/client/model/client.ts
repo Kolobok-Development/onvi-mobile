@@ -6,7 +6,7 @@ import { ActivationStatusType } from '../enum/activation-status.enum';
 import { ClientEntity } from '../../../../infrastructure/account/entity/client.entity';
 import { CardEntity } from '../../../../infrastructure/account/entity/card.entity';
 import { ShortClientDto } from '../dto/short-client.dto';
-import {AvatarType} from "../enum/avatar.enum";
+import { AvatarType } from '../enum/avatar.enum';
 
 export class Client {
   clientId?: number;
@@ -77,9 +77,19 @@ export class Client {
     const { rawPhone, clientType, refreshToken, cards } = data;
     const phone: string = this.formatPhone(rawPhone);
     const name: string = this.generateDefaultName(phone);
-    return new Client(name, rawPhone, phone, clientType, refreshToken, 1, 1, AvatarType.ONE,{
-      cards,
-    });
+    return new Client(
+      name,
+      rawPhone,
+      phone,
+      clientType,
+      refreshToken,
+      1,
+      1,
+      AvatarType.ONE,
+      {
+        cards,
+      },
+    );
   }
 
   public addCard(card: Card): void {

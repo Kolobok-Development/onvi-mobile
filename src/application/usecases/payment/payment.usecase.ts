@@ -7,10 +7,14 @@ import {
   Item,
   ReciptDto,
 } from '../../../infrastructure/payment/dto/recipt.dto';
+import { EnvConfigService } from '../../../infrastructure/config/env-config/env-config.service';
 
 @Injectable()
 export class PaymentUsecase {
-  constructor(private readonly paymentRepository: IPaymentRepository) {}
+  constructor(
+    private readonly paymentRepository: IPaymentRepository,
+    private readonly env: EnvConfigService,
+  ) {}
 
   public async create(data: CreatePaymentDto, clint: Client) {
     const amount: Amount = {
@@ -40,5 +44,12 @@ export class PaymentUsecase {
 
   public async verify(paymentId: string): Promise<any> {
     return await this.paymentRepository.verify(paymentId);
+  }
+
+  public async getGatewayCredentials(): Promise<any> {
+    const credentials = {
+      apiKey: this.env.getPaymentGatewayApiKey(),
+      storeId: this.env.getPaymentGatewayStoreId(),
+    };
   }
 }

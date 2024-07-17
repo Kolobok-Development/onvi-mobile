@@ -1,5 +1,5 @@
 export enum AvatarType {
-    ONE = 'both.jpg',
-    TWO = 'female.jpg',
-    THREE = 'male.jpg'
+  ONE = 'both.jpg',
+  TWO = 'female.jpg',
+  THREE = 'male.jpg',
 }
