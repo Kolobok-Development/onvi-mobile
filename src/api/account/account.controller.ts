@@ -34,8 +34,8 @@ export class AccountController {
   async getCurrentAccount(@Request() req: any): Promise<any> {
     try {
       const { user } = req;
-
-      return user.getAccountInfo();
+      const meta = await this.accountUsecase.getMetaByClientId(user.clientId);
+      return user.getAccountInfo(meta);
     } catch (e) {
       throw new CustomHttpException({
         message: e.message,
@@ -183,6 +183,21 @@ export class AccountController {
           code: HttpStatus.INTERNAL_SERVER_ERROR,
         });
       }
+    }
+  }
+
+  @Patch('notifications')
+  @UseGuards(JwtGuard)
+  @HttpCode(201)
+  async updateNotifications(@Body() body: {notification: boolean}, @Request() request: any): Promise<any> {
+    try {
+      const { user } = request;
+      return await this.accountUsecase.updateNotification(body.notification, user);
+    } catch (e) {
+      throw new CustomHttpException({
+        message: e.message,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
     }
   }
 

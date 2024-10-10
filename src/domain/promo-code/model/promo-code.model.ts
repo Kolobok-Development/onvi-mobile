@@ -13,6 +13,7 @@ export class PromoCode {
   updatedAt?: Date;
   createdBy: number;
   usageAmount: number;
+  image?: string;
   locations?: PromoCodeLocation[];
 
   private constructor(
@@ -27,11 +28,13 @@ export class PromoCode {
       id,
       discount,
       updatedAt,
+      image,
       locations,
     }: {
       id?: number;
       discount?: number;
       updatedAt?: Date;
+      image?: string;
       locations?: PromoCodeLocation[];
     },
   ) {
@@ -44,6 +47,7 @@ export class PromoCode {
     this.id = id;
     this.discount = discount;
     this.updatedAt = updatedAt;
+    this.image = image;
     this.locations = locations;
     this.usageAmount = usageAmount;
   }
@@ -74,6 +78,7 @@ export class PromoCode {
         discount: entity.discount,
         updatedAt: entity.updatedAt,
         locations,
+        image: entity.image,
       },
     );
 

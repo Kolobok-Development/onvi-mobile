@@ -7,6 +7,7 @@ import { ClientEntity } from '../../../../infrastructure/account/entity/client.e
 import { CardEntity } from '../../../../infrastructure/account/entity/card.entity';
 import { ShortClientDto } from '../dto/short-client.dto';
 import { AvatarType } from '../enum/avatar.enum';
+import {OnviMeta} from "./onviMeta";
 
 export class Client {
   clientId?: number;
@@ -20,6 +21,7 @@ export class Client {
   clientTypeId: ClientType;
   isActivated: number;
   userOnvi: number;
+  isNotifications: number;
   avatarOnvi: AvatarType;
   activatedDate?: Date;
   genderId?: GenderType;
@@ -34,6 +36,7 @@ export class Client {
     refreshToken: string,
     isActivated: number,
     userOnvi: number,
+    isNotifications: number,
     avatarOnvi: AvatarType,
     {
       clientId,
@@ -67,6 +70,7 @@ export class Client {
     this.updDate = updDate;
     this.isActivated = isActivated;
     this.userOnvi = userOnvi;
+    this.isNotifications = isNotifications;
     this.avatarOnvi = avatarOnvi;
     this.activatedDate = activationDate;
     this.genderId = genderId;
@@ -83,6 +87,7 @@ export class Client {
       phone,
       clientType,
       refreshToken,
+      1,
       1,
       1,
       AvatarType.ONE,
@@ -118,7 +123,7 @@ export class Client {
     }
   }
 
-  public getAccountInfo(): ShortClientDto {
+  public getAccountInfo(meta?: OnviMeta): ShortClientDto {
     let mainCard: Card;
     if (this.cards.length > 0) {
       mainCard = this.cards.reduce((prev: Card, curr: Card) => {
@@ -136,6 +141,7 @@ export class Client {
       birthday: this.birthday,
       refreshToken: this.refreshToken,
       avatar: this.avatarOnvi,
+      isNotifications: this.isNotifications,
       cards: {
         number: mainCard.nomer,
         unqNumber: mainCard.devNomer,
@@ -143,6 +149,7 @@ export class Client {
         isLocked: mainCard.isLocked,
         dateBegin: mainCard.dateBegin,
       },
+      meta: meta ? meta : null,
     };
   }
 
@@ -167,6 +174,7 @@ export class Client {
       clientTypeId,
       isActivated,
       userOnvi,
+      isNotifications,
       avatarOnvi,
       activatedDate,
       genderId,
@@ -187,6 +195,7 @@ export class Client {
       refreshToken,
       isActivated,
       userOnvi,
+      isNotifications,
       avatarOnvi,
       {
         clientId,

@@ -31,10 +31,11 @@ import { RefreshRequestDto } from './dto/refresh-request.dto';
 import { RefreshResponseDto } from './dto/response/refresh-response.dto';
 import { use } from 'passport';
 import { CustomHttpException } from '../../infrastructure/common/exceptions/custom-http.exception';
+import {AccountUsecase} from "../../application/usecases/account/account.usecase";
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authUsecase: AuthUsecase) {}
+  constructor(private readonly authUsecase: AuthUsecase, private readonly accountUsecase: AccountUsecase) {}
 
   @UseGuards(LocalGuard)
   @HttpCode(200)
@@ -56,7 +57,8 @@ export class AuthController {
         refreshToken.token,
       );
 
-      const shortUser = user.getAccountInfo();
+      const meta = await this.accountUsecase.getMetaByClientId(user.clientId);
+      const shortUser = user.getAccountInfo(meta);
       delete shortUser['refreshToken'];
 
       return new LoginResponseDto({
@@ -84,7 +86,8 @@ export class AuthController {
       const { registeredAccount, accessToken, refreshToken } =
         await this.authUsecase.register(auth.phone, auth.otp);
 
-      const shortUser = registeredAccount.getAccountInfo();
+      const meta = await this.accountUsecase.getMetaByClientId(registeredAccount.clientId)
+      const shortUser = registeredAccount.getAccountInfo(meta);
       delete shortUser['refreshToken'];
       return new RegisterResponseDto({
         client: shortUser,
@@ -150,7 +153,7 @@ export class AuthController {
   @HttpCode(200)
   @UseGuards(RefreshGuard)
   @Post('refresh')
-  async refresh(@Body() RefreshRequestDto: any, @Req() request: any) {
+  async refresh(@Body() body: any, @Req() request: any) {
     const { user } = request;
     const accessToken = await this.authUsecase.signAccessToken(
       user.correctPhone,

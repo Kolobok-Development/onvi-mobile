@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { PromoCodeLocationEntity } from './promo-code-location.entity';
 import { PromoCodeUsageEntity } from './promo-code-usage.entity';
+import {PromoCodeToUserEntity} from "./promo-code-to-user.entity";
 
 @Entity({ name: 'MOBILE_PROMO_CODE', synchronize: false })
 export class PromoCodeEntity {
@@ -34,9 +35,15 @@ export class PromoCodeEntity {
   @Column({ name: 'USAGE_AMOUNT', type: 'number' })
   usageAmount: number;
 
+  @Column({ name: 'IMAGE', type: 'varchar2', length: 255 })
+  image: string;
+
   @OneToMany(() => PromoCodeLocationEntity, (location) => location.promoCode)
   locations: PromoCodeLocationEntity[];
 
   @OneToMany(() => PromoCodeUsageEntity, (usage) => usage.promoCode)
   usages: PromoCodeUsageEntity[];
+
+  @OneToMany(()=> PromoCodeToUserEntity, (user) => user.promoCode)
+  user: PromoCodeToUserEntity[];
 }

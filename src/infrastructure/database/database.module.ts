@@ -14,6 +14,7 @@ import { PromotionEntity } from '../promotion/entity/promotion.entity';
 import { PromotionUsageEntity } from '../promotion/entity/promotion-usage.entity';
 import { PromotionHistEntity } from '../promotion/entity/promotion-hist.entity';
 import {MetadataEntity} from "../account/entity/metadata.entity";
+import {PromoCodeToUserEntity} from "../promo-code/entity/promo-code-to-user.entity";
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import {MetadataEntity} from "../account/entity/metadata.entity";
           PromotionUsageEntity,
           TariffEntity,
           MetadataEntity,
+          PromoCodeToUserEntity,
         ],
       }),
       inject: [ConfigService],

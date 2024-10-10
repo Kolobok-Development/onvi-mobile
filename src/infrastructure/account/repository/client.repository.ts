@@ -77,6 +77,7 @@ export class ClientRepository implements IClientRepository {
     clientEntity.activatedDate = client.activatedDate;
     clientEntity.userOnvi = client.userOnvi;
     clientEntity.avatarOnvi = client.avatarOnvi;
+    clientEntity.isNotifications = client.isNotifications;
 
     return clientEntity;
   }

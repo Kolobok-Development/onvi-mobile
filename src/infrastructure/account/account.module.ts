@@ -14,6 +14,7 @@ import { PromotionHistEntity } from '../promotion/entity/promotion-hist.entity';
 import {MetadataEntity} from "./entity/metadata.entity";
 import {MetaRepository} from "./repository/meta.repository";
 import {MetaRepositoryProvider} from "./provider/meta-repository.provider";
+import {PromoCodeToUserEntity} from "../promo-code/entity/promo-code-to-user.entity";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import {MetaRepositoryProvider} from "./provider/meta-repository.provider";
       ClientEntity,
       CardHistEntity,
       PromotionHistEntity,
+      PromoCodeToUserEntity,
       TariffEntity,
       MetadataEntity,
     ]),
@@ -35,6 +37,6 @@ import {MetaRepositoryProvider} from "./provider/meta-repository.provider";
     CardRepository,
     AccountUsecase,
   ],
-  exports: [AccountRepositoryProvider],
+  exports: [AccountRepositoryProvider, AccountUsecase],
 })
 export class AccountModule {}
