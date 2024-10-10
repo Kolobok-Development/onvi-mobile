@@ -7,4 +7,5 @@ export interface ICreateCardDto {
   devNomer: string;
   cardTypeId: CardType;
   beginDate: Date;
+  isDel: number;
 }

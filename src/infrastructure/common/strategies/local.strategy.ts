@@ -29,7 +29,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       const client: Client =
         await this.authService.validateUserForLocalStrategy(phone, otp);
 
-      console.log(client);
       if (!client) {
         return done(null, { register: true });
       }

@@ -100,10 +100,7 @@ export class Client {
   public getCard(): Card {
     let mainCard: Card;
     if (this.cards.length > 0) {
-      const activeCards: Card[] = this.cards.filter(
-        (card) => card.isDel === null || card.isDel === 0,
-      );
-      mainCard = activeCards.reduce((prev: Card, curr: Card) => {
+      mainCard = this.cards.reduce((prev: Card, curr: Card) => {
         return (prev.balance ?? 0) > (curr.balance ?? 0) ? prev : curr;
       });
     } else {
@@ -113,13 +110,18 @@ export class Client {
     return mainCard;
   }
 
+  public isClientActive(): boolean {
+    if (this.isActivated == 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   public getAccountInfo(): ShortClientDto {
     let mainCard: Card;
     if (this.cards.length > 0) {
-      const activeCards: Card[] = this.cards.filter(
-        (card) => card.isDel === null || card.isDel === 0,
-      );
-      mainCard = activeCards.reduce((prev: Card, curr: Card) => {
+      mainCard = this.cards.reduce((prev: Card, curr: Card) => {
         return (prev.balance ?? 0) > (curr.balance ?? 0) ? prev : curr;
       });
     } else {

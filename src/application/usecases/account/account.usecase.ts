@@ -1,19 +1,20 @@
-import {Injectable} from '@nestjs/common';
-import {IAccountRepository} from '../../../domain/account/interface/account-repository.interface';
-import {IDate} from '../../../infrastructure/common/interfaces/date.interface';
-import {CardHist} from '../../../domain/account/card/model/cardHist';
-import {Client} from '../../../domain/account/client/model/client';
-import {AccountNotFoundExceptions} from '../../../domain/account/exceptions/account-not-found.exceptions';
-import {TariffResponseDto} from './dto/tariff-response.dto';
-import {UpdateAccountDto} from './dto/update-account.dto';
-import {PromotionHist} from '../../../domain/promotion/model/promotionHist';
-import {UpdateMetaDto} from "./dto/update-meta.dto";
-import {IMetaRepositoryAbstract} from "../../../domain/account/client/meta-repository.abstract";
-import {MetaNotFoundExceptions} from "../../../domain/account/exceptions/meta-not-found.exception";
-import {CreateMetaDto} from "./dto/create-meta.dto";
-import {MetaExistsExceptions} from "../../../domain/account/exceptions/meta-exists.exception";
-import {OnviMeta} from "../../../domain/account/client/model/onviMeta";
-import {AvatarType} from "../../../domain/account/client/enum/avatar.enum";
+import { Injectable } from '@nestjs/common';
+import { IAccountRepository } from '../../../domain/account/interface/account-repository.interface';
+import { IDate } from '../../../infrastructure/common/interfaces/date.interface';
+import { CardHist } from '../../../domain/account/card/model/cardHist';
+import { Client } from '../../../domain/account/client/model/client';
+import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
+import { TariffResponseDto } from './dto/tariff-response.dto';
+import { UpdateAccountDto } from './dto/update-account.dto';
+import { PromotionHist } from '../../../domain/promotion/model/promotionHist';
+import { UpdateMetaDto } from './dto/update-meta.dto';
+import { IMetaRepositoryAbstract } from '../../../domain/account/client/meta-repository.abstract';
+import { MetaNotFoundExceptions } from '../../../domain/account/exceptions/meta-not-found.exception';
+import { CreateMetaDto } from './dto/create-meta.dto';
+import { MetaExistsExceptions } from '../../../domain/account/exceptions/meta-exists.exception';
+import { OnviMeta } from '../../../domain/account/client/model/onviMeta';
+import { AvatarType } from '../../../domain/account/client/enum/avatar.enum';
+import { Card } from '../../../domain/account/card/model/card';
 
 @Injectable()
 export class AccountUsecase {
@@ -52,11 +53,11 @@ export class AccountUsecase {
 
     let chAvatar = client.avatarOnvi;
     if (avatar === 1) {
-      chAvatar = AvatarType.ONE
+      chAvatar = AvatarType.ONE;
     } else if (avatar === 2) {
-      chAvatar = AvatarType.TWO
+      chAvatar = AvatarType.TWO;
     } else if (avatar === 3) {
-      chAvatar = AvatarType.THREE
+      chAvatar = AvatarType.THREE;
     }
     client.name = name ? name : client.name;
     client.email = email ? email : client.email;
@@ -75,8 +76,10 @@ export class AccountUsecase {
     return await this.accountRepository.getPromotionHistory(card);
   }
 
-  async createMeta(body: CreateMetaDto){
-    const checkMeta = await this.metadataRepository.findOneByClientId(body.clientId);
+  async createMeta(body: CreateMetaDto) {
+    const checkMeta = await this.metadataRepository.findOneByClientId(
+      body.clientId,
+    );
     if (checkMeta) {
       throw new MetaExistsExceptions(body.clientId);
     }
@@ -91,11 +94,11 @@ export class AccountUsecase {
       platformVersion: body.platformVersion,
       manufacturer: body.manufacturer,
       appToken: body.appToken,
-    })
+    });
 
     return await this.metadataRepository.create(meta);
   }
-  async getMetaById(metaId: number){
+  async getMetaById(metaId: number) {
     const meta = await this.metadataRepository.findOneById(metaId);
     if (!meta) {
       throw new MetaNotFoundExceptions(meta.metaId);
@@ -103,7 +106,7 @@ export class AccountUsecase {
     return meta;
   }
 
-  async updateMeta(body: UpdateMetaDto){
+  async updateMeta(body: UpdateMetaDto) {
     const meta = await this.metadataRepository.findOneById(body.metaId);
     if (!meta) {
       throw new MetaNotFoundExceptions(body.metaId);
@@ -124,10 +127,23 @@ export class AccountUsecase {
     meta.model = model ? model : meta.model;
     meta.name = name ? name : meta.name;
     meta.platform = platform ? platform : meta.platform;
-    meta.platformVersion = platformVersion ? platformVersion : meta.platformVersion;
+    meta.platformVersion = platformVersion
+      ? platformVersion
+      : meta.platformVersion;
     meta.manufacturer = manufacturer ? manufacturer : meta.manufacturer;
     meta.appToken = appToken ? appToken : meta.appToken;
 
     return await this.metadataRepository.update(meta);
+  }
+
+  async deleteAccount(client: Client): Promise<any> {
+    client.isActivated = 0;
+    const isDeleted = await this.accountRepository.delete(client);
+
+    if (!isDeleted) {
+      throw new AccountNotFoundExceptions(client.correctPhone);
+    }
+
+    return { message: 'Success' };
   }
 }

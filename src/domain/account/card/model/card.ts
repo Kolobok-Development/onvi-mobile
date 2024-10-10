@@ -78,6 +78,14 @@ export class Card {
     );
   }
 
+  public isCardActive(): boolean {
+    if (this.isDel === null || this.isDel === 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   public static fromEntity(entity: CardEntity): Card {
     const {
       cardId,

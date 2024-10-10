@@ -24,8 +24,15 @@ export class CardRepository implements ICardRepository {
     return Card.fromEntity(newCard);
   }
 
-  async delete(cardId: number): Promise<void> {
-    return Promise.resolve(undefined);
+  async delete(cardId: number): Promise<any> {
+    const isDeleted = await this.cardRepository.update(
+      { cardId: cardId },
+      { isDel: 1 },
+    );
+
+    if (!isDeleted) return null;
+
+    return isDeleted;
   }
 
   async findByClientId(clientId: number): Promise<Card[]> {
@@ -65,6 +72,14 @@ export class CardRepository implements ICardRepository {
     if (!card) return null;
     card.cardTypeId = newCardTypeId;
     await this.cardRepository.save(card);
+    return card;
+  }
+
+  async reActivate(cardId: number): Promise<any> {
+    const card = await this.cardRepository.update({ cardId }, { isDel: 0 });
+
+    if (!card) return null;
+
     return card;
   }
 

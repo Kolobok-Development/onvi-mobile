@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
-  Patch, Post,
+  Patch,
+  Post,
   Query,
   Req,
   Request,
@@ -17,10 +19,10 @@ import { CustomHttpException } from '../../infrastructure/common/exceptions/cust
 import { HistOptionsDto } from './dto/hist-options.dto';
 import { AccountNotFoundExceptions } from '../../domain/account/exceptions/account-not-found.exceptions';
 import { UpdateAccountDto } from '../../application/usecases/account/dto/update-account.dto';
-import {CreateMetaDto} from "../../application/usecases/account/dto/create-meta.dto";
-import {MetaExistsExceptions} from "../../domain/account/exceptions/meta-exists.exception";
-import {UpdateMetaDto} from "../../application/usecases/account/dto/update-meta.dto";
-import {MetaNotFoundExceptions} from "../../domain/account/exceptions/meta-not-found.exception";
+import { CreateMetaDto } from '../../application/usecases/account/dto/create-meta.dto';
+import { MetaExistsExceptions } from '../../domain/account/exceptions/meta-exists.exception';
+import { UpdateMetaDto } from '../../application/usecases/account/dto/update-meta.dto';
+import { MetaNotFoundExceptions } from '../../domain/account/exceptions/meta-not-found.exception';
 
 @Controller('account')
 export class AccountController {
@@ -138,11 +140,12 @@ export class AccountController {
   }
 
   @Post('/meta/create')
+  @UseGuards(JwtGuard)
   @HttpCode(201)
   async createMeta(@Body() body: CreateMetaDto): Promise<any> {
     try {
       return await this.accountUsecase.createMeta(body);
-    }  catch (e) {
+    } catch (e) {
       if (e instanceof MetaExistsExceptions) {
         throw new CustomHttpException({
           type: e.type,
@@ -160,12 +163,13 @@ export class AccountController {
   }
 
   @Post('/meta/update')
+  @UseGuards(JwtGuard)
   @HttpCode(201)
   async updateMeta(@Body() body: UpdateMetaDto): Promise<any> {
     try {
       await this.accountUsecase.updateMeta(body);
-      return {status: "SUCCESS"}
-    }  catch (e) {
+      return { status: 'SUCCESS' };
+    } catch (e) {
       if (e instanceof MetaNotFoundExceptions) {
         throw new CustomHttpException({
           type: e.type,
@@ -179,6 +183,21 @@ export class AccountController {
           code: HttpStatus.INTERNAL_SERVER_ERROR,
         });
       }
+    }
+  }
+
+  @Delete()
+  @UseGuards(JwtGuard)
+  async deleteAccount(@Request() request: any): Promise<any> {
+    const { user } = request;
+    try {
+      await this.accountUsecase.deleteAccount(user);
+      return { status: 'SUCCESS' };
+    } catch (e) {
+      throw new CustomHttpException({
+        message: e.message,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
     }
   }
 }

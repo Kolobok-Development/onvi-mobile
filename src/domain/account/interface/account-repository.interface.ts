@@ -23,4 +23,6 @@ export abstract class IAccountRepository {
   abstract setRefreshToken(phone: string, token: string): Promise<any>;
   abstract findCardTariff(card: Card): Promise<Tariff>;
   abstract getPromotionHistory(card: Card): Promise<PromotionHist[]>;
+  abstract delete(client: Client): Promise<any>;
+  abstract reactiveBalance(clent: Client): Promise<any>;
 }

@@ -25,6 +25,9 @@ import * as otpGenerator from 'otp-generator';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { CardRepository } from '../../../infrastructure/account/repository/card.repository';
+import { Client } from '../../../domain/account/client/model/client';
+import { Card } from '../../../domain/account/card/model/card';
+import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
 
 @Injectable()
 export class AuthUsecase {
@@ -53,6 +56,7 @@ export class AuthUsecase {
   public async register(phone: string, otp: string): Promise<any> {
     // Validate OTP
     const currentOtp = await this.otpRepository.findOne(phone);
+    let registeredAccount: Client | null = null;
 
     if (
       !currentOtp ||
@@ -63,9 +67,11 @@ export class AuthUsecase {
     }
 
     //Check if user already exists
-    const account = await this.accountRepository.findOneByPhoneNumber(phone);
+    const account: Client = await this.accountRepository.findOneByPhoneNumber(
+      phone,
+    );
 
-    if (account) {
+    if (account && account.isActivated != 0 && account.getCard().isDel != 1) {
       throw new AccountExistsException(phone);
     }
 
@@ -73,8 +79,26 @@ export class AuthUsecase {
     const accessToken = await this.signAccessToken(phone);
     const refreshToken = await this.signRefreshToken(phone);
 
-    // Create new client model
+    //If client was deleted
+    if (!account.isClientActive() && !account.getCard().isCardActive()) {
+      account.isActivated = 1;
+      account.getCard().isDel = 0;
+      account.refreshToken = refreshToken.token;
 
+      const isUpdated = await this.accountRepository.update(account);
+      const isReactivated = await this.accountRepository.reactiveBalance(
+        account,
+      );
+
+      if (!isUpdated && !isReactivated)
+        throw new AccountNotFoundExceptions(account.phone);
+
+      registeredAccount = account;
+
+      return { registeredAccount, accessToken, refreshToken };
+    }
+
+    // Create new client model
     const clientData: ICreateClientDto = {
       rawPhone: phone,
       clientType: ClientType.INDIVIDUAL,
@@ -84,14 +108,14 @@ export class AuthUsecase {
     const uniqNomer = await this.generateNomerCard();
 
     //Create card in the database
-    const newAccount = await this.accountRepository.create(
+    registeredAccount = await this.accountRepository.create(
       clientData,
       uniqNomer,
     );
 
     //await this.setCurrentRefreshToken(phone, refreshToken.token);
 
-    return { newAccount, accessToken, refreshToken };
+    return { registeredAccount, accessToken, refreshToken };
   }
 
   public async validateUserForLocalStrategy(
@@ -102,18 +126,26 @@ export class AuthUsecase {
     if (
       !currentOtp ||
       this.dateService.isExpired(currentOtp.expireDate, OTP_EXPIRY_TIME) ||
-      currentOtp.otp != otp
+      currentOtp.otp !== otp
     ) {
       throw new InvalidOtpException(phone);
     }
 
-    const account = await this.accountRepository.findOneByPhoneNumber(phone);
+    const account: Client = await this.accountRepository.findOneByPhoneNumber(
+      phone,
+    );
 
     if (!account) {
       return null;
     }
 
-    return account;
+    const card: Card = account.getCard();
+
+    if (!account.isClientActive() && !card.isCardActive()) {
+      return null;
+    }
+
+    if (account) return account;
   }
 
   public async validateUserForJwtStrategy(phone: string): Promise<any> {

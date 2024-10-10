@@ -39,6 +39,7 @@ export class AccountRepository implements IAccountRepository {
       devNomer: uniqNomer,
       cardTypeId: CardType.ONVI,
       beginDate: new Date(Date.now()),
+      isDel: 1,
     };
 
     const card: Card = Card.create(cardData);
@@ -51,6 +52,10 @@ export class AccountRepository implements IAccountRepository {
   }
   async update(client: Client): Promise<Client> {
     return await this.clientRepository.update(client);
+  }
+
+  async reactiveBalance(client: Client): Promise<any> {
+    return await this.cardRepository.reActivate(client.getCard().cardId);
   }
   getBalance(cardNumber: string): Promise<Card> {
     return null;
@@ -127,5 +132,19 @@ export class AccountRepository implements IAccountRepository {
     return hisotry.map((transaction, i) =>
       PromotionHist.fromEntity(transaction),
     );
+  }
+
+  async delete(client: Client) {
+    const isDeletedClient = await this.clientRepository.update(client);
+
+    const isDeletedCard = await this.cardRepository.delete(
+      client.getCard().cardId,
+    );
+
+    if (!isDeletedCard && !isDeletedClient) {
+      return null;
+    }
+
+    return 'Success';
   }
 }

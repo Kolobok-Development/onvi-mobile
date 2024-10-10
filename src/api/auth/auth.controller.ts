@@ -81,10 +81,10 @@ export class AuthController {
   @HttpCode(201)
   async register(@Body() auth: RegisterRequestDto, @Request() req: any) {
     try {
-      const { newAccount, accessToken, refreshToken } =
+      const { registeredAccount, accessToken, refreshToken } =
         await this.authUsecase.register(auth.phone, auth.otp);
 
-      const shortUser = newAccount.getAccountInfo();
+      const shortUser = registeredAccount.getAccountInfo();
       delete shortUser['refreshToken'];
       return new RegisterResponseDto({
         client: shortUser,
