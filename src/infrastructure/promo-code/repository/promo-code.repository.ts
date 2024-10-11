@@ -6,7 +6,7 @@ import { PromoCodeLocation } from '../../../domain/promo-code/model/promo-code-l
 import { PromoCodeEntity } from '../entity/promocode.entity';
 import { PromoCodeLocationEntity } from '../entity/promo-code-location.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {MoreThanOrEqual, Repository} from 'typeorm';
 import { PromoCodeUsageEntity } from '../entity/promo-code-usage.entity';
 import { CardEntity } from '../../account/entity/card.entity';
 
@@ -92,6 +92,22 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     });
 
     return promoCodeUsage; // Возвращаем найденную запись или null, если записей нет
+  }
+
+  async findByUserAndActive(clientId: number): Promise<PromoCode[]> {
+    const currentDate = new Date();
+    const promoCodes = await this.promoCodeRepository.find({
+      relations: ['user'],
+      where: [
+        {
+          isActive: 1,
+          user: { client: { clientId } },
+          expiryDate: MoreThanOrEqual(currentDate)
+        }
+      ],
+    });
+
+    return promoCodes.map(promoCode => PromoCode.fromEntity(promoCode));
   }
 
   private static toPromoCodeEntity(promoCode: PromoCode): PromoCodeEntity {

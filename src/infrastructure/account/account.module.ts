@@ -15,6 +15,7 @@ import {MetadataEntity} from "./entity/metadata.entity";
 import {MetaRepository} from "./repository/meta.repository";
 import {MetaRepositoryProvider} from "./provider/meta-repository.provider";
 import {PromoCodeToUserEntity} from "../promo-code/entity/promo-code-to-user.entity";
+import {PromocodeModule} from "../promo-code/promocode.module";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import {PromoCodeToUserEntity} from "../promo-code/entity/promo-code-to-user.ent
       MetadataEntity,
     ]),
     DateModule,
+    PromocodeModule
   ],
   controllers: [AccountController],
   providers: [

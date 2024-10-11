@@ -12,5 +12,6 @@ export abstract class IPromoCodeRepository {
   abstract findOneByCode(code: string): Promise<PromoCode>;
   abstract validateUsageByCard(cardId: number, id: number): Promise<boolean>;
   abstract findOneById(id: number): Promise<PromoCode>;
+  abstract findByUserAndActive(clientId: number): Promise<PromoCode[]>;
   abstract findMaxUsageByCard(cardId: number, id: number): Promise<any>;
 }

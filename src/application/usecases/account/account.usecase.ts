@@ -14,6 +14,7 @@ import {CreateMetaDto} from './dto/create-meta.dto';
 import {MetaExistsExceptions} from '../../../domain/account/exceptions/meta-exists.exception';
 import {OnviMeta} from '../../../domain/account/client/model/onviMeta';
 import {AvatarType} from '../../../domain/account/client/enum/avatar.enum';
+import {IPromoCodeRepository} from "../../../domain/promo-code/promo-code-repository.abstract";
 
 @Injectable()
 export class AccountUsecase {
@@ -21,6 +22,7 @@ export class AccountUsecase {
     private readonly accountRepository: IAccountRepository,
     private readonly dateService: IDate,
     private readonly metadataRepository: IMetaRepositoryAbstract,
+    private readonly promoCodeRepository: IPromoCodeRepository,
   ) {}
 
   async getCardTransactionsHistory(
@@ -86,6 +88,10 @@ export class AccountUsecase {
   async getPromotionHistory(client: Client): Promise<PromotionHist[]> {
     const card = client.getCard();
     return await this.accountRepository.getPromotionHistory(card);
+  }
+
+  async getActivePromotionHistoryForClient(client: Client) {
+    return await this.promoCodeRepository.findByUserAndActive(client.clientId);
   }
 
   async createMeta(body: CreateMetaDto) {

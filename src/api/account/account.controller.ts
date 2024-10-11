@@ -114,6 +114,21 @@ export class AccountController {
     }
   }
 
+  @UseGuards(JwtGuard)
+  @Get('/activePromotion')
+  @HttpCode(200)
+  async getActivePromotion(@Req() request: any): Promise<any> {
+    try {
+      const { user } = request;
+      return await this.accountUsecase.getActivePromotionHistoryForClient(user);
+    } catch (e) {
+      throw new CustomHttpException({
+        message: e.message,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
   @Patch()
   @UseGuards(JwtGuard)
   async updateAccountInfo(@Body() body: UpdateAccountDto, @Req() req: any) {
