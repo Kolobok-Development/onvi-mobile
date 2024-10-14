@@ -3,4 +3,5 @@ export abstract class IJwtConfig {
   abstract getJwtExpirationTime(): string;
   abstract getJwtRefreshSecret(): string;
   abstract getJwtRefreshExpirationTime(): string;
+  abstract getPaymentGatewayClientApiKey(): string;
 }

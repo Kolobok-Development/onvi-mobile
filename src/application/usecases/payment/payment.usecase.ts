@@ -48,7 +48,7 @@ export class PaymentUsecase {
 
   public async getGatewayCredentials(): Promise<any> {
     const credentials = {
-      apiKey: this.env.getPaymentGatewayApiKey(),
+      apiKey: this.env.getPaymentGatewayClientApiKey(),
       storeId: this.env.getPaymentGatewayStoreId(),
     };
 
