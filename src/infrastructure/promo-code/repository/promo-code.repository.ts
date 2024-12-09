@@ -6,7 +6,7 @@ import { PromoCodeLocation } from '../../../domain/promo-code/model/promo-code-l
 import { PromoCodeEntity } from '../entity/promocode.entity';
 import { PromoCodeLocationEntity } from '../entity/promo-code-location.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import {MoreThanOrEqual, Repository} from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { PromoCodeUsageEntity } from '../entity/promo-code-usage.entity';
 import { CardEntity } from '../../account/entity/card.entity';
 
@@ -102,12 +102,12 @@ export class PromoCodeRepository implements IPromoCodeRepository {
         {
           isActive: 1,
           user: { client: { clientId } },
-          expiryDate: MoreThanOrEqual(currentDate)
-        }
+          expiryDate: MoreThanOrEqual(currentDate),
+        },
       ],
     });
 
-    return promoCodes.map(promoCode => PromoCode.fromEntity(promoCode));
+    return promoCodes.map((promoCode) => PromoCode.fromEntity(promoCode));
   }
 
   private static toPromoCodeEntity(promoCode: PromoCode): PromoCodeEntity {

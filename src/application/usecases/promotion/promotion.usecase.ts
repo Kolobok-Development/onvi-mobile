@@ -42,7 +42,6 @@ export class PromotionUsecase {
     }
 
     if (promotion.type === 1) {
-      console.log('point add');
       const extId = this.generateUniqueExt();
       const transactionId = await this.operationRepository.createTransaction(
         account,
@@ -52,7 +51,6 @@ export class PromotionUsecase {
       );
       console.log(transactionId);
     } else if (promotion.type === 2) {
-      console.log('cashback');
       await this.accauntRepository.changeTypeCard(
         card.cardId,
         promotion.cashbackType,
@@ -70,6 +68,15 @@ export class PromotionUsecase {
     );
 
     return promotion;
+  }
+
+  async getActivePromotions() {
+    const promotions = await this.promotionRepository.findActive();
+
+    if (!promotions)
+      throw new PromotionNotFoundException('No promotions found.');
+
+    return promotions;
   }
   generateUniqueExt() {
     const prefix = 'Promotion';

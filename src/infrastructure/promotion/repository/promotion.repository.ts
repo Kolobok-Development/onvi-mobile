@@ -4,7 +4,7 @@ import { Promotion } from '../../../domain/promotion/model/promotion.model';
 import { Card } from '../../../domain/account/card/model/card';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PromotionEntity } from '../entity/promotion.entity';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { PromotionUsageEntity } from '../entity/promotion-usage.entity';
 import { CardEntity } from '../../account/entity/card.entity';
 
@@ -32,6 +32,21 @@ export class PromotionRepository implements IPromotionRepository {
     promotionUsage.isActive = isActive;
 
     return await this.promotionUsageRepository.save(promotionUsage);
+  }
+
+  async findActive(): Promise<Promotion[]> {
+    const promotions = await this.promotionRepository.find({
+      where: {
+        isActive: 1, // Or true, depending on your database schema
+        expiryDate: LessThan(new Date()), // Use LessThan for comparisons
+      },
+    });
+
+    // Handle the case where no promotions are found
+    if (!promotions || promotions.length === 0) return [];
+
+    // Map the entities to your Promotion objects
+    return promotions.map((promotion) => Promotion.fromEntity(promotion));
   }
 
   async findOneByCode(code: string): Promise<Promotion> {

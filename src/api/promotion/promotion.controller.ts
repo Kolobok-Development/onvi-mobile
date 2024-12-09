@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -34,7 +35,6 @@ export class PromotionController {
         code: promotion.code,
       });
     } catch (e) {
-      console.log(e);
       if (e instanceof PromotionNotFoundException) {
         throw new CustomHttpException({
           type: e.type,
@@ -48,6 +48,29 @@ export class PromotionController {
           innerCode: e.innerCode,
           message: e.message,
           code: HttpStatus.UNPROCESSABLE_ENTITY,
+        });
+      } else {
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
+      }
+    }
+  }
+
+  @Get()
+  @UseGuards(JwtGuard)
+  @HttpCode(200)
+  async getActivePromotion(): Promise<any> {
+    try {
+      return await this.promotionUsecase.getActivePromotions();
+    } catch (e) {
+      if (e instanceof PromotionNotFoundException) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.NOT_FOUND,
         });
       } else {
         throw new CustomHttpException({
