@@ -14,10 +14,13 @@ import { OrderModule } from './infrastructure/order/order.module';
 import { PromocodeModule } from './infrastructure/promo-code/promocode.module';
 import { PaymentModule } from './infrastructure/payment/payment.module';
 import { PromotionModule } from './infrastructure/promotion/promotion.module';
+import {PartnerModule} from "./infrastructure/partner/partner.module";
+import {HttpModule} from "@nestjs/axios";
 
 @Module({
   imports: [
     PassportModule.register({}),
+    HttpModule,
     DatabaseModule,
     AccountModule,
     JwtModule,
@@ -30,6 +33,7 @@ import { PromotionModule } from './infrastructure/promotion/promotion.module';
     PromocodeModule,
     PaymentModule,
     PromotionModule,
+    PartnerModule,
   ],
   controllers: [],
   providers: [],

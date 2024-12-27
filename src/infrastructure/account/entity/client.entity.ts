@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CardEntity } from './card.entity';
 import {AvatarType} from "../../../domain/account/client/enum/avatar.enum";
 import {PromoCodeToUserEntity} from "../../promo-code/entity/promo-code-to-user.entity";
+import {PartnerClientEntity} from "../../partner/entity/partner-client.entity";
 
 @Entity({ name: 'CRDCLIENT', synchronize: false })
 export class ClientEntity {
@@ -94,4 +95,7 @@ export class ClientEntity {
 
   @OneToMany(()=> PromoCodeToUserEntity, (promoCode) => promoCode.client)
   promoCodes: PromoCodeToUserEntity[];
+
+  @OneToMany(()=> PartnerClientEntity, (partnerClient) => partnerClient.client)
+  partners: PartnerClientEntity[];
 }
