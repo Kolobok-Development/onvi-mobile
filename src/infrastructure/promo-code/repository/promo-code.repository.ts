@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import { PromoCodeUsageEntity } from '../entity/promo-code-usage.entity';
 import { CardEntity } from '../../account/entity/card.entity';
+import { PromoCodeToUserEntity } from '../entity/promo-code-to-user.entity';
 
 @Injectable()
 export class PromoCodeRepository implements IPromoCodeRepository {
@@ -19,6 +20,8 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     private readonly promoCodeUsageRepository: Repository<PromoCodeUsageEntity>,
     @InjectRepository(PromoCodeLocationEntity)
     private readonly promoCodeLocationRepository: Repository<PromoCodeLocationEntity>,
+    @InjectRepository(PromoCodeToUserEntity)
+    private readonly promoCodeToUserEntity: Repository<PromoCodeToUserEntity>,
   ) {}
   async apply(
     promoCode: PromoCode,
@@ -96,17 +99,17 @@ export class PromoCodeRepository implements IPromoCodeRepository {
 
   async findByUserAndActive(clientId: number): Promise<PromoCode[]> {
     const currentDate = new Date();
-    const promoCodes = await this.promoCodeRepository.find({
-      relations: ['user'],
-      where: [
-        {
-          isActive: 1,
-          user: { client: { clientId } },
-          expiryDate: MoreThanOrEqual(currentDate),
-        },
-      ],
-    });
 
+    // Fetch the promo codes that are active and associated with the user via PromoCodeToUserEntity
+    const promoCodes = await this.promoCodeRepository
+      .createQueryBuilder('promoCode')
+      .leftJoin('promoCode.user', 'user') // Join with PromoCodeToUserEntity
+      .where('promoCode.isActive = :isActive', { isActive: 1 }) // Filter active promo codes
+      .andWhere('user.client = :clientId', { clientId }) // Filter by clientId in PromoCodeToUser
+      .andWhere('promoCode.expiryDate >= :currentDate', { currentDate }) // Ensure expiryDate is valid
+      .getMany(); // Execute the query
+
+    // Return the mapped promo codes
     return promoCodes.map((promoCode) => PromoCode.fromEntity(promoCode));
   }
 

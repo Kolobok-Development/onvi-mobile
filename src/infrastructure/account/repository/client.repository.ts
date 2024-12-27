@@ -33,6 +33,7 @@ export class ClientRepository implements IClientRepository {
     return Client.fromEntity(client);
   }
 
+
   async setRefreshToken(phone: string, token: string): Promise<void> {
     const client: Client = await this.findOneByPhone(phone);
 

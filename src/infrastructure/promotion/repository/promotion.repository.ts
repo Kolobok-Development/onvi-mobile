@@ -4,7 +4,7 @@ import { Promotion } from '../../../domain/promotion/model/promotion.model';
 import { Card } from '../../../domain/account/card/model/card';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PromotionEntity } from '../entity/promotion.entity';
-import { LessThan, Repository } from 'typeorm';
+import { LessThan, MoreThan, Repository } from 'typeorm';
 import { PromotionUsageEntity } from '../entity/promotion-usage.entity';
 import { CardEntity } from '../../account/entity/card.entity';
 
@@ -35,10 +35,12 @@ export class PromotionRepository implements IPromotionRepository {
   }
 
   async findActive(): Promise<Promotion[]> {
+    const currentDate = new Date();
+
     const promotions = await this.promotionRepository.find({
       where: {
         isActive: 1, // Or true, depending on your database schema
-        expiryDate: LessThan(new Date()), // Use LessThan for comparisons
+        expiryDate: MoreThan(currentDate), // Use LessThan for comparisons
       },
     });
 

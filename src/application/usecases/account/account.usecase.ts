@@ -1,20 +1,21 @@
-import {Injectable} from '@nestjs/common';
-import {IAccountRepository} from '../../../domain/account/interface/account-repository.interface';
-import {IDate} from '../../../infrastructure/common/interfaces/date.interface';
-import {CardHist} from '../../../domain/account/card/model/cardHist';
-import {Client} from '../../../domain/account/client/model/client';
-import {AccountNotFoundExceptions} from '../../../domain/account/exceptions/account-not-found.exceptions';
-import {TariffResponseDto} from './dto/tariff-response.dto';
-import {UpdateAccountDto} from './dto/update-account.dto';
-import {PromotionHist} from '../../../domain/promotion/model/promotionHist';
-import {UpdateMetaDto} from './dto/update-meta.dto';
-import {IMetaRepositoryAbstract} from '../../../domain/account/client/meta-repository.abstract';
-import {MetaNotFoundExceptions} from '../../../domain/account/exceptions/meta-not-found.exception';
-import {CreateMetaDto} from './dto/create-meta.dto';
-import {MetaExistsExceptions} from '../../../domain/account/exceptions/meta-exists.exception';
-import {OnviMeta} from '../../../domain/account/client/model/onviMeta';
-import {AvatarType} from '../../../domain/account/client/enum/avatar.enum';
-import {IPromoCodeRepository} from "../../../domain/promo-code/promo-code-repository.abstract";
+import { Injectable } from '@nestjs/common';
+import { IAccountRepository } from '../../../domain/account/interface/account-repository.interface';
+import { IDate } from '../../../infrastructure/common/interfaces/date.interface';
+import { CardHist } from '../../../domain/account/card/model/cardHist';
+import { Client } from '../../../domain/account/client/model/client';
+import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
+import { TariffResponseDto } from './dto/tariff-response.dto';
+import { UpdateAccountDto } from './dto/update-account.dto';
+import { PromotionHist } from '../../../domain/promotion/model/promotionHist';
+import { UpdateMetaDto } from './dto/update-meta.dto';
+import { IMetaRepositoryAbstract } from '../../../domain/account/client/meta-repository.abstract';
+import { MetaNotFoundExceptions } from '../../../domain/account/exceptions/meta-not-found.exception';
+import { CreateMetaDto } from './dto/create-meta.dto';
+import { MetaExistsExceptions } from '../../../domain/account/exceptions/meta-exists.exception';
+import { OnviMeta } from '../../../domain/account/client/model/onviMeta';
+import { AvatarType } from '../../../domain/account/client/enum/avatar.enum';
+import { IPromoCodeRepository } from '../../../domain/promo-code/promo-code-repository.abstract';
+import { Card } from '../../../domain/account/card/model/card';
 
 @Injectable()
 export class AccountUsecase {
@@ -30,7 +31,9 @@ export class AccountUsecase {
     size: number,
     page: number,
   ): Promise<CardHist[]> {
-    const meta = await this.metadataRepository.findOneByClientId(client.clientId);
+    const meta = await this.metadataRepository.findOneByClientId(
+      client.clientId,
+    );
     const mainAccount = client.getAccountInfo(meta);
     return await this.accountRepository.getCardHistory(
       mainAccount.cards.unqNumber,
@@ -49,6 +52,24 @@ export class AccountUsecase {
       cashBack: tariff.bonus,
     };
   }
+
+  async getCardBalance(unqNumber: string): Promise<any> {
+    const card: Card = await this.accountRepository.findOneByDevNomer(
+      unqNumber,
+    );
+
+    if (!card) return null;
+
+    return {
+      unqNumber: card.devNomer,
+      balance: card.balance,
+      onviBonusSum: card.realBalance,
+      promoCodeSum: card.airBalance,
+    };
+  }
+
+
+//  aysync transfetBalance(client: Client,  )
 
   async updateAccountInfo(body: UpdateAccountDto, client: Client) {
     const { name, email, avatar } = body;

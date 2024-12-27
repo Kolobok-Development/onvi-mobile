@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ICardRepository } from '../../../domain/account/card/card-repository.abstract';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CardEntity } from '../entity/card.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Card } from '../../../domain/account/card/model/card';
 import { Client } from '../../../domain/account/client/model/client';
 import { ClientEntity } from '../entity/client.entity';
@@ -55,6 +55,8 @@ export class CardRepository implements ICardRepository {
     const card = await this.cardRepository.findOne({
       where: {
         devNomer: devNomer,
+        isDel: In([0, null]),
+        isLocked: In([0, null]),
       },
     });
 
