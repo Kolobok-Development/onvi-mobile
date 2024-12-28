@@ -19,15 +19,17 @@ import { InvalidPromoCodeException } from '../../../domain/promo-code/exceptions
 import { PromoCodeNotFoundException } from '../../../domain/promo-code/exceptions/promo-code-not-found.exception';
 import { PaymentUsecase } from '../payment/payment.usecase';
 import { PaymentStatus } from '../../../domain/payment/model/payment';
-import { IAccountRepository } from '../../../domain/account/interface/account-repository.interface';
+import {ITransactionRepository} from "../../../domain/transaction/transaction-repository.abstract";
+import {ITariffRepository} from "../../../domain/account/card/tariff-repository.abstract";
 
 @Injectable()
 export class OrderUsecase {
   constructor(
     private readonly orderRepository: IOrderRepository,
+    private readonly transactionRepository: ITransactionRepository,
     private readonly promoCodeRepository: IPromoCodeRepository,
     private readonly paymentUsecase: PaymentUsecase,
-    private readonly accountRepository: IAccountRepository,
+    private readonly tariffRepository: ITariffRepository,
   ) {}
 
   async create(data: CreateOrderDto, account: Client): Promise<any> {
@@ -53,7 +55,7 @@ export class OrderUsecase {
     }
 
     const card = account.getCard();
-    const tariff = await this.accountRepository.findCardTariff(card);
+    const tariff = await this.tariffRepository.findCardTariff(card);
     const cashback = Math.ceil((data.sum * tariff.bonus) / 100);
 
     const order: Order = Order.create({
@@ -116,7 +118,7 @@ export class OrderUsecase {
       if (card.balance < newOrder.rewardPointsUsed)
         throw new OrderProcessingException();
 
-      const withdraw = await this.orderRepository.withdraw(
+      const withdraw = await this.transactionRepository.withdraw(
         bay.id,
         card.devNomer,
         newOrder.rewardPointsUsed.toString(),

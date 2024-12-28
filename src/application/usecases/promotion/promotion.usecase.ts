@@ -5,15 +5,18 @@ import { Client } from '../../../domain/account/client/model/client';
 import { Promotion } from '../../../domain/promotion/model/promotion.model';
 import { PromotionNotFoundException } from '../../../domain/promotion/exceptions/promotion-not-found.exception';
 import { InvalidPromotionException } from '../../../domain/promotion/exceptions/invalid-promotion.exception';
-import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
-import { IAccountRepository } from '../../../domain/account/interface/account-repository.interface';
+import {ITransactionRepository} from "../../../domain/transaction/transaction-repository.abstract";
+import {ICardRepository} from "../../../domain/account/card/card-repository.abstract";
+import {IPromotionHistoryRepository} from "../../../domain/promotion/promotionHistory-repository.abstract";
+import {PromotionHist} from "../../../domain/promotion/model/promotionHist";
 
 @Injectable()
 export class PromotionUsecase {
   constructor(
     private readonly promotionRepository: IPromotionRepository,
-    private readonly operationRepository: IOrderRepository,
-    private readonly accauntRepository: IAccountRepository,
+    private readonly promotionHistoryRepository: IPromotionHistoryRepository,
+    private readonly transactionRepository: ITransactionRepository,
+    private readonly cardRepository: ICardRepository,
   ) {}
 
   async apply(data: ApplyPromotionDto, account: Client): Promise<any> {
@@ -43,15 +46,15 @@ export class PromotionUsecase {
 
     if (promotion.type === 1) {
       const extId = this.generateUniqueExt();
-      const transactionId = await this.operationRepository.createTransaction(
+      const transactionId = await this.transactionRepository.create(
         account,
         card,
-        promotion,
+        promotion.point.toString(),
         extId,
       );
       console.log(transactionId);
     } else if (promotion.type === 2) {
-      await this.accauntRepository.changeTypeCard(
+      await this.cardRepository.changeType(
         card.cardId,
         promotion.cashbackType,
       );
@@ -78,6 +81,12 @@ export class PromotionUsecase {
 
     return promotions;
   }
+
+  async getPromotionHistory(client: Client): Promise<PromotionHist[]> {
+    const card = client.getCard();
+    return await this.promotionHistoryRepository.getPromotionHistory(card);
+  }
+
   generateUniqueExt() {
     const prefix = 'Promotion';
     const uniqueId = Date.now(); // получаем текущую дату и время в миллисекундах как уникальный идентификатор

@@ -8,16 +8,21 @@ import { PromotionUsecase } from '../../application/usecases/promotion/promotion
 import { PromotionRepository } from './repository/promotion.repository';
 import { OrderModule } from '../order/order.module';
 import { AccountModule } from '../account/account.module';
+import {TransactionModule} from "../transaction/transaction.module";
+import {PromotionHistoryRepositoryProvider} from "./provider/promotionHistory-repository.provider";
+import {PromotionHistEntity} from "./entity/promotion-hist.entity";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([PromotionEntity, PromotionUsageEntity]),
+    TypeOrmModule.forFeature([PromotionEntity, PromotionUsageEntity, PromotionHistEntity,]),
     OrderModule,
     AccountModule,
+    TransactionModule
   ],
   controllers: [PromotionController],
   providers: [
     PromotionRepositoryProvider,
+    PromotionHistoryRepositoryProvider,
     PromotionUsecase,
     PromotionRepository,
   ],

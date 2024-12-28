@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class CreateMetaDto {
+export class AccountCreateMetaDto {
   @IsNumber()
   @IsOptional()
   metaId?: number;

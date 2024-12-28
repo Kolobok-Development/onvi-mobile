@@ -13,20 +13,40 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { AccountUsecase } from '../../application/usecases/account/account.usecase';
 import { JwtGuard } from '../../infrastructure/common/guards/jwt.guard';
 import { CustomHttpException } from '../../infrastructure/common/exceptions/custom-http.exception';
-import { HistOptionsDto } from './dto/hist-options.dto';
+import { HistOptionsDto } from '../dto/req/hist-options.dto';
 import { AccountNotFoundExceptions } from '../../domain/account/exceptions/account-not-found.exceptions';
-import { UpdateAccountDto } from '../../application/usecases/account/dto/update-account.dto';
-import { CreateMetaDto } from '../../application/usecases/account/dto/create-meta.dto';
+import { AccountClientUpdateDto } from '../dto/req/account-client-update.dto';
+import { AccountCreateMetaDto } from '../dto/req/account-create-meta.dto';
 import { MetaExistsExceptions } from '../../domain/account/exceptions/meta-exists.exception';
-import { UpdateMetaDto } from '../../application/usecases/account/dto/update-meta.dto';
+import { AccountUpdateMetaDto } from '../dto/req/account-update-meta.dto';
 import { MetaNotFoundExceptions } from '../../domain/account/exceptions/meta-not-found.exception';
+import {CreateMetaUseCase} from "../../application/usecases/account/account-meta-create";
+import {UpdateMetaUseCase} from "../../application/usecases/account/account-meta-update";
+import {FindMethodsMetaUseCase} from "../../application/usecases/account/account-meta-find-methods";
+import {UpdateClientUseCase} from "../../application/usecases/account/account-client-update";
+import {CardService} from "../../application/services/card-service";
+import {DeleteAccountUseCase} from "../../application/usecases/account/account-delete";
+import {PromocodeUsecase} from "../../application/usecases/promocode/promocode.usecase";
+import {AccountTransferDataDto} from "../dto/req/account-transfer-data.dto";
+import {AccountTransferUseCase} from "../../application/usecases/account/account-transfer";
+import {CardNotMatchExceptions} from "../../domain/account/exceptions/card-not-match.exceptions";
+import {AccountTransferDataResponseDto} from "../dto/res/account-transfer-data.dto";
+import {AccountTransferDto} from "../dto/req/account-transfer.dto";
 
 @Controller('account')
 export class AccountController {
-  constructor(private readonly accountUsecase: AccountUsecase) {}
+  constructor(
+      private readonly updateClientUseCase: UpdateClientUseCase,
+      private readonly createMetaUseCase: CreateMetaUseCase,
+      private readonly updateMetaUseCase: UpdateMetaUseCase,
+      private readonly deleteAccountUseCase: DeleteAccountUseCase,
+      private readonly findMethodsMetaUseCase: FindMethodsMetaUseCase,
+      private readonly promocodeUsecase: PromocodeUsecase,
+      private readonly accountTransferUseCase: AccountTransferUseCase,
+      private readonly cardService: CardService,
+  ) {}
 
   @UseGuards(JwtGuard)
   @Get('/me')
@@ -34,7 +54,7 @@ export class AccountController {
   async getCurrentAccount(@Request() req: any): Promise<any> {
     try {
       const { user } = req;
-      const meta = await this.accountUsecase.getMetaByClientId(user.clientId);
+      const meta = await this.findMethodsMetaUseCase.getByClientId(user.clientId);
       return user.getAccountInfo(meta);
     } catch (e) {
       throw new CustomHttpException({
@@ -53,7 +73,7 @@ export class AccountController {
     try {
       const { size, page } = options;
       const { user } = request;
-      return await this.accountUsecase.getCardTransactionsHistory(
+      return await this.cardService.getCardTransactionsHistory(
         user,
         size,
         page,
@@ -72,31 +92,7 @@ export class AccountController {
   async getAccountNotifications(@Req() request: any): Promise<any> {
     try {
       const { user } = request;
-      return await this.accountUsecase.getCardTariff(user);
-    } catch (e) {
-      if (e instanceof AccountNotFoundExceptions) {
-        throw new CustomHttpException({
-          type: e.type,
-          innerCode: e.innerCode,
-          message: e.message,
-          code: HttpStatus.NOT_FOUND,
-        });
-      } else {
-        throw new CustomHttpException({
-          message: e.message,
-          code: HttpStatus.INTERNAL_SERVER_ERROR,
-        });
-      }
-    }
-  }
-
-  @UseGuards(JwtGuard)
-  @Get('/promotion')
-  @HttpCode(200)
-  async getPromotionHistory(@Req() request: any): Promise<any> {
-    try {
-      const { user } = request;
-      return await this.accountUsecase.getPromotionHistory(user);
+      return await this.cardService.getCardTariff(user);
     } catch (e) {
       if (e instanceof AccountNotFoundExceptions) {
         throw new CustomHttpException({
@@ -120,7 +116,7 @@ export class AccountController {
   async getActivePromotion(@Req() request: any): Promise<any> {
     try {
       const { user } = request;
-      return await this.accountUsecase.getActivePromotionHistoryForClient(user);
+      return await this.promocodeUsecase.getActivePromotionHistoryForClient(user);
     } catch (e) {
       throw new CustomHttpException({
         message: e.message,
@@ -131,11 +127,11 @@ export class AccountController {
 
   @Patch()
   @UseGuards(JwtGuard)
-  async updateAccountInfo(@Body() body: UpdateAccountDto, @Req() req: any) {
+  async updateAccountInfo(@Body() body: AccountClientUpdateDto, @Req() req: any) {
     const { user } = req;
 
     try {
-      return await this.accountUsecase.updateAccountInfo(body, user);
+      return await this.updateClientUseCase.execute(body, user);
     } catch (e: any) {
       console.log(e);
       if (e instanceof AccountNotFoundExceptions) {
@@ -157,9 +153,9 @@ export class AccountController {
   @Post('/meta/create')
   @UseGuards(JwtGuard)
   @HttpCode(201)
-  async createMeta(@Body() body: CreateMetaDto): Promise<any> {
+  async createMeta(@Body() body: AccountCreateMetaDto): Promise<any> {
     try {
-      return await this.accountUsecase.createMeta(body);
+      return await this.createMetaUseCase.execute(body);
     } catch (e) {
       if (e instanceof MetaExistsExceptions) {
         throw new CustomHttpException({
@@ -180,12 +176,60 @@ export class AccountController {
   @Post('/meta/update')
   @UseGuards(JwtGuard)
   @HttpCode(201)
-  async updateMeta(@Body() body: UpdateMetaDto): Promise<any> {
+  async updateMeta(@Body() body: AccountUpdateMetaDto): Promise<any> {
     try {
-      await this.accountUsecase.updateMeta(body);
+      await this.updateMetaUseCase.execute(body);
       return { status: 'SUCCESS' };
     } catch (e) {
       if (e instanceof MetaNotFoundExceptions) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.NOT_FOUND,
+        });
+      } else {
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
+      }
+    }
+  }
+
+  @Get('/transfer')
+  @UseGuards(JwtGuard)
+  @HttpCode(201)
+  async transferData(@Body() body: AccountTransferDataDto, @Req() req: any): Promise<AccountTransferDataResponseDto> {
+    const { user } = req;
+    try {
+      return await this.accountTransferUseCase.transferData(body.devNomer, user);
+    } catch (e) {
+      if (e instanceof CardNotMatchExceptions) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.NOT_FOUND,
+        });
+      } else {
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
+      }
+    }
+  }
+
+  @Post('/transfer')
+  @UseGuards(JwtGuard)
+  @HttpCode(201)
+  async transfer(@Body() body: AccountTransferDto, @Req() req: any) {
+    const { user } = req;
+    try {
+      return await this.accountTransferUseCase.transfer(body, user);
+    } catch (e) {
+      if (e instanceof CardNotMatchExceptions) {
         throw new CustomHttpException({
           type: e.type,
           innerCode: e.innerCode,
@@ -207,7 +251,9 @@ export class AccountController {
   async updateNotifications(@Body() body: {notification: boolean}, @Request() request: any): Promise<any> {
     try {
       const { user } = request;
-      return await this.accountUsecase.updateNotification(body.notification, user);
+      return await this.updateClientUseCase.execute({
+        notification: body.notification
+      }, user);
     } catch (e) {
       throw new CustomHttpException({
         message: e.message,
@@ -221,7 +267,7 @@ export class AccountController {
   async deleteAccount(@Request() request: any): Promise<any> {
     const { user } = request;
     try {
-      await this.accountUsecase.deleteAccount(user);
+      await this.deleteAccountUseCase.execute(user);
       return { status: 'SUCCESS' };
     } catch (e) {
       throw new CustomHttpException({

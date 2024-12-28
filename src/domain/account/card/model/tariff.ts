@@ -1,5 +1,3 @@
-import { TariffEntity } from '../../../../infrastructure/account/entity/tariff.entity';
-
 export class Tariff {
   cardTypeId: number;
   name: string;
@@ -22,12 +20,5 @@ export class Tariff {
     this.bonus = bonus;
     this.createdDate = createdDate;
     this.countryCode = countryCode;
-  }
-
-  public static fromEntity(tariffEntity: TariffEntity): Tariff {
-    const { cardTypeId, name, code, bonus, createDate, countryCode } =
-      tariffEntity;
-
-    return new Tariff(cardTypeId, name, code, bonus, createDate, countryCode);
   }
 }

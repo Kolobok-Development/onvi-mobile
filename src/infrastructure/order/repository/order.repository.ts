@@ -12,10 +12,6 @@ import { OrderEntity } from '../entity/order.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
-import * as oracledb from 'oracledb';
-import { Card } from '../../../domain/account/card/model/card';
-import { Promotion } from '../../../domain/promotion/model/promotion.model';
-import { Client } from '../../../domain/account/client/model/client';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -27,8 +23,6 @@ export class OrderRepository implements IOrderRepository {
     private readonly orderRepository: Repository<OrderEntity>,
     private readonly httpService: HttpService,
     private readonly envConfig: EnvConfigService,
-    @InjectDataSource()
-    private readonly dataSource: DataSource,
   ) {
     this.apiKey = envConfig.getDsCloudApiKey();
     this.baseUrl = envConfig.getDsCloudBaseUrl();
@@ -39,28 +33,6 @@ export class OrderRepository implements IOrderRepository {
 
     const newOrder = await this.orderRepository.save(orderEntity);
     return Order.fromEntity(newOrder);
-  }
-
-  async createTransaction(
-    client: Client,
-    card: Card,
-    promotion: Promotion,
-    extId: string,
-  ): Promise<any> {
-    const addTransactionQuery = `begin :p0 := cwash.PAY_OPER_PKG.add_oper_open(:p1, :p2, :p3, :p4, :p5, :p6); end;`;
-    const runAddPyamentQuery = await this.dataSource.query(
-      addTransactionQuery,
-      [
-        { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-        card.nomer,
-        client.email,
-        client.correctPhone,
-        promotion.point,
-        extId,
-        new Date(),
-      ],
-    );
-    return runAddPyamentQuery[0];
   }
 
   async ping(carWashId: number, bayNumber: number): Promise<BayResponseDto> {
@@ -152,27 +124,6 @@ export class OrderRepository implements IOrderRepository {
     return {
       akey: apiKey,
     };
-  }
-
-  async withdraw(
-    deviceId: string,
-    cardUnq: string,
-    sum: string,
-    pToken?: string,
-  ): Promise<any> {
-    const withdrawPointsQuery = `begin :p0 := cwash.CARD_PKG.add_oper_json(:p1, :p2, :p3, :p4); end;`;
-
-    const runWithdrawPointsQuery = await this.dataSource.query(
-      withdrawPointsQuery,
-      [
-        { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-        deviceId,
-        cardUnq,
-        sum,
-        pToken,
-      ],
-    );
-    return JSON.parse(runWithdrawPointsQuery[0]);
   }
 
   private toOrderEntity(order: Order): OrderEntity {

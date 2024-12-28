@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ClientEntity } from '../entity/client.entity';
 import { Repository } from 'typeorm';
 import { Client } from '../../../domain/account/client/model/client';
+import {ClientMapper} from "../mapper/client.mapper";
 
 @Injectable()
 export class ClientRepository implements IClientRepository {
@@ -13,9 +14,9 @@ export class ClientRepository implements IClientRepository {
   ) {}
 
   async create(client: Client): Promise<Client> {
-    const clientEntity = ClientRepository.toClientEntity(client);
+    const clientEntity = ClientMapper.toClientEntity(client);
     const newClient = await this.clientRepository.save(clientEntity);
-    return Client.fromEntity(newClient);
+    return ClientMapper.fromEntity(newClient);
   }
 
   async findOneByPhone(phone: string): Promise<Client> {
@@ -30,7 +31,7 @@ export class ClientRepository implements IClientRepository {
       .getOne();
 
     if (!client) return null;
-    return Client.fromEntity(client);
+    return ClientMapper.fromEntity(client);
   }
 
 
@@ -47,7 +48,7 @@ export class ClientRepository implements IClientRepository {
   }
 
   async update(client: Client): Promise<any> {
-    const clientEntity = ClientRepository.toClientEntity(client);
+    const clientEntity = ClientMapper.toClientEntity(client);
     const { clientId, ...updatedData } = clientEntity;
 
     const updatedClient = await this.clientRepository.update(
@@ -60,26 +61,5 @@ export class ClientRepository implements IClientRepository {
     if (!updatedClient) return null;
 
     return updatedClient;
-  }
-
-  public static toClientEntity(client: Client): ClientEntity {
-    const clientEntity: ClientEntity = new ClientEntity();
-
-    clientEntity.clientId = client.clientId ? client.clientId : null;
-    clientEntity.name = client.name;
-    clientEntity.email = client.email;
-    clientEntity.phone = client.phone;
-    clientEntity.birthday = client.birthday;
-    clientEntity.clientTypeId = client.clientTypeId;
-    clientEntity.isActivated = client.isActivated;
-    clientEntity.genderId = client.genderId;
-    clientEntity.correctPhone = client.correctPhone;
-    clientEntity.refreshToken = client.refreshToken;
-    clientEntity.activatedDate = client.activatedDate;
-    clientEntity.userOnvi = client.userOnvi;
-    clientEntity.avatarOnvi = client.avatarOnvi;
-    clientEntity.isNotifications = client.isNotifications;
-
-    return clientEntity;
   }
 }

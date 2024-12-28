@@ -6,10 +6,12 @@ import { PromoCodeLocation } from '../../../domain/promo-code/model/promo-code-l
 import { PromoCodeEntity } from '../entity/promocode.entity';
 import { PromoCodeLocationEntity } from '../entity/promo-code-location.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { PromoCodeUsageEntity } from '../entity/promo-code-usage.entity';
 import { CardEntity } from '../../account/entity/card.entity';
 import { PromoCodeToUserEntity } from '../entity/promo-code-to-user.entity';
+import {ClientEntity} from "../../account/entity/client.entity";
+import {Client} from "../../../domain/account/client/model/client";
 
 @Injectable()
 export class PromoCodeRepository implements IPromoCodeRepository {
@@ -38,6 +40,22 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     promoCodeUsage.usage = usage;
 
     return await this.promoCodeUsageRepository.save(promoCodeUsage);
+  }
+
+  async create(promoCode: PromoCode): Promise<PromoCode> {
+    const promoCodeEntity = PromoCodeRepository.toPromoCodeEntity(promoCode);
+
+    const newPromoCode = await this.promoCodeRepository.save(promoCodeEntity);
+    return PromoCode.fromEntity(newPromoCode);
+  }
+
+  async bindClient(promoCode: PromoCode, client: Client): Promise<any> {
+    const promoCodeToUserEntity = new PromoCodeToUserEntity();
+
+    promoCodeToUserEntity.promoCode = { id: promoCode.id } as PromoCodeEntity;
+    promoCodeToUserEntity.client = { clientId: client.clientId } as ClientEntity;
+
+    return await this.promoCodeToUserEntity.save(promoCodeToUserEntity);
   }
 
   async findOneByCode(code: string): Promise<PromoCode> {

@@ -5,8 +5,8 @@ import { CardEntity } from '../entity/card.entity';
 import { In, Repository } from 'typeorm';
 import { Card } from '../../../domain/account/card/model/card';
 import { Client } from '../../../domain/account/client/model/client';
-import { ClientEntity } from '../entity/client.entity';
-import { ClientRepository } from './client.repository';
+import {CardMapper} from "../mapper/card.mapper";
+import {ClientMapper} from "../mapper/client.mapper";
 
 @Injectable()
 export class CardRepository implements ICardRepository {
@@ -15,13 +15,13 @@ export class CardRepository implements ICardRepository {
     private readonly cardRepository: Repository<CardEntity>,
   ) {}
   async create(card: Card, client: Client): Promise<Card> {
-    const cardEntity = this.toCardEntity(card);
-    const clientEntity = ClientRepository.toClientEntity(client);
+    const cardEntity = CardMapper.toCardEntity(card);
+    const clientEntity = ClientMapper.toClientEntity(client);
 
     cardEntity.client = clientEntity;
 
     const newCard = await this.cardRepository.save(cardEntity);
-    return Card.fromEntity(newCard);
+    return CardMapper.fromEntity(newCard);
   }
 
   async delete(cardId: number): Promise<any> {
@@ -43,7 +43,7 @@ export class CardRepository implements ICardRepository {
       .getMany();
 
     const cards = card.map((cardEntity: CardEntity) =>
-      Card.fromEntity(cardEntity),
+        CardMapper.fromEntity(cardEntity),
     );
 
     if (!cards) return null;
@@ -54,14 +54,12 @@ export class CardRepository implements ICardRepository {
   async findOneByDevNomer(devNomer: string): Promise<Card> {
     const card = await this.cardRepository.findOne({
       where: {
-        devNomer: devNomer,
-        isDel: In([0, null]),
-        isLocked: In([0, null]),
+        devNomer: devNomer
       },
     });
 
     if (!card) return null;
-    return Card.fromEntity(card);
+    return CardMapper.fromEntity(card);
   }
 
   async changeType(cardId: number, newCardTypeId: number): Promise<any> {
@@ -89,21 +87,14 @@ export class CardRepository implements ICardRepository {
     return Promise.resolve(undefined);
   }
 
-  private toCardEntity(card: Card): CardEntity {
-    const cardEntity: CardEntity = new CardEntity();
+  async findGroupIdByCardId(cardId: number): Promise<number | null> {
+    const result = await this.cardRepository
+        .createQueryBuilder('card')
+        .leftJoin('CRDCARD_TYPE', 'type', 'card.CARD_TYPE_ID = type.CARD_TYPE_ID')
+        .select('type.GROUP_ID', 'groupId')
+        .where('card.CARD_ID = :cardId', { cardId })
+        .getRawOne();
 
-    cardEntity.isLocked = card.isLocked;
-    cardEntity.dateEnd = card.dateEnd;
-    cardEntity.cardTypeId = card.cardTypeId;
-    cardEntity.devNomer = card.devNomer;
-    cardEntity.isDel = card.isDel;
-    cardEntity.cmnCity = card.cmnCity;
-    cardEntity.nomer = card.nomer;
-    cardEntity.tag = card.tag;
-    cardEntity.balance = card.balance;
-    cardEntity.realBalance = card.realBalance;
-    cardEntity.airBalance = card.airBalance;
-
-    return cardEntity;
+    return result ? result.groupId : null;
   }
 }

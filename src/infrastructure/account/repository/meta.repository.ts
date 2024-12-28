@@ -4,6 +4,7 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {MetadataEntity} from "../entity/metadata.entity";
 import {Repository} from "typeorm";
 import {OnviMeta} from "../../../domain/account/client/model/onviMeta";
+import {MetaMapper} from "../mapper/meta.mapper";
 
 @Injectable()
 export class MetaRepository implements IMetaRepositoryAbstract {
@@ -13,9 +14,9 @@ export class MetaRepository implements IMetaRepositoryAbstract {
     ) {}
 
     async create(meta: OnviMeta): Promise<OnviMeta> {
-        const metaEntity = MetaRepository.toMetaEntity(meta);
+        const metaEntity = MetaMapper.toMetaEntity(meta);
         const newMeta = await this.metadataRepository.save(metaEntity);
-        return OnviMeta.fromEntity(newMeta);
+        return MetaMapper.fromEntity(newMeta);
     }
 
     async findOneById(metaId: number): Promise<OnviMeta> {
@@ -26,7 +27,7 @@ export class MetaRepository implements IMetaRepositoryAbstract {
         });
 
         if (!meta) return null;
-        return OnviMeta.fromEntity(meta);
+        return MetaMapper.fromEntity(meta);
     }
 
     async findOneByClientId(clientId: number): Promise<OnviMeta> {
@@ -37,11 +38,11 @@ export class MetaRepository implements IMetaRepositoryAbstract {
         });
 
         if (!meta) return null;
-        return OnviMeta.fromEntity(meta);
+        return MetaMapper.fromEntity(meta);
     }
 
     async update(meta: OnviMeta): Promise<any> {
-        const metaEntity = MetaRepository.toMetaEntity(meta);
+        const metaEntity = MetaMapper.toMetaEntity(meta);
         const { metaId, ...updatedData } = metaEntity;
 
         const updatedMeta = await this.metadataRepository.update(
@@ -54,21 +55,5 @@ export class MetaRepository implements IMetaRepositoryAbstract {
         if (!updatedMeta) return null;
 
         return updatedMeta;
-    }
-
-    public static toMetaEntity(meta: OnviMeta): MetadataEntity {
-        const metaEntity: MetadataEntity = new MetadataEntity();
-
-        metaEntity.metaId = meta.metaId ? meta.metaId : null;
-        metaEntity.clientId = meta.clientId;
-        metaEntity.deviceId = meta.deviceId;
-        metaEntity.model = meta.model;
-        metaEntity.name = meta.name;
-        metaEntity.platform = meta.platform;
-        metaEntity.platformVersion = meta.platformVersion;
-        metaEntity.manufacturer = meta.manufacturer;
-        metaEntity.appToken = meta.appToken;
-
-        return metaEntity;
     }
 }

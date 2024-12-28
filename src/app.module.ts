@@ -16,6 +16,7 @@ import { PaymentModule } from './infrastructure/payment/payment.module';
 import { PromotionModule } from './infrastructure/promotion/promotion.module';
 import {PartnerModule} from "./infrastructure/partner/partner.module";
 import {HttpModule} from "@nestjs/axios";
+import {TransactionModule} from "./infrastructure/transaction/transaction.module";
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import {HttpModule} from "@nestjs/axios";
     PaymentModule,
     PromotionModule,
     PartnerModule,
+    TransactionModule,
   ],
   controllers: [],
   providers: [],

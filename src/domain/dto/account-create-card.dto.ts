@@ -1,5 +1,5 @@
-import { Client } from '../../client/model/client';
-import { CardType } from '../enum/card-type.enum';
+import { Client } from '../account/client/model/client';
+import { CardType } from '../account/card/enum/card-type.enum';
 
 export interface ICreateCardDto {
   clientId: number;

@@ -1,4 +1,4 @@
-import {ICreateMetaDto} from "../dto/create-meta.dto";
+import {ICreateMetaDto} from "../../../dto/account-create-meta.dto";
 import {MetadataEntity} from "../../../../infrastructure/account/entity/metadata.entity";
 
 export class OnviMeta {
@@ -12,7 +12,7 @@ export class OnviMeta {
     manufacturer: string;
     appToken: string;
 
-    private constructor(
+    constructor(
         clientId: number,
         deviceId: string,
         model: string,
@@ -40,22 +40,6 @@ export class OnviMeta {
 
     public static create(data: ICreateMetaDto): OnviMeta {
         const { metaId, clientId, deviceId, model, name,  platform, platformVersion, manufacturer, appToken } = data;
-        return new OnviMeta(clientId, deviceId, model, name, platform, platformVersion, manufacturer, appToken, { metaId });
-    }
-
-    public static fromEntity(entity: MetadataEntity): OnviMeta {
-        const {
-            metaId,
-            clientId,
-            deviceId,
-            model,
-            name,
-            platform,
-            platformVersion,
-            manufacturer,
-            appToken,
-        } = entity;
-
         return new OnviMeta(clientId, deviceId, model, name, platform, platformVersion, manufacturer, appToken, { metaId });
     }
 }
