@@ -1,4 +1,4 @@
-export class BayResponseDto {
+export class PingResponseDto {
   id: string;
   status: string;
   type: string;
