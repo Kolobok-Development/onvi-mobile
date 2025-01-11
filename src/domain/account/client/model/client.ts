@@ -1,13 +1,14 @@
 import { Card } from '../../card/model/card';
 import { GenderType } from '../enum/gender.enum';
 import { ClientType } from '../enum/clinet-type.enum';
-import { ICreateClientDto } from '../dto/create-client.dto';
+import { ICreateClientDto } from '../../../dto/account-create-client.dto';
 import { ActivationStatusType } from '../enum/activation-status.enum';
 import { ClientEntity } from '../../../../infrastructure/account/entity/client.entity';
 import { CardEntity } from '../../../../infrastructure/account/entity/card.entity';
-import { ShortClientDto } from '../dto/short-client.dto';
+import { AccountShortClientDto } from '../../../dto/account-short-client.dto';
 import { AvatarType } from '../enum/avatar.enum';
 import {OnviMeta} from "./onviMeta";
+import {CardMapper} from "../../../../infrastructure/account/mapper/card.mapper";
 
 export class Client {
   clientId?: number;
@@ -28,7 +29,7 @@ export class Client {
   refreshToken?: string;
   cards?: Card[];
 
-  private constructor(
+  constructor(
     name: string,
     rawPhone: string,
     phone: string,
@@ -123,7 +124,7 @@ export class Client {
     }
   }
 
-  public getAccountInfo(meta?: OnviMeta): ShortClientDto {
+  public getAccountInfo(meta?: OnviMeta): AccountShortClientDto {
     let mainCard: Card;
     if (this.cards.length > 0) {
       mainCard = this.cards.reduce((prev: Card, curr: Card) => {
@@ -158,56 +159,5 @@ export class Client {
   }
   private static formatPhone(rawPhone: string): string {
     return rawPhone.replace(/^\s*\+|\s*/g, '');
-  }
-
-  public static fromEntity(entity: ClientEntity): Client {
-    let cardModels;
-    const {
-      clientId,
-      name,
-      email,
-      phone,
-      correctPhone,
-      birthday,
-      insDate,
-      updDate,
-      clientTypeId,
-      isActivated,
-      userOnvi,
-      isNotifications,
-      avatarOnvi,
-      activatedDate,
-      genderId,
-      refreshToken,
-      cards,
-    } = entity;
-
-    if (cards) {
-      cardModels = cards.map((cardEntity: CardEntity) =>
-        Card.fromEntity(cardEntity),
-      );
-    }
-    const client = new Client(
-      name,
-      phone,
-      correctPhone,
-      clientTypeId,
-      refreshToken,
-      isActivated,
-      userOnvi,
-      isNotifications,
-      avatarOnvi,
-      {
-        clientId,
-        email,
-        birthday,
-        insDate,
-        updDate,
-        activationDate: activatedDate,
-        genderId,
-        cards: cardModels,
-      },
-    );
-    return client;
   }
 }

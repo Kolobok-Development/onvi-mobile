@@ -16,7 +16,7 @@ export class PromoCode {
   image?: string;
   locations?: PromoCodeLocation[];
 
-  private constructor(
+  constructor(
     code: string,
     discountType: number,
     expiryDate: Date,

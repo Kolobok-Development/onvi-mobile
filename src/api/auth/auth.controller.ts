@@ -31,11 +31,14 @@ import { RefreshRequestDto } from './dto/refresh-request.dto';
 import { RefreshResponseDto } from './dto/response/refresh-response.dto';
 import { use } from 'passport';
 import { CustomHttpException } from '../../infrastructure/common/exceptions/custom-http.exception';
-import {AccountUsecase} from "../../application/usecases/account/account.usecase";
+import {FindMethodsMetaUseCase} from "../../application/usecases/account/account-meta-find-methods";
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authUsecase: AuthUsecase, private readonly accountUsecase: AccountUsecase) {}
+  constructor(
+      private readonly authUsecase: AuthUsecase,
+      private readonly findMethodsMetaUseCase: FindMethodsMetaUseCase,
+      ) {}
 
   @UseGuards(LocalGuard)
   @HttpCode(200)
@@ -57,7 +60,7 @@ export class AuthController {
         refreshToken.token,
       );
 
-      const meta = await this.accountUsecase.getMetaByClientId(user.clientId);
+      const meta = await this.findMethodsMetaUseCase.getByClientId(user.clientId);
       const shortUser = user.getAccountInfo(meta);
       delete shortUser['refreshToken'];
 
@@ -86,7 +89,7 @@ export class AuthController {
       const { registeredAccount, accessToken, refreshToken } =
         await this.authUsecase.register(auth.phone, auth.otp);
 
-      const meta = await this.accountUsecase.getMetaByClientId(registeredAccount.clientId)
+      const meta = await this.findMethodsMetaUseCase.getByClientId(registeredAccount.clientId)
       const shortUser = registeredAccount.getAccountInfo(meta);
       delete shortUser['refreshToken'];
       return new RegisterResponseDto({

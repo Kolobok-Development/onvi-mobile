@@ -1,4 +1,3 @@
-import { IAccountRepository } from '../../../domain/account/interface/account-repository.interface';
 import { Injectable } from '@nestjs/common';
 import {
   IJwtService,
@@ -16,8 +15,8 @@ import { AccountExistsException } from '../../../domain/account/exceptions/accou
 import { OtpInternalExceptions } from '../../../domain/otp/exceptions/otp-internal.exceptions';
 import { InvalidRefreshException } from '../../../domain/auth/exceptions/invalid-refresh.exception';
 import * as ms from 'ms';
-import { ICreateClientDto } from '../../../domain/account/client/dto/create-client.dto';
-import { ICreateCardDto } from '../../../domain/account/card/dto/create-card.dto';
+import { ICreateClientDto } from '../../../domain/dto/account-create-client.dto';
+import { ICreateCardDto } from '../../../domain/dto/account-create-card.dto';
 import { CardType } from '../../../domain/account/card/enum/card-type.enum';
 import { AuthenticationException } from '../../../infrastructure/common/exceptions/base.exceptions';
 import { InvalidAccessException } from '../../../domain/auth/exceptions/invalida-token.excpetion';
@@ -28,6 +27,8 @@ import { CardRepository } from '../../../infrastructure/account/repository/card.
 import { Client } from '../../../domain/account/client/model/client';
 import { Card } from '../../../domain/account/card/model/card';
 import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
+import {IClientRepository} from "../../../domain/account/client/client-repository.abstract";
+import {ICardRepository} from "../../../domain/account/card/card-repository.abstract";
 
 @Injectable()
 export class AuthUsecase {
@@ -43,7 +44,8 @@ export class AuthUsecase {
           8)
      */
   constructor(
-    private readonly accountRepository: IAccountRepository,
+    private readonly clientRepository: IClientRepository,
+    private readonly cardRepository: ICardRepository,
     private readonly jwtService: IJwtService,
     private readonly otpRepository: IOtpRepository,
     private readonly dateService: IDate,
@@ -67,7 +69,7 @@ export class AuthUsecase {
     }
 
     //Check if user already exists
-    const account: Client = await this.accountRepository.findOneByPhoneNumber(
+    const account: Client = await this.clientRepository.findOneByPhone(
       phone,
     );
 
@@ -85,9 +87,9 @@ export class AuthUsecase {
       account.getCard().isDel = 0;
       account.refreshToken = refreshToken.token;
 
-      const isUpdated = await this.accountRepository.update(account);
-      const isReactivated = await this.accountRepository.reactiveBalance(
-        account,
+      const isUpdated = await this.clientRepository.update(account);
+      const isReactivated = await this.cardRepository.reActivate(
+        account.getCard().cardId
       );
 
       if (!isUpdated && !isReactivated)
@@ -107,15 +109,26 @@ export class AuthUsecase {
 
     const uniqNomer = await this.generateNomerCard();
 
-    //Create card in the database
-    registeredAccount = await this.accountRepository.create(
-      clientData,
-      uniqNomer,
-    );
+    const client: Client = Client.create(clientData);
+    const newClient = await this.clientRepository.create(client);
 
+    const cardData: ICreateCardDto = {
+      clientId: newClient.clientId,
+      nomer: uniqNomer,
+      devNomer: uniqNomer,
+      cardTypeId: CardType.ONVI,
+      beginDate: new Date(Date.now()),
+      isDel: 1,
+    };
+
+    const card: Card = Card.create(cardData);
+
+    const newCard = await this.cardRepository.create(card, newClient);
+
+    client.addCard(newCard);
     //await this.setCurrentRefreshToken(phone, refreshToken.token);
 
-    return { registeredAccount, accessToken, refreshToken };
+    return { client, accessToken, refreshToken };
   }
 
   public async validateUserForLocalStrategy(
@@ -131,7 +144,7 @@ export class AuthUsecase {
       throw new InvalidOtpException(phone);
     }
 
-    const account: Client = await this.accountRepository.findOneByPhoneNumber(
+    const account: Client = await this.clientRepository.findOneByPhone(
       phone,
     );
 
@@ -149,7 +162,7 @@ export class AuthUsecase {
   }
 
   public async validateUserForJwtStrategy(phone: string): Promise<any> {
-    const account = await this.accountRepository.findOneByPhoneNumber(phone);
+    const account = await this.clientRepository.findOneByPhone(phone);
     if (!account) {
       throw new InvalidAccessException(phone);
     }
@@ -184,14 +197,14 @@ export class AuthUsecase {
     refreshToken: string,
   ): Promise<void> {
     const hashedRefreshToken = await this.bcryptService.hash(refreshToken);
-    await this.accountRepository.setRefreshToken(phone, hashedRefreshToken);
+    await this.clientRepository.setRefreshToken(phone, hashedRefreshToken);
   }
 
   public async getAccountIfRefreshTokenMatches(
     refreshToken: string,
     phone: string,
   ) {
-    const account = await this.accountRepository.findOneByPhoneNumber(phone);
+    const account = await this.clientRepository.findOneByPhone(phone);
     if (!account) {
       return null;
     }
@@ -249,7 +262,7 @@ export class AuthUsecase {
     do {
       newNomer = this.generateRandom12DigitNumber();
       console.log(newNomer);
-    } while (await this.accountRepository.findOneByDevNomer(newNomer));
+    } while (await this.cardRepository.findOneByDevNomer(newNomer));
     return newNomer;
   }
   private generateRandom12DigitNumber() {

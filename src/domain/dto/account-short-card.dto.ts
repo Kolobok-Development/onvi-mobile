@@ -1,4 +1,4 @@
-export interface ShortCardDto {
+export interface AccountShortCardDto {
   number: string;
   unqNumber: string;
   balance: number;

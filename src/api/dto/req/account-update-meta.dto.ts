@@ -1,6 +1,6 @@
 import {IsNotEmpty, IsNumber, IsOptional, IsString} from "class-validator";
 
-export class UpdateMetaDto{
+export class AccountUpdateMetaDto {
     @IsNumber()
     @IsNotEmpty({ message: 'Id is required' })
     metaId: number;

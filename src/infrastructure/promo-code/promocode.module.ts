@@ -5,6 +5,7 @@ import { PromoCodeUsageEntity } from './entity/promo-code-usage.entity';
 import { PromoCodeLocationEntity } from './entity/promo-code-location.entity';
 import { PromoCodeRepositoryProvider } from './provider/promo-code-repository.provider';
 import {PromoCodeToUserEntity} from "./entity/promo-code-to-user.entity";
+import {PromocodeUsecase} from "../../application/usecases/promocode/promocode.usecase";
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import {PromoCodeToUserEntity} from "./entity/promo-code-to-user.entity";
       PromoCodeToUserEntity,
     ]),
   ],
-  providers: [PromoCodeRepositoryProvider],
-  exports: [PromoCodeRepositoryProvider],
+  providers: [PromoCodeRepositoryProvider, PromocodeUsecase],
+  exports: [PromoCodeRepositoryProvider, PromocodeUsecase],
 })
 export class PromocodeModule {}

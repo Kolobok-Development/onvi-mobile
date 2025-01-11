@@ -9,6 +9,7 @@ import { OrderEntity } from './entity/order.entity';
 import { PromocodeModule } from '../promo-code/promocode.module';
 import { PaymentModule } from '../payment/payment.module';
 import {AccountModule} from "../account/account.module";
+import {TransactionModule} from "../transaction/transaction.module";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import {AccountModule} from "../account/account.module";
     TypeOrmModule.forFeature([OrderEntity]),
     PaymentModule,
     AccountModule,
+    TransactionModule,
   ],
   controllers: [OrderController],
   providers: [OrderRepositoryProvider, OrderUsecase],

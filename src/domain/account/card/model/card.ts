@@ -1,6 +1,6 @@
 import { Client } from '../../client/model/client';
 import { CardType } from '../enum/card-type.enum';
-import { ICreateCardDto } from '../dto/create-card.dto';
+import { ICreateCardDto } from '../../../dto/account-create-card.dto';
 import { CardEntity } from '../../../../infrastructure/account/entity/card.entity';
 
 export class Card {
@@ -19,7 +19,7 @@ export class Card {
   nomer: string;
   tag?: string;
 
-  private constructor(
+  constructor(
     cardTypeId: CardType,
     nomer: string,
     devNomer: string,
@@ -79,49 +79,6 @@ export class Card {
   }
 
   public isCardActive(): boolean {
-    if (this.isDel === null || this.isDel === 0) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  public static fromEntity(entity: CardEntity): Card {
-    const {
-      cardId,
-      balance,
-      isLocked,
-      dateBegin,
-      dateEnd,
-      client,
-      cardTypeId,
-      devNomer,
-      isDel,
-      cmnCity,
-      realBalance,
-      airBalance,
-      nomer,
-      tag,
-    } = entity;
-
-    const card = new Card(
-      cardTypeId,
-      nomer,
-      devNomer,
-      balance,
-      airBalance,
-      realBalance,
-      dateBegin,
-      {
-        cardId,
-        isLocked,
-        dateEnd,
-        isDel,
-        cmnCity,
-        tag,
-      },
-    );
-
-    return card;
+    return this.isDel === null || this.isDel === 0;
   }
 }

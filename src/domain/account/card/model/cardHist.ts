@@ -41,36 +41,4 @@ export class CardHist {
     this.address = address;
     this.city = city;
   }
-
-  public static fromEntity(cardHistEntity: CardHistEntity): CardHist {
-    const {
-      unqCardNumber,
-      name,
-      phone,
-      operDate,
-      operSum,
-      operSumReal,
-      operSumPoint,
-      cashBackAmount,
-      carWash,
-      address,
-      city,
-      bay,
-    } = cardHistEntity;
-
-    return new CardHist(
-      unqCardNumber,
-      name,
-      phone,
-      operDate,
-      operSum,
-      operSumReal,
-      operSumPoint,
-      cashBackAmount,
-      carWash,
-      bay,
-      address,
-      city,
-    );
-  }
 }
