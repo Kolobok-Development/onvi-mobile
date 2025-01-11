@@ -203,7 +203,10 @@ export class AccountController {
   async transferData(@Body() body: AccountTransferDataDto, @Req() req: any): Promise<AccountTransferDataResponseDto> {
     const { user } = req;
     try {
-      return await this.accountTransferUseCase.transferData(body.devNomer, user);
+      return await this.accountTransferUseCase.transferData(
+        body.devNomer,
+        user,
+      );
     } catch (e) {
       if (e instanceof CardNotMatchExceptions) {
         throw new CustomHttpException({
