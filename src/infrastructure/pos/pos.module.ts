@@ -6,6 +6,6 @@ import { EnvConfigModule } from '../config/env-config/env-config.module';
 @Module({
   imports: [HttpModule, EnvConfigModule],
   providers: [PosServiceProvider],
-  exports: ['IPosService'],
+  exports: [PosServiceProvider],
 })
 export class PosModule {}

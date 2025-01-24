@@ -27,8 +27,8 @@ import { CardRepository } from '../../../infrastructure/account/repository/card.
 import { Client } from '../../../domain/account/client/model/client';
 import { Card } from '../../../domain/account/card/model/card';
 import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
-import {IClientRepository} from "../../../domain/account/client/client-repository.abstract";
-import {ICardRepository} from "../../../domain/account/card/card-repository.abstract";
+import { IClientRepository } from '../../../domain/account/client/client-repository.abstract';
+import { ICardRepository } from '../../../domain/account/card/card-repository.abstract';
 
 @Injectable()
 export class AuthUsecase {
@@ -69,9 +69,7 @@ export class AuthUsecase {
     }
 
     //Check if user already exists
-    const account: Client = await this.clientRepository.findOneByPhone(
-      phone,
-    );
+    const account: Client = await this.clientRepository.findOneByPhone(phone);
 
     if (account && account.isActivated != 0 && account.getCard().isDel != 1) {
       throw new AccountExistsException(phone);
@@ -82,14 +80,18 @@ export class AuthUsecase {
     const refreshToken = await this.signRefreshToken(phone);
 
     //If client was deleted
-    if (account && !account.isClientActive() && !account.getCard().isCardActive()) {
+    if (
+      account &&
+      !account.isClientActive() &&
+      !account.getCard().isCardActive()
+    ) {
       account.isActivated = 1;
       account.getCard().isDel = 0;
       account.refreshToken = refreshToken.token;
 
       const isUpdated = await this.clientRepository.update(account);
       const isReactivated = await this.cardRepository.reActivate(
-        account.getCard().cardId
+        account.getCard().cardId,
       );
 
       if (!isUpdated && !isReactivated)
@@ -125,10 +127,11 @@ export class AuthUsecase {
 
     const newCard = await this.cardRepository.create(card, newClient);
 
-    client.addCard(newCard);
-    //await this.setCurrentRefreshToken(phone, refreshToken.token);
+    newClient.addCard(newCard);
 
-    return { client, accessToken, refreshToken };
+    await this.setCurrentRefreshToken(phone, refreshToken.token);
+
+    return { newClient, accessToken, refreshToken };
   }
 
   public async validateUserForLocalStrategy(
@@ -144,9 +147,7 @@ export class AuthUsecase {
       throw new InvalidOtpException(phone);
     }
 
-    const account: Client = await this.clientRepository.findOneByPhone(
-      phone,
-    );
+    const account: Client = await this.clientRepository.findOneByPhone(phone);
 
     if (!account) {
       return null;
@@ -196,8 +197,8 @@ export class AuthUsecase {
     phone: string,
     refreshToken: string,
   ): Promise<void> {
-    const hashedRefreshToken = await this.bcryptService.hash(refreshToken);
-    await this.clientRepository.setRefreshToken(phone, hashedRefreshToken);
+    //const hashedRefreshToken = await this.bcryptService.hash(refreshToken);
+    await this.clientRepository.setRefreshToken(phone, refreshToken);
   }
 
   public async getAccountIfRefreshTokenMatches(
@@ -209,10 +210,7 @@ export class AuthUsecase {
       return null;
     }
 
-    const isRefreshingTokenMatching = await this.bcryptService.compare(
-      refreshToken,
-      account.refreshToken,
-    );
+    const isRefreshingTokenMatching = account.refreshToken === refreshToken;
 
     if (isRefreshingTokenMatching) {
       return account;
@@ -232,7 +230,7 @@ export class AuthUsecase {
     //Create new otp model
     let otpCode = this.generateOtp();
     console.log(otpCode);
-    if(phone == '+79999999999'){
+    if (phone == '+79999999999') {
       otpCode = '0000';
     }
     const otp = new Otp(null, phone, otpCode, otpTime);

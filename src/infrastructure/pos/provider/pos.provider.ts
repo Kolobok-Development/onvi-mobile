@@ -3,6 +3,6 @@ import { IPosService } from '../interface/pos.interface';
 import { PosService } from '../pos.service';
 
 export const PosServiceProvider: Provider = {
-  provide: 'IPosService',
+  provide: IPosService,
   useClass: PosService,
 };

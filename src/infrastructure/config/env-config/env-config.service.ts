@@ -43,4 +43,12 @@ export class EnvConfigService implements IJwtConfig {
   getPaymentGatewayClientApiKey(): string {
     return this.configService.get<string>('PAYMENT_GATEWAY_API_KEY_CLIENT');
   }
+
+  getLogtailGatwayHTTPToken(): string {
+    return this.configService.get<string>('LOGTAIL_HTTP_SOURCE_TOKEN');
+  }
+
+  getLogtailGatwayRunTimeToken(): string {
+    return this.configService.get<string>('LOGTAIL_ERROR_SOURCE_TOKEN');
+  }
 }

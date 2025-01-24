@@ -14,13 +14,69 @@ import { OrderModule } from './infrastructure/order/order.module';
 import { PromocodeModule } from './infrastructure/promo-code/promocode.module';
 import { PaymentModule } from './infrastructure/payment/payment.module';
 import { PromotionModule } from './infrastructure/promotion/promotion.module';
-import {PartnerModule} from "./infrastructure/partner/partner.module";
-import {HttpModule} from "@nestjs/axios";
-import {TransactionModule} from "./infrastructure/transaction/transaction.module";
+import { PartnerModule } from './infrastructure/partner/partner.module';
+import { HttpModule } from '@nestjs/axios';
+import { TransactionModule } from './infrastructure/transaction/transaction.module';
+import { PosModule } from './infrastructure/pos/pos.module';
+import { LoggerModule } from 'nestjs-pino';
+import { EnvConfigService } from './infrastructure/config/env-config/env-config.service';
 
 @Module({
   imports: [
     PassportModule.register({}),
+    LoggerModule.forRootAsync({
+      imports: [EnvConfigModule],
+      inject: [EnvConfigService],
+      useFactory: (env: EnvConfigService) => ({
+        pinoHttp: {
+          customSuccessMessage(req, res) {
+            return `${req.method} [${req.url}] || ${res.statusMessage}`;
+          },
+          customErrorMessage(req, res, error) {
+            return `${req.method} [${req.url}] || ${error.message}`;
+          },
+          serializers: {
+            req(req) {
+              req.body = req.raw.body;
+              return req;
+            },
+          },
+          transport: {
+            dedupe: true,
+            targets: [
+              ...(process.env.NODE_ENV === 'development'
+                ? [
+                    {
+                      target: 'pino-pretty',
+                      options: {
+                        colorize: true,
+                        levelFirst: true,
+                        translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
+                      },
+                      level: 'debug',
+                    },
+                  ]
+                : [
+                    {
+                      target: '@logtail/pino',
+                      options: {
+                        sourceToken: env.getLogtailGatwayHTTPToken(), // HTTP source
+                      },
+                      level: 'info',
+                    },
+                    {
+                      target: '@logtail/pino',
+                      options: {
+                        sourceToken: env.getLogtailGatwayRunTimeToken(), // Error source
+                      },
+                      level: 'error',
+                    },
+                  ]),
+            ],
+          },
+        },
+      }),
+    }),
     HttpModule,
     DatabaseModule,
     AccountModule,
@@ -36,6 +92,7 @@ import {TransactionModule} from "./infrastructure/transaction/transaction.module
     PromotionModule,
     PartnerModule,
     TransactionModule,
+    PosModule,
   ],
   controllers: [],
   providers: [],

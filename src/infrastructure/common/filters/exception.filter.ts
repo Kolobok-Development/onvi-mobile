@@ -4,6 +4,7 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger
 } from '@nestjs/common';
 import { ValidationException } from '../exceptions/validation.exception';
 import { CustomHttpException } from '../exceptions/custom-http.exception';
@@ -22,6 +23,7 @@ interface IError {
 
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(AllExceptionFilter.name);
   constructor() {}
   catch(exception: any, host: ArgumentsHost): any {
     const ctx = host.switchToHttp();
@@ -68,7 +70,12 @@ export class AllExceptionFilter implements ExceptionFilter {
       },
     };
 
-    console.log(exception);
+    // Log the error to the runtime log (Logtail)
+    this.logger.error(
+      `Exception caught: ${JSON.stringify(responseData)}`,
+      exception.stack || 'No stack trace available',
+    );
+
     response.status(status).json(responseData);
   }
 }

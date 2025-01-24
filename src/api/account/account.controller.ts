@@ -22,30 +22,30 @@ import { AccountCreateMetaDto } from '../dto/req/account-create-meta.dto';
 import { MetaExistsExceptions } from '../../domain/account/exceptions/meta-exists.exception';
 import { AccountUpdateMetaDto } from '../dto/req/account-update-meta.dto';
 import { MetaNotFoundExceptions } from '../../domain/account/exceptions/meta-not-found.exception';
-import {CreateMetaUseCase} from "../../application/usecases/account/account-meta-create";
-import {UpdateMetaUseCase} from "../../application/usecases/account/account-meta-update";
-import {FindMethodsMetaUseCase} from "../../application/usecases/account/account-meta-find-methods";
-import {UpdateClientUseCase} from "../../application/usecases/account/account-client-update";
-import {CardService} from "../../application/services/card-service";
-import {DeleteAccountUseCase} from "../../application/usecases/account/account-delete";
-import {PromocodeUsecase} from "../../application/usecases/promocode/promocode.usecase";
-import {AccountTransferDataDto} from "../dto/req/account-transfer-data.dto";
-import {AccountTransferUseCase} from "../../application/usecases/account/account-transfer";
-import {CardNotMatchExceptions} from "../../domain/account/exceptions/card-not-match.exceptions";
-import {AccountTransferDataResponseDto} from "../dto/res/account-transfer-data.dto";
-import {AccountTransferDto} from "../dto/req/account-transfer.dto";
+import { CreateMetaUseCase } from '../../application/usecases/account/account-meta-create';
+import { UpdateMetaUseCase } from '../../application/usecases/account/account-meta-update';
+import { FindMethodsMetaUseCase } from '../../application/usecases/account/account-meta-find-methods';
+import { UpdateClientUseCase } from '../../application/usecases/account/account-client-update';
+import { CardService } from '../../application/services/card-service';
+import { DeleteAccountUseCase } from '../../application/usecases/account/account-delete';
+import { PromocodeUsecase } from '../../application/usecases/promocode/promocode.usecase';
+import { AccountTransferDataDto } from '../dto/req/account-transfer-data.dto';
+import { AccountTransferUseCase } from '../../application/usecases/account/account-transfer';
+import { CardNotMatchExceptions } from '../../domain/account/exceptions/card-not-match.exceptions';
+import { AccountTransferDataResponseDto } from '../dto/res/account-transfer-data.dto';
+import { AccountTransferDto } from '../dto/req/account-transfer.dto';
 
 @Controller('account')
 export class AccountController {
   constructor(
-      private readonly updateClientUseCase: UpdateClientUseCase,
-      private readonly createMetaUseCase: CreateMetaUseCase,
-      private readonly updateMetaUseCase: UpdateMetaUseCase,
-      private readonly deleteAccountUseCase: DeleteAccountUseCase,
-      private readonly findMethodsMetaUseCase: FindMethodsMetaUseCase,
-      private readonly promocodeUsecase: PromocodeUsecase,
-      private readonly accountTransferUseCase: AccountTransferUseCase,
-      private readonly cardService: CardService,
+    private readonly updateClientUseCase: UpdateClientUseCase,
+    private readonly createMetaUseCase: CreateMetaUseCase,
+    private readonly updateMetaUseCase: UpdateMetaUseCase,
+    private readonly deleteAccountUseCase: DeleteAccountUseCase,
+    private readonly findMethodsMetaUseCase: FindMethodsMetaUseCase,
+    private readonly promocodeUsecase: PromocodeUsecase,
+    private readonly accountTransferUseCase: AccountTransferUseCase,
+    private readonly cardService: CardService,
   ) {}
 
   @UseGuards(JwtGuard)
@@ -54,7 +54,9 @@ export class AccountController {
   async getCurrentAccount(@Request() req: any): Promise<any> {
     try {
       const { user } = req;
-      const meta = await this.findMethodsMetaUseCase.getByClientId(user.clientId);
+      const meta = await this.findMethodsMetaUseCase.getByClientId(
+        user.clientId,
+      );
       return user.getAccountInfo(meta);
     } catch (e) {
       throw new CustomHttpException({
@@ -116,7 +118,9 @@ export class AccountController {
   async getActivePromotion(@Req() request: any): Promise<any> {
     try {
       const { user } = request;
-      return await this.promocodeUsecase.getActivePromotionHistoryForClient(user);
+      return await this.promocodeUsecase.getActivePromotionHistoryForClient(
+        user,
+      );
     } catch (e) {
       throw new CustomHttpException({
         message: e.message,
@@ -127,7 +131,10 @@ export class AccountController {
 
   @Patch()
   @UseGuards(JwtGuard)
-  async updateAccountInfo(@Body() body: AccountClientUpdateDto, @Req() req: any) {
+  async updateAccountInfo(
+    @Body() body: AccountClientUpdateDto,
+    @Req() req: any,
+  ) {
     const { user } = req;
 
     try {
@@ -200,11 +207,14 @@ export class AccountController {
   @Get('/transfer')
   @UseGuards(JwtGuard)
   @HttpCode(201)
-  async transferData(@Body() body: AccountTransferDataDto, @Req() req: any): Promise<AccountTransferDataResponseDto> {
+  async transferData(
+    @Query() query: AccountTransferDataDto,
+    @Req() req: any,
+  ): Promise<AccountTransferDataResponseDto> {
     const { user } = req;
     try {
       return await this.accountTransferUseCase.transferData(
-        body.devNomer,
+        query.devNomer,
         user,
       );
     } catch (e) {
@@ -251,12 +261,18 @@ export class AccountController {
   @Patch('notifications')
   @UseGuards(JwtGuard)
   @HttpCode(201)
-  async updateNotifications(@Body() body: {notification: boolean}, @Request() request: any): Promise<any> {
+  async updateNotifications(
+    @Body() body: { notification: boolean },
+    @Request() request: any,
+  ): Promise<any> {
     try {
       const { user } = request;
-      return await this.updateClientUseCase.execute({
-        notification: body.notification
-      }, user);
+      return await this.updateClientUseCase.execute(
+        {
+          notification: body.notification,
+        },
+        user,
+      );
     } catch (e) {
       throw new CustomHttpException({
         message: e.message,

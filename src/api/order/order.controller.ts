@@ -18,10 +18,17 @@ import { CustomHttpException } from '../../infrastructure/common/exceptions/cust
 import { VerifyPromoDto } from '../../application/usecases/order/dto/verify-promo.dto';
 import { PromoCodeNotFoundException } from '../../domain/promo-code/exceptions/promo-code-not-found.exception';
 import { InvalidPromoCodeException } from '../../domain/promo-code/exceptions/invalid-promo-code.exception';
+import { CreateOrderUseCase } from '../../application/usecases/order/create-order.use-case';
+import { IPosService } from '../../infrastructure/pos/interface/pos.interface';
+import { PingRequestDto } from '../../infrastructure/pos/dto/ping-request.dto';
 
 @Controller('order')
 export class OrderController {
-  constructor(private readonly orderUsecase: OrderUsecase) {}
+  constructor(
+    private readonly orderUsecase: OrderUsecase,
+    private readonly createOrderUsecase: CreateOrderUseCase,
+    private readonly posService: IPosService,
+  ) {}
 
   @UseGuards(JwtGuard)
   @Post('create')
@@ -29,7 +36,7 @@ export class OrderController {
   async create(@Body() data: CreateOrderDto, @Req() req: any): Promise<any> {
     try {
       const { user } = req;
-      return await this.orderUsecase.create(data, user);
+      return await this.createOrderUsecase.execute(data, user);
     } catch (e) {
       if (e instanceof ClientException) {
         throw new CustomHttpException({
@@ -82,9 +89,9 @@ export class OrderController {
   @Get('/ping')
   @UseGuards(JwtGuard)
   async pingCarWash(@Query() query: any) {
-    return await this.orderUsecase.pingCarWash(
-      Number(query.carWashId),
-      Number(query.bayNumber),
-    );
+    return await this.posService.ping({
+      posId: Number(query.carWashId),
+      bayNumber: Number(query.bayNumber),
+    });
   }
 }
