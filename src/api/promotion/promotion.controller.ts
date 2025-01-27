@@ -19,6 +19,7 @@ import { InvalidPromotionException } from '../../domain/promotion/exceptions/inv
 import { PromotionResponseDto } from './dto/response/promotion-response.dto';
 import { PromotionStatus } from '../../domain/promotion/enums/promotion-status.enum';
 import {AccountNotFoundExceptions} from "../../domain/account/exceptions/account-not-found.exceptions";
+import { use } from 'passport';
 
 @Controller('promotion')
 export class PromotionController {
@@ -86,9 +87,10 @@ export class PromotionController {
   @Get()
   @UseGuards(JwtGuard)
   @HttpCode(200)
-  async getActivePromotion(): Promise<any> {
+  async getActivePromotion(@Req() request: any): Promise<any> {
     try {
-      return await this.promotionUsecase.getActivePromotions();
+      const { user } = request;
+      return await this.promotionUsecase.getActivePromotions(user);
     } catch (e) {
       if (e instanceof PromotionNotFoundException) {
         throw new CustomHttpException({
