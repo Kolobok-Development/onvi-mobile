@@ -5,10 +5,10 @@ import { Client } from '../../../domain/account/client/model/client';
 import { Promotion } from '../../../domain/promotion/model/promotion.model';
 import { PromotionNotFoundException } from '../../../domain/promotion/exceptions/promotion-not-found.exception';
 import { InvalidPromotionException } from '../../../domain/promotion/exceptions/invalid-promotion.exception';
-import {ITransactionRepository} from "../../../domain/transaction/transaction-repository.abstract";
-import {ICardRepository} from "../../../domain/account/card/card-repository.abstract";
-import {IPromotionHistoryRepository} from "../../../domain/promotion/promotionHistory-repository.abstract";
-import {PromotionHist} from "../../../domain/promotion/model/promotionHist";
+import { ITransactionRepository } from '../../../domain/transaction/transaction-repository.abstract';
+import { ICardRepository } from '../../../domain/account/card/card-repository.abstract';
+import { IPromotionHistoryRepository } from '../../../domain/promotion/promotionHistory-repository.abstract';
+import { PromotionHist } from '../../../domain/promotion/model/promotionHist';
 
 @Injectable()
 export class PromotionUsecase {
@@ -52,12 +52,8 @@ export class PromotionUsecase {
         promotion.point.toString(),
         extId,
       );
-      console.log(transactionId);
     } else if (promotion.type === 2) {
-      await this.cardRepository.changeType(
-        card.cardId,
-        promotion.cashbackType,
-      );
+      await this.cardRepository.changeType(card.cardId, promotion.cashbackType);
       isActive = 1;
     }
     const expiryPeriodDate = new Date(
@@ -73,8 +69,9 @@ export class PromotionUsecase {
     return promotion;
   }
 
-  async getActivePromotions() {
-    const promotions = await this.promotionRepository.findActive();
+  async getActivePromotions(client: Client) {
+    const card = client.getCard();
+    const promotions = await this.promotionRepository.findActive(card.cardId);
 
     if (!promotions)
       throw new PromotionNotFoundException('No promotions found.');

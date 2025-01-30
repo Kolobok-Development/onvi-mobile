@@ -14,5 +14,5 @@ export abstract class IPromotionRepository {
     promotionId: number,
   ): Promise<boolean>;
   abstract findOneById(promotionId: number): Promise<Promotion>;
-  abstract findActive(): Promise<Promotion[]>;
+  abstract findActive(cardId: number): Promise<Promotion[]>;
 }

@@ -4,8 +4,9 @@ import { PromoCodeEntity } from './entity/promocode.entity';
 import { PromoCodeUsageEntity } from './entity/promo-code-usage.entity';
 import { PromoCodeLocationEntity } from './entity/promo-code-location.entity';
 import { PromoCodeRepositoryProvider } from './provider/promo-code-repository.provider';
-import {PromoCodeToUserEntity} from "./entity/promo-code-to-user.entity";
-import {PromocodeUsecase} from "../../application/usecases/promocode/promocode.usecase";
+import { PromoCodeToUserEntity } from './entity/promo-code-to-user.entity';
+import { PromocodeUsecase } from '../../application/usecases/promocode/promocode.usecase';
+import { PromoCodeService } from '../../application/services/promocode-service';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import {PromocodeUsecase} from "../../application/usecases/promocode/promocode.u
       PromoCodeToUserEntity,
     ]),
   ],
-  providers: [PromoCodeRepositoryProvider, PromocodeUsecase],
-  exports: [PromoCodeRepositoryProvider, PromocodeUsecase],
+  providers: [PromoCodeRepositoryProvider, PromocodeUsecase, PromoCodeService],
+  exports: [PromoCodeRepositoryProvider, PromocodeUsecase, PromoCodeService],
 })
 export class PromocodeModule {}

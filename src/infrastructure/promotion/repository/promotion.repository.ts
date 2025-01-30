@@ -34,15 +34,22 @@ export class PromotionRepository implements IPromotionRepository {
     return await this.promotionUsageRepository.save(promotionUsage);
   }
 
-  async findActive(): Promise<Promotion[]> {
+  async findActive(cardId: number): Promise<Promotion[]> {
     const currentDate = new Date();
 
-    const promotions = await this.promotionRepository.find({
-      where: {
-        isActive: 1, // Or true, depending on your database schema
-        expiryDate: MoreThan(currentDate), // Use LessThan for comparisons
-      },
-    });
+    const promotions = await this.promotionRepository
+      .createQueryBuilder('promotion')
+      // Left join with PromotionUsageEntity filtered by cardId
+      .leftJoin(
+        PromotionUsageEntity,
+        'usage',
+        'usage.PROMOTION_ID = promotion.promotionId AND usage.CARD_ID = :cardId',
+        { cardId },
+      )
+      .where('promotion.isActive = :isActive', { isActive: 1 })
+      .andWhere('promotion.expiryDate > :currentDate', { currentDate })
+      .andWhere('usage.id IS NULL') // Ensures the card hasn't used the promotion
+      .getMany();
 
     // Handle the case where no promotions are found
     if (!promotions || promotions.length === 0) return [];

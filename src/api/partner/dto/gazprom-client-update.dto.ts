@@ -1,4 +1,4 @@
-import {IsDate, IsEnum, IsNotEmpty, IsNumber, IsString} from "class-validator";
+import {IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString} from "class-validator";
 import {Transform, Type} from "class-transformer";
 
 export class ClientDto{
@@ -9,8 +9,8 @@ export class ClientDto{
     @IsNotEmpty({ message: 'partner_user_id is required' })
     partner_user_id: number;
     @IsString()
-    @IsNotEmpty({ message: 'phone_number is required' })
-    phone_number: string;
+    @IsOptional()
+    phone_number?: string;
 }
 
 export class PromotionDto{

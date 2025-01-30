@@ -28,7 +28,7 @@ export class PartnerController {
     }
 
     @UseGuards(JwtGuard)
-    @Post('gazprom')
+    @Post('2921/activate')
     @HttpCode(201)
     async activateSessionGazprom(@Req() req: any): Promise<any> {
         try {
@@ -43,7 +43,7 @@ export class PartnerController {
     }
 
     @UseGuards(JwtGuard)
-    @Get('gazprom')
+    @Get('2921/subscription')
     @HttpCode(201)
     async getSubscriptionDataGazprom(@Req() req: any): Promise<any> {
         try {
@@ -58,7 +58,7 @@ export class PartnerController {
     }
 
     @UseGuards(JwtGuard)
-    @Patch('gazprom')
+    @Patch('2921')
     @HttpCode(201)
     async updatePartnerDataGazprom(@Req() req: any, @Body() data: {operDate: Date}): Promise<any> {
         try {
@@ -75,7 +75,7 @@ export class PartnerController {
     @UseGuards(PartnerGuard)
     @Post('2921/clients/subscription/create')
     @HttpCode(201)
-    async updateClientDataGazprom(@Body() data: GazpromClientUpdateDto, @Req() req: any): Promise<any> {
+    async createClientDataGazprom(@Body() data: GazpromClientUpdateDto, @Req() req: any): Promise<any> {
         try {
             const { user } = req;
             return await this.gazpromUsecase.updateClientData(data, user);
@@ -103,6 +103,30 @@ export class PartnerController {
         try {
             const { user } = req;
             return await this.gazpromUsecase.cancelClientData(data, user);
+        } catch (e) {
+            if (e instanceof NotFoundException) {
+                throw new CustomHttpException({
+                    type: e.type,
+                    innerCode: e.innerCode,
+                    message: e.message,
+                    code: HttpStatus.NOT_FOUND,
+                });
+            } else {
+                throw new CustomHttpException({
+                    message: e.message,
+                    code: HttpStatus.INTERNAL_SERVER_ERROR,
+                });
+            }
+        }
+    }
+
+    @UseGuards(PartnerGuard)
+    @Post('2921/clients/subscription/refresh')
+    @HttpCode(201)
+    async refreshClientDataGazprom(@Body() data: GazpromClientUpdateDto, @Req() req: any): Promise<any> {
+        try {
+            const { user } = req;
+            return await this.gazpromUsecase.updateClientData(data, user);
         } catch (e) {
             if (e instanceof NotFoundException) {
                 throw new CustomHttpException({

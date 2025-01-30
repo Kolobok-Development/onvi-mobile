@@ -10,8 +10,8 @@ import { Repository } from 'typeorm';
 import { PromoCodeUsageEntity } from '../entity/promo-code-usage.entity';
 import { CardEntity } from '../../account/entity/card.entity';
 import { PromoCodeToUserEntity } from '../entity/promo-code-to-user.entity';
-import {ClientEntity} from "../../account/entity/client.entity";
-import {Client} from "../../../domain/account/client/model/client";
+import { ClientEntity } from '../../account/entity/client.entity';
+import { Client } from '../../../domain/account/client/model/client';
 
 @Injectable()
 export class PromoCodeRepository implements IPromoCodeRepository {
@@ -53,7 +53,9 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     const promoCodeToUserEntity = new PromoCodeToUserEntity();
 
     promoCodeToUserEntity.promoCode = { id: promoCode.id } as PromoCodeEntity;
-    promoCodeToUserEntity.client = { clientId: client.clientId } as ClientEntity;
+    promoCodeToUserEntity.client = {
+      clientId: client.clientId,
+    } as ClientEntity;
 
     return await this.promoCodeToUserEntity.save(promoCodeToUserEntity);
   }
@@ -115,17 +117,22 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     return promoCodeUsage; // Возвращаем найденную запись или null, если записей нет
   }
 
-  async findByUserAndActive(clientId: number): Promise<PromoCode[]> {
+  async findByUserAndActive(cardId: number): Promise<PromoCode[]> {
     const currentDate = new Date();
 
     // Fetch the promo codes that are active and associated with the user via PromoCodeToUserEntity
     const promoCodes = await this.promoCodeRepository
-      .createQueryBuilder('promoCode')
-      .leftJoin('promoCode.user', 'user') // Join with PromoCodeToUserEntity
-      .where('promoCode.isActive = :isActive', { isActive: 1 }) // Filter active promo codes
-      .andWhere('user.client = :clientId', { clientId }) // Filter by clientId in PromoCodeToUser
-      .andWhere('promoCode.expiryDate >= :currentDate', { currentDate }) // Ensure expiryDate is valid
-      .getMany(); // Execute the query
+      .createQueryBuilder('promocode')
+      .leftJoin(
+        PromoCodeUsageEntity,
+        'usage',
+        'usage.PROMO_CODE_ID = promocode.id AND usage.CARD_ID = :cardId',
+        { cardId },
+      )
+      .where('promocode.isActive = :isActive', { isActive: 1 })
+      .andWhere('promocode.expiryDate > :currentDate', { currentDate })
+      .andWhere('usage.id IS NULL')
+      .getMany();
 
     // Return the mapped promo codes
     return promoCodes.map((promoCode) => PromoCode.fromEntity(promoCode));

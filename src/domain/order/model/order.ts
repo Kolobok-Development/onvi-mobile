@@ -92,12 +92,20 @@ export class Order {
 
     const orderStatus: OrderStatus = OrderStatus.CREATED;
 
-    return new Order(createdAt, sum, orderStatus, carWashId, bayNumber, cashback,{
-      transactionId,
-      promoCodeId,
-      rewardPointsUsed,
-      card: card,
-    });
+    return new Order(
+      createdAt,
+      sum,
+      orderStatus,
+      carWashId,
+      bayNumber,
+      cashback,
+      {
+        transactionId,
+        promoCodeId,
+        rewardPointsUsed,
+        card: card,
+      },
+    );
   }
 
   public static fromEntity(entity: OrderEntity): Order {
