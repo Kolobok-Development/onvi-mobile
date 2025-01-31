@@ -22,8 +22,7 @@ export class GazpromUsecase {
         const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(user.clientId, partner.id);
         if (clientPartner) {
             try {
-                //return await this.gazpromRepository.getSession(user.clientId)
-                return clientPartner
+                return await this.gazpromRepository.getSession(user.clientId)
             } catch (e) {}
         }
         const clientGazprom = {
@@ -31,17 +30,12 @@ export class GazpromUsecase {
         }
         const partnerClient = PartnerClient.create({ metaData: JSON.stringify(clientGazprom)});
         await this.partnerRepository.apply(partnerClient, partner, user.clientId);
-        //return await this.gazpromRepository.registration(user.clientId, user.correctPhone);
+        return await this.gazpromRepository.registration(user.clientId, user.correctPhone);
     }
 
     async getSubscriptionData(user: Client): Promise<any> {
         const partner = await this.partnerRepository.findOneByName('Gazprom');
-        //const subscriptionData = await this.gazpromRepository.getSubscriptionData(user.clientId);
-        const subscriptionData = {
-            dateStart: '12.12.12',
-            dateEnd: '12.12.24',
-            status: 'ACTIVE'
-        }
+        const subscriptionData = await this.gazpromRepository.getSubscriptionData(user.clientId);
         const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(user.clientId, partner.id);
         clientPartner.metaData = JSON.parse(JSON.stringify(subscriptionData));
         return await this.partnerRepository.updatePartnerClient(clientPartner);
