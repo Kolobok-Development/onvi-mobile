@@ -35,14 +35,14 @@ export class GazpromRepository implements IGazpromRepository {
     };
 
     try {
-      /*const request: AxiosResponse = await firstValueFrom(
+      const request: AxiosResponse = await firstValueFrom(
         this.httpService.post(
           `${this.baseUrl}/v1/partners/${this.partnerId}/register/client`,
           body,
           config,
         ),
-      );*/
-      return { token: /*request.data.token*/ 'test_token' };
+      );
+      return { token: request.data.token };
     } catch (err) {
       const { response } = err;
       return new GazpromErrorDto(
@@ -69,14 +69,14 @@ export class GazpromRepository implements IGazpromRepository {
     };
 
     try {
-      /*const request: AxiosResponse = await firstValueFrom(
+      const request: AxiosResponse = await firstValueFrom(
           this.httpService.post(
               `${this.baseUrl}/v1/partners/${this.partnerId}/reference/client`,
               body,
               config,
           ),
-      );*/
-      return { token: /*request.data.token*/ 'test_token' };
+      );
+      return { token: request.data.token };
     } catch (err) {
       const { response } = err;
       return new GazpromErrorDto(
@@ -90,20 +90,20 @@ export class GazpromRepository implements IGazpromRepository {
 
   async getSubscriptionData(
       partnerClientId: string,
-  ): Promise</*GazpromSubscriptionResponseDto*/string | GazpromErrorDto> {
+  ): Promise<GazpromSubscriptionResponseDto | GazpromErrorDto> {
     const config = this.setHeaders();
 
     try {
-      /*const request: AxiosResponse = await firstValueFrom(
+      const request: AxiosResponse = await firstValueFrom(
         this.httpService.get(
           `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${partnerClientId}/user-promotions?filter.public_ids=moyka_01`,
           config,
         ),
-      );*/
-      return 'test_data'/*new GazpromSubscriptionResponseDto(
+      );
+      return new GazpromSubscriptionResponseDto(
         request.data.items,
         request.data.count,
-      );*/
+      );
     } catch (err) {
       const { response } = err;
       return new GazpromErrorDto(
@@ -121,14 +121,14 @@ export class GazpromRepository implements IGazpromRepository {
     const config = this.setHeaders();
 
     try {
-      /*const request: AxiosResponse = await firstValueFrom(
+      const request: AxiosResponse = await firstValueFrom(
         this.httpService.post(
           `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${partnerClientId}/create/session`,
           null,
           config,
         ),
-      );*/
-      return { token: /*request.data.token*/'test_token' };
+      );
+      return { token: request.data.token };
     } catch (err) {
       const { response } = err;
       return new GazpromErrorDto(
@@ -147,14 +147,14 @@ export class GazpromRepository implements IGazpromRepository {
     const config = this.setHeaders();
 
     try {
-      /*const request: AxiosResponse = await firstValueFrom(
+      const request: AxiosResponse = await firstValueFrom(
         this.httpService.patch(
           `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${partnerClientId}`,
           meta,
           config,
         ),
-      );*/
-      return /*request.data*/{code: 1, data: 'test'};
+      );
+      return request.data;
     } catch (err) {
       const { response } = err;
       return new GazpromErrorDto(
