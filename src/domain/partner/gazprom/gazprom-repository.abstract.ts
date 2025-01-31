@@ -7,8 +7,9 @@ import {GazpromUpdateDto} from "../../../infrastructure/partner/gazprom/dto/gazp
 import {GazpromUpdateResponseDto} from "../../../infrastructure/partner/gazprom/dto/gazprom-update-response.dto";
 
 export abstract class IGazpromRepository {
-    abstract registration(clientId: number, phoneNumber: string): Promise<GazpromSessionDto | GazpromErrorDto>;
-    abstract getSubscriptionData(clientId: number): Promise<GazpromSubscriptionResponseDto | GazpromErrorDto>;
-    abstract getSession(clientId: number): Promise<GazpromSessionDto | GazpromErrorDto>;
-    abstract updateData(clientId: number, meta: GazpromUpdateDto): Promise<GazpromUpdateResponseDto | GazpromErrorDto>;
+    abstract registration(partnerClientId: string, phoneNumber: string): Promise<GazpromSessionDto | GazpromErrorDto>;
+    abstract reference(reference: string, partnerClientId: string, phoneNumber: string): Promise<GazpromSessionDto | GazpromErrorDto>;
+    abstract getSubscriptionData(partnerClientId: string): Promise</*GazpromSubscriptionResponseDto*/string | GazpromErrorDto>;
+    abstract getSession(partnerClientId: string): Promise<GazpromSessionDto | GazpromErrorDto>;
+    abstract updateData(partnerClientId: string, meta: GazpromUpdateDto): Promise<GazpromUpdateResponseDto | GazpromErrorDto>;
 }

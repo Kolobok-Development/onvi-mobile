@@ -25,24 +25,24 @@ export class GazpromRepository implements IGazpromRepository {
   }
 
   async registration(
-    clientId: number,
+    partnerClientId: string,
     phoneNumber: string,
   ): Promise<GazpromSessionDto | GazpromErrorDto> {
     const config = this.setHeaders();
     const body = {
-      partner_user_id: clientId,
+      partner_user_id: partnerClientId,
       phone_number: phoneNumber,
     };
 
     try {
-      const request: AxiosResponse = await firstValueFrom(
+      /*const request: AxiosResponse = await firstValueFrom(
         this.httpService.post(
           `${this.baseUrl}/v1/partners/${this.partnerId}/register/client`,
           body,
           config,
         ),
-      );
-      return { token: request.data.token };
+      );*/
+      return { token: /*request.data.token*/ 'test_token' };
     } catch (err) {
       const { response } = err;
       return new GazpromErrorDto(
@@ -54,22 +54,56 @@ export class GazpromRepository implements IGazpromRepository {
     }
   }
 
+  async reference(
+      reference:string,
+      partnerClientId: string,
+      phoneNumber: string,
+  ): Promise<GazpromSessionDto | GazpromErrorDto> {
+    const config = this.setHeaders();
+    const body = {
+      reference: reference,
+      params: {
+        partner_user_id: partnerClientId,
+        phone_number: phoneNumber,
+      }
+    };
+
+    try {
+      /*const request: AxiosResponse = await firstValueFrom(
+          this.httpService.post(
+              `${this.baseUrl}/v1/partners/${this.partnerId}/reference/client`,
+              body,
+              config,
+          ),
+      );*/
+      return { token: /*request.data.token*/ 'test_token' };
+    } catch (err) {
+      const { response } = err;
+      return new GazpromErrorDto(
+          response.data.code,
+          response.data.message,
+          response.data.correlation_id,
+          response.data.details,
+      );
+    }
+  }
+
   async getSubscriptionData(
-    clientId: number,
-  ): Promise<GazpromSubscriptionResponseDto | GazpromErrorDto> {
+      partnerClientId: string,
+  ): Promise</*GazpromSubscriptionResponseDto*/string | GazpromErrorDto> {
     const config = this.setHeaders();
 
     try {
-      const request: AxiosResponse = await firstValueFrom(
+      /*const request: AxiosResponse = await firstValueFrom(
         this.httpService.get(
-          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}/user-promotions`,
+          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${partnerClientId}/user-promotions?filter.public_ids=moyka_01`,
           config,
         ),
-      );
-      return new GazpromSubscriptionResponseDto(
+      );*/
+      return 'test_data'/*new GazpromSubscriptionResponseDto(
         request.data.items,
         request.data.count,
-      );
+      );*/
     } catch (err) {
       const { response } = err;
       return new GazpromErrorDto(
@@ -82,19 +116,19 @@ export class GazpromRepository implements IGazpromRepository {
   }
 
   async getSession(
-    clientId: number,
+      partnerClientId: string,
   ): Promise<GazpromSessionDto | GazpromErrorDto> {
     const config = this.setHeaders();
 
     try {
-      const request: AxiosResponse = await firstValueFrom(
+      /*const request: AxiosResponse = await firstValueFrom(
         this.httpService.post(
-          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}/create/session`,
+          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${partnerClientId}/create/session`,
           null,
           config,
         ),
-      );
-      return { token: request.data.token };
+      );*/
+      return { token: /*request.data.token*/'test_token' };
     } catch (err) {
       const { response } = err;
       return new GazpromErrorDto(
@@ -107,20 +141,20 @@ export class GazpromRepository implements IGazpromRepository {
   }
 
   async updateData(
-    clientId: number,
+      partnerClientId: string,
     meta: GazpromUpdateDto,
   ): Promise<GazpromUpdateResponseDto | GazpromErrorDto> {
     const config = this.setHeaders();
 
     try {
-      const request: AxiosResponse = await firstValueFrom(
+      /*const request: AxiosResponse = await firstValueFrom(
         this.httpService.patch(
-          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}`,
+          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${partnerClientId}`,
           meta,
           config,
         ),
-      );
-      return request.data;
+      );*/
+      return /*request.data*/{code: 1, data: 'test'};
     } catch (err) {
       const { response } = err;
       return new GazpromErrorDto(

@@ -1,3 +1,4 @@
 export class PartnerClientCreateDto{
-    metaData: string
+    metaData: string;
+    partnerUserId?: string;
 }

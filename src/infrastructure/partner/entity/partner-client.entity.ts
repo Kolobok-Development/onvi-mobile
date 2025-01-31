@@ -23,4 +23,7 @@ export class PartnerClientEntity {
 
     @Column({ name: 'UPDATED_AT', type: 'date' })
     updatedAt: Date;
+
+    @Column({ name: 'PARTNER_USER_ID', type: 'varchar2', length: 255 })
+    partnerUserId: string;
 }

@@ -10,5 +10,6 @@ export abstract class IPartnerRepository {
     abstract update(partner: Partner): Promise<any>;
     abstract apply(partnerClient: PartnerClient, partner: Partner, clientId: number): Promise<PartnerClient>;
     abstract findPartnerClientByClientIdAndPartnerId(clientId: number, partnerId: number): Promise<PartnerClient>;
+    abstract findPartnerClientByPartnerUserIdAndPartnerId(partnerUserId: string, partnerId: number): Promise<PartnerClient>;
     abstract updatePartnerClient(partnerClient: PartnerClient): Promise<any>;
 }
