@@ -17,6 +17,7 @@ import { PartnerCreateDto } from './dto/partner-create.dto';
 import { PartnerGuard } from '../../infrastructure/common/guards/partner.guard';
 import { GazpromClientUpdateDto } from './dto/gazprom-client-update.dto';
 import { NotFoundException } from '../../infrastructure/common/exceptions/base.exceptions';
+import {GazpromClientReferenceDto} from "./dto/gazprom-client-reference.dto";
 
 @Controller('partner')
 export class PartnerController {
@@ -31,6 +32,21 @@ export class PartnerController {
   async createPartner(@Body() data: PartnerCreateDto): Promise<any> {
     try {
       return await this.partnerUsecase.createPartner(data);
+    } catch (e) {
+      throw new CustomHttpException({
+        message: e.message,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
+  @UseGuards(JwtGuard)
+  @Post('2921/reference')
+  @HttpCode(201)
+  async referenceGazprom(@Req() req: any, @Body() data: GazpromClientReferenceDto): Promise<any> {
+    try {
+      const { user } = req;
+      return await this.gazpromUsecase.reference(user, data.reference);
     } catch (e) {
       throw new CustomHttpException({
         message: e.message,

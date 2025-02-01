@@ -10,8 +10,8 @@ export class GazpromUpdateDto{
 }
 
 export class ClientDto{
-    partner_id: number;
-    partner_user_id: number;
+    partner_id: string;
+    partner_user_id: string;
     phone_number?: string;
 }
 

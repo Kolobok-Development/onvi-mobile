@@ -88,6 +88,7 @@ export class PartnerRepository implements IPartnerRepository {
     partnerClientEntity.metaData = JSON.stringify(partnerClient.metaData);
     partnerClientEntity.createdAt = partnerClient.createdAt;
     partnerClientEntity.updatedAt = partnerClient.updatedAt;
+    partnerClientEntity.partnerUserId = partnerClient.partnerUserId;
 
     const newPartnerClientEntity = await this.partnerClientRepository.save(
       partnerClientEntity,
@@ -110,6 +111,21 @@ export class PartnerRepository implements IPartnerRepository {
     return PartnerClient.fromEntity(partnerClient);
   }
 
+  async findPartnerClientByPartnerUserIdAndPartnerId(
+      partnerUserId: string,
+      partnerId: number,
+  ): Promise<PartnerClient> {
+    const partnerClient = await this.partnerClientRepository.findOne({
+      where: {
+        partner: { id: partnerId },
+        partnerUserId
+      },
+    });
+
+    if (!partnerClient) return null;
+    return PartnerClient.fromEntity(partnerClient);
+  }
+
   async updatePartnerClient(partnerClient: PartnerClient): Promise<any> {
     const partnerClientEntity = new PartnerClientEntity();
 
@@ -117,6 +133,7 @@ export class PartnerRepository implements IPartnerRepository {
     partnerClientEntity.metaData = JSON.stringify(partnerClient.metaData);
     partnerClientEntity.createdAt = partnerClient.createdAt;
     partnerClientEntity.updatedAt = partnerClient.updatedAt;
+    partnerClientEntity.partnerUserId = partnerClient.partnerUserId;
 
     const { id, ...updateData } = partnerClientEntity;
 
