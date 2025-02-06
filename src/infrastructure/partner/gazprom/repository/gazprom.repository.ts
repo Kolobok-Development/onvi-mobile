@@ -6,7 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { GazpromErrorDto } from '../dto/gazprom-error.dto';
 import { GazpromSessionDto } from '../dto/gazprom-session.dto';
 import { GazpromSubscriptionResponseDto } from '../dto/gazprom-subscription-response.dto';
-import { GazpromUpdateDto } from '../dto/gazprom-update.dto';
+import { GazpromUpdateOperDto } from '../dto/gazprom-update-oper.dto';
 import { GazpromUpdateResponseDto } from '../dto/gazprom-update-response.dto';
 import { EnvConfigService } from '../../../config/env-config/env-config.service';
 
@@ -120,6 +120,7 @@ export class GazpromRepository implements IGazpromRepository {
   ): Promise<GazpromSessionDto | GazpromErrorDto> {
     const config = this.setHeaders();
 
+    console.log('start request')
     try {
       const request: AxiosResponse = await firstValueFrom(
         this.httpService.post(
@@ -128,6 +129,7 @@ export class GazpromRepository implements IGazpromRepository {
           config,
         ),
       );
+      console.log(request)
       return { token: request.data.token };
     } catch (err) {
       const { response } = err;
@@ -142,7 +144,7 @@ export class GazpromRepository implements IGazpromRepository {
 
   async updateData(
       partnerClientId: string,
-    meta: GazpromUpdateDto,
+    meta: GazpromUpdateOperDto,
   ): Promise<GazpromUpdateResponseDto | GazpromErrorDto> {
     const config = this.setHeaders();
 

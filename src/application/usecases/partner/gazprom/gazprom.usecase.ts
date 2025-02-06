@@ -7,6 +7,7 @@ import {Partner} from "../../../../domain/partner/model/partner.model";
 import {CustomHttpException} from "../../../../infrastructure/common/exceptions/custom-http.exception";
 import {NotFoundException} from "../../../../infrastructure/common/exceptions/base.exceptions";
 import {GazpromUpdateDto} from "../dto/gazprom-update.dto";
+import {GazpromUpdateOperDto} from "../../../../infrastructure/partner/gazprom/dto/gazprom-update-oper.dto";
 
 @Injectable()
 export class GazpromUsecase {
@@ -53,7 +54,7 @@ export class GazpromUsecase {
         return await this.partnerRepository.updatePartnerClient(clientPartner);
     }
 
-    async updatePartnerData(user: Client, metaData: any): Promise<any> {
+    async updatePartnerData(user: Client, metaData: GazpromUpdateOperDto): Promise<any> {
         const partner = await this.partnerRepository.findOneByName('Gazprom');
         const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(user.clientId, partner.id);
         return await this.gazpromRepository.updateData(clientPartner.partnerUserId, metaData)

@@ -18,6 +18,7 @@ import { PartnerGuard } from '../../infrastructure/common/guards/partner.guard';
 import { GazpromClientUpdateDto } from './dto/gazprom-client-update.dto';
 import { NotFoundException } from '../../infrastructure/common/exceptions/base.exceptions';
 import {GazpromClientReferenceDto} from "./dto/gazprom-client-reference.dto";
+import {GazpromClientOperationDto} from "./dto/gazprom-client-operation";
 
 @Controller('partner')
 export class PartnerController {
@@ -90,11 +91,11 @@ export class PartnerController {
   @HttpCode(201)
   async updatePartnerDataGazprom(
     @Req() req: any,
-    @Body() data: { operDate: Date },
+    @Body() data: GazpromClientOperationDto,
   ): Promise<any> {
     try {
       const { user } = req;
-      return await this.gazpromUsecase.updatePartnerData(user, data);
+      return await this.gazpromUsecase.updatePartnerData(user, {meta: data});
     } catch (e) {
       throw new CustomHttpException({
         message: e.message,
