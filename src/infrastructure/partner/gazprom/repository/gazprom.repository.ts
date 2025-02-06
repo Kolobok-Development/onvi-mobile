@@ -132,6 +132,7 @@ export class GazpromRepository implements IGazpromRepository {
       console.log(request)
       return { token: request.data.token };
     } catch (err) {
+      console.log(err)
       const { response } = err;
       return new GazpromErrorDto(
         response.data.code,
