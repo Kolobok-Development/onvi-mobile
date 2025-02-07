@@ -76,7 +76,7 @@ export class GazpromUsecase {
             throw new NotFoundException(432, 'Client not found')
         }
         const metaData = clientPartner.metaData ? JSON.parse(JSON.stringify(clientPartner.metaData)) : {};
-        if (metaData.status !=='ACTIVE' && metaData.status !=='active') {
+        if (metaData.status =='CANCEL') {
             throw new NotFoundException(433, 'Lack of an active subscription')
         }
         const subscriptionData = {
