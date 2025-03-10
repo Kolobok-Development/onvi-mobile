@@ -58,7 +58,6 @@ export class AuthUsecase {
   public async register(phone: string, otp: string): Promise<any> {
     // Validate OTP
     const currentOtp = await this.otpRepository.findOne(phone);
-    let registeredAccount: Client | null = null;
 
     if (
       !currentOtp ||
@@ -97,9 +96,9 @@ export class AuthUsecase {
       if (!isUpdated && !isReactivated)
         throw new AccountNotFoundExceptions(account.phone);
 
-      registeredAccount = account;
+      const newClient = account;
 
-      return { registeredAccount, accessToken, refreshToken };
+      return { newClient, accessToken, refreshToken };
     }
 
     // Create new client model

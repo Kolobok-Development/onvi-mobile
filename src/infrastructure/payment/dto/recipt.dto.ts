@@ -10,4 +10,6 @@ export class Item {
   amount: IAmount;
   quantity: string;
   vat_code: number;
+  payment_subject: string;
+  payment_mode: string;
 }

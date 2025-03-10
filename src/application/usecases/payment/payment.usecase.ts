@@ -32,7 +32,9 @@ export class PaymentUsecase {
       description: data.description,
       amount,
       quantity: '1',
-      vat_code: 4,
+      vat_code: 2,
+      payment_subject: 'commodity',
+      payment_mode: 'full_payment',
     };
     const recipt: ReciptDto = {
       phone: clint.correctPhone,
