@@ -2,12 +2,12 @@ import {IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString} from "class-
 import {Transform, Type} from "class-transformer";
 
 export class ClientDto{
-    @IsNumber()
+    @IsString()
     @IsNotEmpty({ message: 'partner_id is required' })
-    partner_id: number;
-    @IsNumber()
+    partner_id: string;
+    @IsString()
     @IsNotEmpty({ message: 'partner_user_id is required' })
-    partner_user_id: number;
+    partner_user_id: string;
     @IsString()
     @IsOptional()
     phone_number?: string;

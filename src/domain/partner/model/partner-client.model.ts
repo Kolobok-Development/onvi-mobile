@@ -6,6 +6,7 @@ export class PartnerClient {
     metaData: JSON;
     createdAt: Date;
     updatedAt?: Date;
+    partnerUserId?: string;
 
     private constructor(
         metaData: JSON,
@@ -13,24 +14,27 @@ export class PartnerClient {
         {
             id,
             updatedAt,
+            partnerUserId,
         }: {
             id?: number;
             updatedAt?: Date;
+            partnerUserId?: string;
         },
     ) {
         this.metaData = metaData;
         this.createdAt = createdAt;
         this.id = id;
         this.updatedAt = updatedAt;
+        this.partnerUserId = partnerUserId;
     }
 
     public static create(date: PartnerClientCreateDto) {
-       const { metaData } = date;
+       const { metaData, partnerUserId } = date;
 
         const createdAt: Date = new Date();
         const updatedAt: Date = new Date();
 
-        return new PartnerClient(JSON.parse(metaData), createdAt, {updatedAt})
+        return new PartnerClient(JSON.parse(metaData), createdAt, {updatedAt, partnerUserId})
     }
     public static fromEntity(entity: PartnerClientEntity): PartnerClient {
         return new PartnerClient(
@@ -38,7 +42,8 @@ export class PartnerClient {
             entity.createdAt,
             {
                 id: entity.id,
-                updatedAt: entity.updatedAt
+                updatedAt: entity.updatedAt,
+                partnerUserId: entity.partnerUserId,
             }
         )
     }

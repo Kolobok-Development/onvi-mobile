@@ -7,6 +7,7 @@ import {Partner} from "../../../../domain/partner/model/partner.model";
 import {CustomHttpException} from "../../../../infrastructure/common/exceptions/custom-http.exception";
 import {NotFoundException} from "../../../../infrastructure/common/exceptions/base.exceptions";
 import {GazpromUpdateDto} from "../dto/gazprom-update.dto";
+import {GazpromUpdateOperDto} from "../../../../infrastructure/partner/gazprom/dto/gazprom-update-oper.dto";
 
 @Injectable()
 export class GazpromUsecase {
@@ -16,38 +17,52 @@ export class GazpromUsecase {
     ) {
     }
 
+    async reference(user: Client, reference: string): Promise<any> {
+        const partner = await this.partnerRepository.findOneByName('Gazprom');
+        const clientGazprom = {
+            status: 'CREATED'
+        }
+        const partnerUserId = `m01-${user.clientId}`;
+        const partnerClient = PartnerClient.create({ metaData: JSON.stringify(clientGazprom), partnerUserId: partnerUserId});
+        await this.partnerRepository.apply(partnerClient, partner, user.clientId);
+        return await this.gazpromRepository.reference(reference, partnerUserId, user.correctPhone);
+    }
+
     async activationSession(user: Client): Promise<any> {
 
         const partner = await this.partnerRepository.findOneByName('Gazprom');
         const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(user.clientId, partner.id);
         if (clientPartner) {
             try {
-                return await this.gazpromRepository.getSession(user.clientId)
+                return await this.gazpromRepository.getSession(clientPartner.partnerUserId)
             } catch (e) {}
         }
         const clientGazprom = {
             status: 'CREATED'
         }
-        const partnerClient = PartnerClient.create({ metaData: JSON.stringify(clientGazprom)});
+        const partnerUserId = `m01-${user.clientId}`;
+        const partnerClient = PartnerClient.create({ metaData: JSON.stringify(clientGazprom), partnerUserId: partnerUserId});
         await this.partnerRepository.apply(partnerClient, partner, user.clientId);
-        return await this.gazpromRepository.registration(user.clientId, user.correctPhone);
+        return await this.gazpromRepository.registration(partnerUserId, user.correctPhone);
     }
 
     async getSubscriptionData(user: Client): Promise<any> {
         const partner = await this.partnerRepository.findOneByName('Gazprom');
-        const subscriptionData = await this.gazpromRepository.getSubscriptionData(user.clientId);
         const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(user.clientId, partner.id);
+        const subscriptionData = await this.gazpromRepository.getSubscriptionData(clientPartner.partnerUserId);
         clientPartner.metaData = JSON.parse(JSON.stringify(subscriptionData));
         return await this.partnerRepository.updatePartnerClient(clientPartner);
     }
 
-    async updatePartnerData(user: Client, metaData: any): Promise<any> {
-        return await this.gazpromRepository.updateData(user.clientId, metaData)
+    async updatePartnerData(user: Client, metaData: GazpromUpdateOperDto): Promise<any> {
+        const partner = await this.partnerRepository.findOneByName('Gazprom');
+        const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(user.clientId, partner.id);
+        return await this.gazpromRepository.updateData(clientPartner.partnerUserId, metaData)
     }
 
     async updateClientData(input: GazpromUpdateDto, partner: Partner): Promise<any> {
         const { client, promotion, ...metaData} = input;
-        const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(client.partner_user_id, partner.id);
+        const clientPartner = await this.partnerRepository.findPartnerClientByPartnerUserIdAndPartnerId(client.partner_user_id, partner.id);
         if (!clientPartner) {
             throw new NotFoundException(432, 'Client not found')
         }
@@ -56,12 +71,12 @@ export class GazpromUsecase {
     }
 
     async cancelClientData(input: GazpromUpdateDto, partner: Partner): Promise<any> {
-        const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(input.client.partner_user_id, partner.id);
+        const clientPartner = await this.partnerRepository.findPartnerClientByPartnerUserIdAndPartnerId(input.client.partner_user_id, partner.id);
         if (!clientPartner) {
             throw new NotFoundException(432, 'Client not found')
         }
         const metaData = clientPartner.metaData ? JSON.parse(JSON.stringify(clientPartner.metaData)) : {};
-        if (metaData.status !=='ACTIVE') {
+        if (metaData.status =='CANCEL') {
             throw new NotFoundException(433, 'Lack of an active subscription')
         }
         const subscriptionData = {
