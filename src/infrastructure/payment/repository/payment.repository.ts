@@ -9,7 +9,7 @@ export class PaymentRepository implements IPaymentRepository {
   constructor(@Inject(PaymentToken) private readonly paymentGateway: any) {}
 
   public async create(data: Payment, receipt: ReciptDto) {
-    const { paymentToken, amount, capture, description, paymentMethodType } = data;
+    const { paymentToken, amount, capture, description } = data;
 
     const payment = await this.paymentGateway.createPayment({
       payment_token: paymentToken,
@@ -17,9 +17,6 @@ export class PaymentRepository implements IPaymentRepository {
       amount,
       capture,
       description,
-      payment_method_data: {
-        type: paymentMethodType,
-      },
     });
 
     return payment;

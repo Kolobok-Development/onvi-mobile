@@ -30,16 +30,53 @@ import { EnvConfigService } from './infrastructure/config/env-config/env-config.
       useFactory: (env: EnvConfigService) => ({
         pinoHttp: {
           customSuccessMessage(req, res) {
-            return `${req.method} [${req.url}] || ${res.statusMessage}`;
+            return `${req.method} [${req.url}] || ${res.statusCode} ${res.statusMessage}`;
           },
           customErrorMessage(req, res, error) {
-            return `${req.method} [${req.url}] || ${error.message}`;
+            return `${req.method} [${req.url}] || ${res.statusCode} ${error.message}`;
+          },
+          level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
+          redact: {
+            paths: [
+              'req.headers.authorization',
+              'req.headers.cookie',
+              'req.body.password',
+              'req.body.token',
+              'req.body.refresh_token',
+              'req.body.cardNumber',
+              'req.body.cvv',
+              'res.headers["set-cookie"]'
+            ],
+            censor: '[REDACTED]'
           },
           serializers: {
             req(req) {
               req.body = req.raw.body;
+              req.params = req.raw.params;
+              req.query = req.raw.query;
+              req.id = req.id || req.raw.id;
               return req;
             },
+            res(res) {
+              return {
+                statusCode: res.statusCode,
+                responseTime: res.responseTime,
+                headers: res.headers
+              };
+            },
+            err(err) {
+              return {
+                type: err.type || err.constructor.name,
+                message: err.message,
+                stack: err.stack,
+                code: err.code,
+                statusCode: err.statusCode,
+                cause: err.cause,
+                source: err.source,
+                details: err.details || err.originalError,
+                requestId: err.requestId
+              };
+            }
           },
           transport: {
             dedupe: true,

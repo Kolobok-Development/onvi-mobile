@@ -20,10 +20,11 @@ async function bootstrap() {
       },
     }),
   );
+  const logger = app.get(Logger);
+  app.useLogger(logger);
   app.useGlobalInterceptors(new ResponseInterceptor());
-  app.useGlobalFilters(new AllExceptionFilter());
+  app.useGlobalFilters(new AllExceptionFilter(logger));
   app.setGlobalPrefix('/api/v2');
-  app.useLogger(app.get(Logger));
   await app.listen(process.env.PORT, () => {
     console.log(`ONVI listening on port ${process.env.PORT}`);
     console.log(process.env.NODE_ENV);
