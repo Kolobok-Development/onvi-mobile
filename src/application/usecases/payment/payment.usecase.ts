@@ -26,6 +26,7 @@ export class PaymentUsecase {
       amount,
       capture: true,
       description: data.description,
+      paymentMethodType: data.paymentMethod,
     });
 
     const purchaseItem: Item = {

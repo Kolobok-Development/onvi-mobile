@@ -73,7 +73,18 @@ export class AllExceptionFilter implements ExceptionFilter {
     // Log the error to the runtime log (Logtail)
     this.logger.error(
       `Exception caught: ${JSON.stringify(responseData)}`,
-      exception.stack || 'No stack trace available',
+      {
+        stack: exception.stack || 'No stack trace available',
+        cause: exception.cause || 'No cause available',
+        originalError: exception.originalError ? JSON.stringify(exception.originalError) : 'No original error',
+        request: {
+          url: request.url,
+          method: request.method,
+          body: request.body,
+          params: request.params,
+          query: request.query
+        }
+      },
     );
 
     response.status(status).json(responseData);

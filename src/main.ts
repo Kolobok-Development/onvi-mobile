@@ -26,7 +26,7 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   await app.listen(process.env.PORT, () => {
     console.log(`ONVI listening on port ${process.env.PORT}`);
-    console.log(process.env.NODE_ENV)
+    console.log(process.env.NODE_ENV);
   });
 }
 bootstrap();
