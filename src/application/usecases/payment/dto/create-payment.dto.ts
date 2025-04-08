@@ -7,4 +7,5 @@ export class CreatePaymentDto {
   capture?: boolean;
   description?: string;
   paymentMethod: IPaymentMethodType;
+  returnUrl?: string;
 }

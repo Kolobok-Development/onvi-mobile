@@ -4,12 +4,13 @@ import { Payment } from '../../../domain/payment/model/payment';
 import { ReciptDto } from '../dto/recipt.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { IPaymentRepository } from '../../../domain/payment/adapter/payment.interface';
+import { IPaymentMethodType } from '@a2seven/yoo-checkout/build/types';
 @Injectable()
 export class PaymentRepository implements IPaymentRepository {
   constructor(@Inject(PaymentToken) private readonly paymentGateway: any) {}
 
   public async create(data: Payment, receipt: ReciptDto) {
-    const { paymentToken, amount, capture, description } = data;
+    const { paymentToken, amount, capture, description, returnUrl } = data;
 
     const payment = await this.paymentGateway.createPayment({
       payment_token: paymentToken,
@@ -17,6 +18,10 @@ export class PaymentRepository implements IPaymentRepository {
       amount,
       capture,
       description,
+      confirmation: {
+        type: 'redirect',
+        return_url: returnUrl,
+      },
     });
 
     return payment;

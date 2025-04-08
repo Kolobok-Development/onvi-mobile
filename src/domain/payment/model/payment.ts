@@ -20,6 +20,7 @@ export class Payment {
   capture: boolean;
   description: string;
   paymentMethodType: IPaymentMethodType;
+  returnUrl: string;
 
   private constructor(
     paymentToken: string,
@@ -27,17 +28,25 @@ export class Payment {
     capture: boolean,
     description: string,
     paymentMethodType: IPaymentMethodType,
+    returnUrl: string,
   ) {
     this.paymentToken = paymentToken;
     this.amount = amount;
     this.capture = capture;
     this.description = description;
     this.paymentMethodType = paymentMethodType;
+    this.returnUrl = returnUrl;
   }
 
   public static create(data: ICreatePaymentDto): Payment {
-    const { paymentToken, amount, capture, description, paymentMethodType } =
-      data;
+    const {
+      paymentToken,
+      amount,
+      capture,
+      description,
+      paymentMethodType,
+      returnUrl,
+    } = data;
 
     if (Number(amount.value) <= 0) {
       throw new PaymentProcessingException();
@@ -49,6 +58,7 @@ export class Payment {
       capture,
       description,
       paymentMethodType,
+      returnUrl,
     );
   }
 }

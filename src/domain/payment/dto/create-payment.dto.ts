@@ -7,4 +7,5 @@ export interface ICreatePaymentDto {
   capture: boolean;
   description: string;
   paymentMethodType: IPaymentMethodType;
+  returnUrl?: string;
 }
