@@ -9,7 +9,11 @@ export class PromocodeUsecase {
 
   async getActivePromotionHistoryForClient(client: Client) {
     const card = client.getCard();
-    return await this.promoCodeRepository.findByUserAndActive(card.cardId);
+    const clientId = client.clientId;
+    return await this.promoCodeRepository.findByUserAndActive(
+      card.cardId,
+      clientId,
+    );
   }
 
   async create(promoCode: PromoCode): Promise<PromoCode> {

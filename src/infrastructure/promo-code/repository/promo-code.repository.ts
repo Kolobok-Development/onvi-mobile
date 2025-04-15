@@ -117,7 +117,10 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     return promoCodeUsage; // Возвращаем найденную запись или null, если записей нет
   }
 
-  async findByUserAndActive(cardId: number): Promise<PromoCode[]> {
+  async findByUserAndActive(
+    cardId: number,
+    clientId: number,
+  ): Promise<PromoCode[]> {
     const currentDate = new Date();
 
     // Fetch the promo codes that are active and associated with the user via PromoCodeToUserEntity
@@ -129,9 +132,13 @@ export class PromoCodeRepository implements IPromoCodeRepository {
         'usage.PROMO_CODE_ID = promocode.id AND usage.CARD_ID = :cardId',
         { cardId },
       )
+      .leftJoin(PromoCodeToUserEntity, 'user', 'user.USER_ID = :clientId', {
+        clientId,
+      })
       .where('promocode.isActive = :isActive', { isActive: 1 })
       .andWhere('promocode.expiryDate > :currentDate', { currentDate })
       .andWhere('usage.id IS NULL')
+      .andWhere('promocode.id = user.id')
       .getMany();
 
     // Return the mapped promo codes
