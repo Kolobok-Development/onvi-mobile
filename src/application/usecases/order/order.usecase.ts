@@ -43,13 +43,15 @@ export class OrderUsecase {
       throw new InvalidPromoCodeException(promoCode.code);
     }
 
-    // check if promocode is allowed for location
-    const isLocationAllowed = promoCode.locations.some(
-      (location: PromoCodeLocation) => location.carWashId === data.carWashId,
-    );
+    // Promocode is assigned to speceific location, need to validate if location matching
+    if (promoCode.locations.length > 0) {
+      const isLocationAllowed = promoCode.locations.some(
+        (location: PromoCodeLocation) => location.carWashId === data.carWashId,
+      );
 
-    if (!isLocationAllowed) {
-      throw new InvalidPromoCodeException(promoCode.code);
+      if (!isLocationAllowed) {
+        throw new InvalidPromoCodeException(promoCode.code);
+      }
     }
 
     return {
