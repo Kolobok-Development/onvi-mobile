@@ -18,10 +18,6 @@ export class PaymentRepository implements IPaymentRepository {
       amount,
       capture,
       description,
-      confirmation: {
-        type: 'redirect',
-        return_url: returnUrl,
-      },
     });
 
     return payment;
@@ -35,3 +31,5 @@ export class PaymentRepository implements IPaymentRepository {
     };
   }
 }
+
+
