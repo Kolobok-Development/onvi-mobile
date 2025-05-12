@@ -6,7 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { GazpromErrorDto } from '../dto/gazprom-error.dto';
 import { GazpromSessionDto } from '../dto/gazprom-session.dto';
 import { GazpromSubscriptionResponseDto } from '../dto/gazprom-subscription-response.dto';
-import { GazpromUpdateDto } from '../dto/gazprom-update.dto';
+import { GazpromUpdateOperDto } from '../dto/gazprom-update-oper.dto';
 import { GazpromUpdateResponseDto } from '../dto/gazprom-update-response.dto';
 import { EnvConfigService } from '../../../config/env-config/env-config.service';
 
@@ -25,12 +25,12 @@ export class GazpromRepository implements IGazpromRepository {
   }
 
   async registration(
-    clientId: number,
+    partnerClientId: string,
     phoneNumber: string,
   ): Promise<GazpromSessionDto | GazpromErrorDto> {
     const config = this.setHeaders();
     const body = {
-      partner_user_id: clientId,
+      partner_user_id: partnerClientId,
       phone_number: phoneNumber,
     };
 
@@ -54,15 +54,49 @@ export class GazpromRepository implements IGazpromRepository {
     }
   }
 
+  async reference(
+      reference:string,
+      partnerClientId: string,
+      phoneNumber: string,
+  ): Promise<GazpromSessionDto | GazpromErrorDto> {
+    const config = this.setHeaders();
+    const body = {
+      reference: reference,
+      params: {
+        partner_user_id: partnerClientId,
+        phone_number: phoneNumber,
+      }
+    };
+
+    try {
+      const request: AxiosResponse = await firstValueFrom(
+          this.httpService.post(
+              `${this.baseUrl}/v1/partners/${this.partnerId}/reference/client`,
+              body,
+              config,
+          ),
+      );
+      return { token: request.data.token };
+    } catch (err) {
+      const { response } = err;
+      return new GazpromErrorDto(
+          response.data.code,
+          response.data.message,
+          response.data.correlation_id,
+          response.data.details,
+      );
+    }
+  }
+
   async getSubscriptionData(
-    clientId: number,
+      partnerClientId: string,
   ): Promise<GazpromSubscriptionResponseDto | GazpromErrorDto> {
     const config = this.setHeaders();
 
     try {
       const request: AxiosResponse = await firstValueFrom(
         this.httpService.get(
-          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}/user-promotions`,
+          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${partnerClientId}/user-promotions?filter.public_ids=moyka_01`,
           config,
         ),
       );
@@ -82,20 +116,23 @@ export class GazpromRepository implements IGazpromRepository {
   }
 
   async getSession(
-    clientId: number,
+      partnerClientId: string,
   ): Promise<GazpromSessionDto | GazpromErrorDto> {
     const config = this.setHeaders();
 
+    console.log('start request')
     try {
       const request: AxiosResponse = await firstValueFrom(
         this.httpService.post(
-          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}/create/session`,
+          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${partnerClientId}/create/session`,
           null,
           config,
         ),
       );
+      console.log(request)
       return { token: request.data.token };
     } catch (err) {
+      console.log(err)
       const { response } = err;
       return new GazpromErrorDto(
         response.data.code,
@@ -107,15 +144,15 @@ export class GazpromRepository implements IGazpromRepository {
   }
 
   async updateData(
-    clientId: number,
-    meta: GazpromUpdateDto,
+      partnerClientId: string,
+    meta: GazpromUpdateOperDto,
   ): Promise<GazpromUpdateResponseDto | GazpromErrorDto> {
     const config = this.setHeaders();
 
     try {
       const request: AxiosResponse = await firstValueFrom(
         this.httpService.patch(
-          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}`,
+          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${partnerClientId}`,
           meta,
           config,
         ),
