@@ -15,6 +15,7 @@ import { ValidateOrderPromocodeUsecase } from '../../application/usecases/order/
 import { RegisterPaymentUseCase } from '../../application/usecases/order/register-payment.use-case';
 import { StartPosUseCase } from '../../application/usecases/order/start-pos.use-case';
 import { GetOrderByIdUseCase } from '../../application/usecases/order/get-order-by-id.use-case';
+import { PaymentWebhookController } from '../../api/webhooks/payment-webhook.controller';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { GetOrderByIdUseCase } from '../../application/usecases/order/get-order-
     TransactionModule,
     PosModule,
   ],
-  controllers: [OrderController],
+  controllers: [OrderController, PaymentWebhookController],
   providers: [
     OrderRepositoryProvider,
     CreateOrderUseCase,
