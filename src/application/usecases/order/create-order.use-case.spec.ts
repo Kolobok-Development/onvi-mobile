@@ -1,9 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateOrderUseCase } from './create-order.use-case';
 import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
-import { ITransactionRepository } from '../../../domain/transaction/transaction-repository.abstract';
 import { PromoCodeService } from '../../services/promocode-service';
-import { PaymentUsecase } from '../payment/payment.usecase';
 import { ITariffRepository } from '../../../domain/account/card/tariff-repository.abstract';
 import { IPosService } from '../../../infrastructure/pos/interface/pos.interface';
 import { Client } from '../../../domain/account/client/model/client';
@@ -14,18 +12,23 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { BayBusyException } from '../../../domain/order/exceptions/bay-busy.exception';
 import { CarwashUnavalibleException } from '../../../domain/order/exceptions/carwash-unavalible.exception';
 import { InsufficientRewardPointsException } from '../../../domain/order/exceptions/insufficient-reward-roints.exception';
-import { RewardPointsWithdrawalException } from '../../../domain/order/exceptions/reward-points-withdrawal.exception';
 import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
 import { SendStatus } from '../../../infrastructure/order/enum/send-status.enum';
+import {
+  standardTariff,
+  validCreateCardDto,
+  validCreateClientDto,
+} from './mock.data';
+import { ICreateOrderDto } from '../../../domain/order/dto/create-order.dto';
+import { Logger } from 'nestjs-pino';
 
 describe('CreateOrderUseCase', () => {
   let createOrderUseCase: CreateOrderUseCase;
   let orderRepository: jest.Mocked<IOrderRepository>;
-  let transactionRepository: jest.Mocked<ITransactionRepository>;
   let promoCodeService: jest.Mocked<PromoCodeService>;
-  let paymentUsecase: jest.Mocked<PaymentUsecase>;
   let tariffRepository: jest.Mocked<ITariffRepository>;
   let posService: jest.Mocked<IPosService>;
+  let logger: jest.Mocked<Logger>;
 
   beforeEach(async () => {
     const mockOrderRepository = {
@@ -55,13 +58,20 @@ describe('CreateOrderUseCase', () => {
       send: jest.fn(),
     };
 
+    const mockLogger = {
+      log: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateOrderUseCase,
         { provide: IOrderRepository, useValue: mockOrderRepository },
-        { provide: ITransactionRepository, useValue: mockTransactionRepository },
+        { provide: Logger, useValue: mockLogger },
         { provide: PromoCodeService, useValue: mockPromoCodeService },
-        { provide: PaymentUsecase, useValue: mockPaymentUsecase },
         { provide: ITariffRepository, useValue: mockTariffRepository },
         { provide: IPosService, useValue: mockPosService },
       ],
@@ -69,9 +79,7 @@ describe('CreateOrderUseCase', () => {
 
     createOrderUseCase = module.get<CreateOrderUseCase>(CreateOrderUseCase);
     orderRepository = module.get(IOrderRepository);
-    transactionRepository = module.get(ITransactionRepository);
     promoCodeService = module.get(PromoCodeService);
-    paymentUsecase = module.get(PaymentUsecase);
     tariffRepository = module.get(ITariffRepository);
     posService = module.get(IPosService);
   });
@@ -83,18 +91,22 @@ describe('CreateOrderUseCase', () => {
     let createOrderDto: CreateOrderDto;
 
     beforeEach(() => {
-      mockCard = new Card();
-      mockCard.cardId = 123;
-      mockCard.devNomer = '123456789012';
+      mockCard = Card.create(validCreateCardDto);
       mockCard.balance = 100; // Reward points balance
-      
-      mockClient = new Client();
+
+      mockClient = Client.create(validCreateClientDto);
       mockClient.clientId = 1;
       mockClient.getCard = jest.fn().mockReturnValue(mockCard);
-      
-      mockTariff = new Tariff();
-      mockTariff.bonus = 5; // 5% cashback
-      
+
+      mockTariff = new Tariff(
+        standardTariff.cardTypeId,
+        standardTariff.name,
+        standardTariff.code,
+        standardTariff.bonus,
+        standardTariff.createdDate,
+        standardTariff.countryCode,
+      );
+
       createOrderDto = {
         carWashId: 1,
         bayNumber: 2,
@@ -103,31 +115,35 @@ describe('CreateOrderUseCase', () => {
         rewardPointsUsed: 0,
         promoCodeId: null,
       };
-      
+
       // Mock the bay availability check - Available
       posService.ping.mockResolvedValue({
         id: 'device-123',
-        status: 'Available',
-        message: 'OK',
+        status: 'Free',
+        type: 'BAY',
+        errorMessage: null,
       });
-      
+
       // Mock the tariff check
       tariffRepository.findCardTariff.mockResolvedValue(mockTariff);
-      
+
       // Mock the order creation
-      const newOrder = Order.create({
+
+      const orderData: ICreateOrderDto = {
         card: mockCard,
         transactionId: createOrderDto.transactionId,
+        status: OrderStatus.CREATED,
         sum: createOrderDto.sum,
         promoCodeId: createOrderDto.promoCodeId,
         rewardPointsUsed: createOrderDto.rewardPointsUsed,
         carWashId: createOrderDto.carWashId,
         bayNumber: createOrderDto.bayNumber,
-        cashback: 50, // 5% of 1000
-      });
+        cashback: 50,
+      };
+      const newOrder = Order.create(orderData);
       newOrder.id = 1;
       orderRepository.create.mockResolvedValue(newOrder);
-      
+
       // Mock the car wash response
       posService.send.mockResolvedValue({
         sendStatus: SendStatus.SUCCESS,
@@ -136,17 +152,18 @@ describe('CreateOrderUseCase', () => {
     });
 
     it('should throw BayBusyException when bay is busy', async () => {
-      // Arrange
+      // Arrange Bay is busy
       posService.ping.mockResolvedValue({
         id: 'device-123',
         status: 'Busy',
-        message: 'Bay is busy',
+        type: 'BAY',
+        errorMessage: 'Bay is busy',
       });
 
       // Act & Assert
-      await expect(createOrderUseCase.execute(createOrderDto, mockClient)).rejects.toThrow(
-        BayBusyException,
-      );
+      await expect(
+        createOrderUseCase.execute(createOrderDto, mockClient),
+      ).rejects.toThrow(BayBusyException);
       expect(posService.ping).toHaveBeenCalledWith({
         posId: createOrderDto.carWashId,
         bayNumber: createOrderDto.bayNumber,
@@ -158,31 +175,34 @@ describe('CreateOrderUseCase', () => {
       posService.ping.mockResolvedValue({
         id: 'device-123',
         status: 'Unavailable',
-        message: 'Car wash is unavailable',
+        type: 'BAY',
+        errorMessage: 'Car wash is unavailable',
       });
 
       // Act & Assert
-      await expect(createOrderUseCase.execute(createOrderDto, mockClient)).rejects.toThrow(
-        CarwashUnavalibleException,
-      );
+      await expect(
+        createOrderUseCase.execute(createOrderDto, mockClient),
+      ).rejects.toThrow(CarwashUnavalibleException);
     });
 
     it('should create an order successfully without promo code or reward points', async () => {
       // Act
-      const result = await createOrderUseCase.execute(createOrderDto, mockClient);
+      const result = await createOrderUseCase.execute(
+        createOrderDto,
+        mockClient,
+      );
 
       // Assert
       expect(tariffRepository.findCardTariff).toHaveBeenCalledWith(mockCard);
       expect(orderRepository.create).toHaveBeenCalled();
-      expect(posService.send).toHaveBeenCalledWith({
-        cardNumber: mockCard.devNomer,
-        sum: '1000',
-        deviceId: 'device-123',
-      });
-      expect(orderRepository.updateOrderStatus).toHaveBeenCalledWith(1, OrderStatus.COMPLETED);
+
+      // Instead of checking for updateOrderStatus call that no longer exists
+      // Remove: expect(orderRepository.updateOrderStatus).toHaveBeenCalledWith(...);
+
+      // Check the returned object instead
       expect(result).toEqual({
-        sendStatus: SendStatus.SUCCESS,
-        errorMessage: '',
+        orderId: 1, // Assuming your mock returns an order with ID 1
+        status: OrderStatus.CREATED,
       });
     });
 
@@ -197,30 +217,6 @@ describe('CreateOrderUseCase', () => {
       // Assert
       expect(promoCodeService.applyPromoCode).toHaveBeenCalled();
       expect(orderRepository.create).toHaveBeenCalled();
-      expect(posService.send).toHaveBeenCalled();
-    });
-
-    it('should withdraw reward points when reward points are used', async () => {
-      // Arrange
-      createOrderDto.rewardPointsUsed = 50;
-      transactionRepository.withdraw.mockResolvedValue(true);
-
-      // Act
-      await createOrderUseCase.execute(createOrderDto, mockClient);
-
-      // Assert
-      expect(transactionRepository.withdraw).toHaveBeenCalledWith(
-        'device-123',
-        mockCard.devNomer,
-        '50',
-        '1',
-      );
-      expect(orderRepository.create).toHaveBeenCalled();
-      expect(posService.send).toHaveBeenCalledWith({
-        cardNumber: mockCard.devNomer,
-        sum: '1050', // 1000 + 50 reward points
-        deviceId: 'device-123',
-      });
     });
 
     it('should throw InsufficientRewardPointsException when card balance is less than reward points used', async () => {
@@ -228,40 +224,9 @@ describe('CreateOrderUseCase', () => {
       createOrderDto.rewardPointsUsed = 150; // More than card balance (100)
 
       // Act & Assert
-      await expect(createOrderUseCase.execute(createOrderDto, mockClient)).rejects.toThrow(
-        InsufficientRewardPointsException,
-      );
-      expect(orderRepository.create).toHaveBeenCalled(); // Order is still created
-      expect(transactionRepository.withdraw).not.toHaveBeenCalled(); // Withdrawal is not attempted
-    });
-
-    it('should throw RewardPointsWithdrawalException when points withdrawal fails', async () => {
-      // Arrange
-      createOrderDto.rewardPointsUsed = 50;
-      transactionRepository.withdraw.mockResolvedValue(false); // Withdrawal fails
-
-      // Act & Assert
-      await expect(createOrderUseCase.execute(createOrderDto, mockClient)).rejects.toThrow(
-        RewardPointsWithdrawalException,
-      );
-      expect(orderRepository.create).toHaveBeenCalled();
-      expect(transactionRepository.withdraw).toHaveBeenCalled();
-    });
-
-    it('should throw CarwashUnavalibleException and update order status when car wash send fails', async () => {
-      // Arrange
-      posService.send.mockResolvedValue({
-        sendStatus: SendStatus.FAIL,
-        errorMessage: 'Failed to process order',
-      });
-
-      // Act & Assert
-      await expect(createOrderUseCase.execute(createOrderDto, mockClient)).rejects.toThrow(
-        CarwashUnavalibleException,
-      );
-      expect(orderRepository.create).toHaveBeenCalled();
-      expect(orderRepository.updateOrderStatus).toHaveBeenCalledWith(1, OrderStatus.CANCELED);
-      expect(orderRepository.setExcecutionError).toHaveBeenCalledWith(1, 'Failed to process order');
+      await expect(
+        createOrderUseCase.execute(createOrderDto, mockClient),
+      ).rejects.toThrow(InsufficientRewardPointsException);
     });
 
     it('should throw error when order creation fails', async () => {
@@ -269,9 +234,9 @@ describe('CreateOrderUseCase', () => {
       orderRepository.create.mockResolvedValue(null); // Order creation fails
 
       // Act & Assert
-      await expect(createOrderUseCase.execute(createOrderDto, mockClient)).rejects.toThrow(
-        'Failed to create order.'
-      );
+      await expect(
+        createOrderUseCase.execute(createOrderDto, mockClient),
+      ).rejects.toThrow('Failed to create order');
     });
 
     it('should calculate correct cashback amount based on tariff', async () => {

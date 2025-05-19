@@ -1,0 +1,48 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
+import { Logger } from 'nestjs-pino';
+import { OrderNotFoundException } from '../../../domain/order/exceptions/order-base.exceptions';
+
+@Injectable()
+export class GetOrderByIdUseCase {
+  constructor(
+    private readonly orderRepository: IOrderRepository,
+    @Inject(Logger) private readonly logger: Logger,
+  ) {}
+
+  async execute(orderId: number): Promise<any> {
+    const order = await this.orderRepository.findOneById(orderId);
+
+    if (!order) {
+      throw new OrderNotFoundException(orderId.toString());
+    }
+
+    this.logger.log(
+      {
+        orderId: order.id,
+        action: 'get_order_details',
+        timestamp: new Date(),
+      },
+      `Order details retrieved for order ID ${order.id}`,
+    );
+
+    return {
+      id: order.id,
+      status: order.orderStatus,
+      carWashId: order.carWashId,
+      bayNumber: order.bayNumber,
+      sum: order.sum,
+      cashback: order.cashback,
+      card: {
+        id: order.card.cardId,
+        number: order.card.devNomer,
+      },
+      promoCodeId: order.promoCodeId,
+      discountAmount: order.discountAmount,
+      rewardPointsUsed: order.rewardPointsUsed,
+      createdAt: order.createdAt,
+      transactionId: order.transactionId,
+      error: order.excecutionError,
+    };
+  }
+}

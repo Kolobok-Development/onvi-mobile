@@ -11,6 +11,8 @@ import { AuthController } from '../../api/auth/auth.controller';
 import { LocalStrategy } from '../common/strategies/local.strategy';
 import { JwtRefreshStrategy } from '../common/strategies/jwt-refresh.strategy';
 import { JwtStrategy } from '../common/strategies/jwt.strategy';
+import { WsJwtStrategy } from '../common/strategies/jwt-ws.strategy';
+import { WsAuthGuard } from '../common/guards/jws-ws.guard';
 
 @Module({
   imports: [
@@ -28,7 +30,9 @@ import { JwtStrategy } from '../common/strategies/jwt.strategy';
     LocalStrategy,
     JwtRefreshStrategy,
     JwtStrategy,
+    WsJwtStrategy,
+    WsAuthGuard,
   ],
-  exports: [AuthUsecase],
+  exports: [AuthUsecase, WsAuthGuard],
 })
 export class AuthModule {}

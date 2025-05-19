@@ -4,13 +4,14 @@ import {
   HttpCode,
   Post,
   UseGuards,
-  Request,
   HttpStatus,
   Req,
   Get,
   Query,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { OrderUsecase } from '../../application/usecases/order/order.usecase';
+import { ValidateOrderPromocodeUsecase } from '../../application/usecases/order/validate-order-promocode.usecase';
 import { JwtGuard } from '../../infrastructure/common/guards/jwt.guard';
 import { CreateOrderDto } from '../../application/usecases/order/dto/create-order.dto';
 import { ClientException } from '../../infrastructure/common/exceptions/base.exceptions';
@@ -20,14 +21,19 @@ import { PromoCodeNotFoundException } from '../../domain/promo-code/exceptions/p
 import { InvalidPromoCodeException } from '../../domain/promo-code/exceptions/invalid-promo-code.exception';
 import { CreateOrderUseCase } from '../../application/usecases/order/create-order.use-case';
 import { IPosService } from '../../infrastructure/pos/interface/pos.interface';
-import { PingRequestDto } from '../../infrastructure/pos/dto/ping-request.dto';
+import { RegisterPaymentUseCase } from '../../application/usecases/order/register-payment.use-case';
+import { IRegisterPaymentDto } from '../../application/usecases/order/dto/register-payment.dto';
+import { GetOrderByIdUseCase } from '../../application/usecases/order/get-order-by-id.use-case';
+import { OrderNotFoundException } from '../../domain/order/exceptions/order-base.exceptions';
 
 @Controller('order')
 export class OrderController {
   constructor(
-    private readonly orderUsecase: OrderUsecase,
+    private readonly validateOrderPromocodeUsecase: ValidateOrderPromocodeUsecase,
     private readonly createOrderUsecase: CreateOrderUseCase,
     private readonly posService: IPosService,
+    private readonly registerPaymentUseCase: RegisterPaymentUseCase,
+    private readonly getOrderByIdUseCase: GetOrderByIdUseCase,
   ) {}
 
   @UseGuards(JwtGuard)
@@ -55,12 +61,38 @@ export class OrderController {
   }
 
   @UseGuards(JwtGuard)
+  @Post('register')
+  @HttpCode(201)
+  async registerPayment(
+    @Body() data: IRegisterPaymentDto,
+    @Req() req: any,
+  ): Promise<any> {
+    try {
+      return await this.registerPaymentUseCase.execute(data);
+    } catch (e) {
+      if (e instanceof ClientException) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.UNPROCESSABLE_ENTITY,
+        });
+      } else {
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
+      }
+    }
+  }
+
+  @UseGuards(JwtGuard)
   @Post('promo/validate')
   @HttpCode(200)
   async validatePromoCode(@Body() data: VerifyPromoDto, @Req() req: any) {
     try {
       const { user } = req;
-      return await this.orderUsecase.validatePromo(data, user);
+      return await this.validateOrderPromocodeUsecase.validatePromo(data, user);
     } catch (e) {
       console.log(e);
       if (e instanceof PromoCodeNotFoundException) {
@@ -86,12 +118,42 @@ export class OrderController {
     }
   }
 
-  @Get('/ping')
+  @Get('ping')
   @UseGuards(JwtGuard)
   async pingCarWash(@Query() query: any) {
     return await this.posService.ping({
       posId: Number(query.carWashId),
       bayNumber: Number(query.bayNumber),
     });
+  }
+
+  @Get(':id')
+  @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async getOrderById(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    try {
+      return await this.getOrderByIdUseCase.execute(id);
+    } catch (e) {
+      if (e instanceof OrderNotFoundException) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.NOT_FOUND,
+        });
+      } else if (e instanceof ClientException) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.UNPROCESSABLE_ENTITY,
+        });
+      } else {
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
+      }
+    }
   }
 }

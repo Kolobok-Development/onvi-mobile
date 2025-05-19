@@ -20,6 +20,7 @@ import { TransactionModule } from './infrastructure/transaction/transaction.modu
 import { PosModule } from './infrastructure/pos/pos.module';
 import { LoggerModule } from 'nestjs-pino';
 import { EnvConfigService } from './infrastructure/config/env-config/env-config.service';
+import { BalanceWsModule } from './websockets/balance/balance-ws.module';
 
 @Module({
   imports: [
@@ -51,10 +52,10 @@ import { EnvConfigService } from './infrastructure/config/env-config/env-config.
           },
           serializers: {
             req(req) {
-              req.body = req.raw.body;
-              req.params = req.raw.params;
-              req.query = req.raw.query;
-              req.id = req.id || req.raw.id;
+              // req.body = req.raw;
+              // req.params = req.raw.params;
+              // req.query = req.raw.query;
+              // req.id = req.id || req.raw.id;
               return req;
             },
             res(res) {
@@ -130,6 +131,7 @@ import { EnvConfigService } from './infrastructure/config/env-config/env-config.
     PartnerModule,
     TransactionModule,
     PosModule,
+    BalanceWsModule,
   ],
   controllers: [],
   providers: [],

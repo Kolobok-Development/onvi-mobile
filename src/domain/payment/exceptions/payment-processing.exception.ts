@@ -1,8 +1,8 @@
 import { ClientException } from '../../../infrastructure/common/exceptions/base.exceptions';
-import { PAYMENT_PROCESSING_ERROR_CODE } from '../../../infrastructure/common/constants/constants';
+import { PAYMENT_ERROR_CODES } from '../../../infrastructure/common/constants/constants';
 
 export class PaymentProcessingException extends ClientException {
   constructor() {
-    super(PAYMENT_PROCESSING_ERROR_CODE, 'Payment processing error');
+    super(PAYMENT_ERROR_CODES.PROCESSING_ERROR, 'Payment processing error');
   }
 }

@@ -27,6 +27,7 @@ import { DeleteAccountUseCase } from '../../application/usecases/account/account
 import { FindMethodsCardUseCase } from '../../application/usecases/account/account-card-find-methods';
 import { AccountTransferUseCase } from '../../application/usecases/account/account-transfer';
 import { TransactionModule } from '../transaction/transaction.module';
+import { BalanceWsModule } from '../../websockets/balance/balance-ws.module';
 
 const repositories: Provider[] = [
   ClientRepositoryProvider,
@@ -68,6 +69,6 @@ const accountUseCase: Provider[] = [
     ...cardUseCase,
     ...accountUseCase,
   ],
-  exports: [...repositories, ...metaUseCase],
+  exports: [...repositories, ...metaUseCase, ...cardUseCase],
 })
 export class AccountModule {}
