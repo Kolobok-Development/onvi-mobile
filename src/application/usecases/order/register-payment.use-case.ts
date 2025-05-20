@@ -38,7 +38,6 @@ export class RegisterPaymentUseCase {
       const updatedOrder = {
         ...order,
         orderStatus: OrderStatus.PAYMENT_PROCESSING,
-        transactionId: order.transactionId,
       };
       await this.orderRepository.update(updatedOrder);
 
@@ -71,6 +70,7 @@ export class RegisterPaymentUseCase {
       const finalOrderUpdate = {
         ...finalOrder,
         orderStatus: OrderStatus.WAITING_PAYMENT,
+        transactionId: paymentResult.id,
       };
       await this.orderRepository.update(finalOrderUpdate);
 
