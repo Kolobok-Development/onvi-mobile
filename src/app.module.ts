@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { JwtModule } from './infrastructure/services/jwt/jwt.module';
 import { AccountModule } from './infrastructure/account/account.module';
@@ -21,10 +21,26 @@ import { PosModule } from './infrastructure/pos/pos.module';
 import { LoggerModule } from 'nestjs-pino';
 import { EnvConfigService } from './infrastructure/config/env-config/env-config.service';
 import { BalanceWsModule } from './websockets/balance/balance-ws.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
     PassportModule.register({}),
+    BullModule.forRootAsync({
+      imports: [EnvConfigModule],
+      useFactory: (env: EnvConfigService) => ({
+        connection: {
+          host: env.getRedisHost(),
+          port: env.getRedisPort(),
+          username: env.getRedisUsername(),
+          password: env.getRedisPwsd(),
+          keepAlive: 3000,
+          connectTimeout: 6000,
+          retryStrategy: (times) => Math.min(times * 100, 3000),
+        },
+      }),
+      inject: [EnvConfigService],
+    }),
     LoggerModule.forRootAsync({
       imports: [EnvConfigModule],
       inject: [EnvConfigService],
@@ -46,9 +62,9 @@ import { BalanceWsModule } from './websockets/balance/balance-ws.module';
               'req.body.refresh_token',
               'req.body.cardNumber',
               'req.body.cvv',
-              'res.headers["set-cookie"]'
+              'res.headers["set-cookie"]',
             ],
-            censor: '[REDACTED]'
+            censor: '[REDACTED]',
           },
           serializers: {
             req(req) {
@@ -62,7 +78,7 @@ import { BalanceWsModule } from './websockets/balance/balance-ws.module';
               return {
                 statusCode: res.statusCode,
                 responseTime: res.responseTime,
-                headers: res.headers
+                headers: res.headers,
               };
             },
             err(err) {
@@ -75,9 +91,9 @@ import { BalanceWsModule } from './websockets/balance/balance-ws.module';
                 cause: err.cause,
                 source: err.source,
                 details: err.details || err.originalError,
-                requestId: err.requestId
+                requestId: err.requestId,
               };
-            }
+            },
           },
           transport: {
             dedupe: true,

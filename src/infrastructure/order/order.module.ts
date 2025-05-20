@@ -15,7 +15,10 @@ import { ValidateOrderPromocodeUsecase } from '../../application/usecases/order/
 import { RegisterPaymentUseCase } from '../../application/usecases/order/register-payment.use-case';
 import { StartPosUseCase } from '../../application/usecases/order/start-pos.use-case';
 import { GetOrderByIdUseCase } from '../../application/usecases/order/get-order-by-id.use-case';
+import { GetOrderByTransactionIdUseCase } from '../../application/usecases/order/get-order-by-transaction-id.use-case';
 import { PaymentWebhookController } from '../../api/webhooks/payment-webhook.controller';
+import { BullModule } from '@nestjs/bullmq';
+import { ProcessOrderWebhookUseCase } from '../../application/usecases/order/process-order-webhook.use-case';
 
 @Module({
   imports: [
@@ -27,6 +30,14 @@ import { PaymentWebhookController } from '../../api/webhooks/payment-webhook.con
     AccountModule,
     TransactionModule,
     PosModule,
+    BullModule.registerQueue({
+      name: 'pos-process',
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true,
+        attempts: 3,
+      },
+    }),
   ],
   controllers: [OrderController, PaymentWebhookController],
   providers: [
@@ -36,6 +47,8 @@ import { PaymentWebhookController } from '../../api/webhooks/payment-webhook.con
     RegisterPaymentUseCase,
     StartPosUseCase,
     GetOrderByIdUseCase,
+    GetOrderByTransactionIdUseCase,
+    ProcessOrderWebhookUseCase,
   ],
   exports: [OrderRepositoryProvider],
 })

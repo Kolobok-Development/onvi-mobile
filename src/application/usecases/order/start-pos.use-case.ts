@@ -14,6 +14,9 @@ import { CarwashStartFailedException } from '../../../domain/order/exceptions/po
 
 @Injectable()
 export class StartPosUseCase {
+  private readonly MAX_RETRY_ATTEMPTS = 3;
+  private readonly VERIFICATION_DELAY_MS = 5000; // 5 seconds
+
   constructor(
     private readonly orderRepository: IOrderRepository,
     @Inject(Logger) private readonly logger: Logger,
@@ -48,13 +51,13 @@ export class StartPosUseCase {
 
       // Withdraw reward points if used
       if (order.rewardPointsUsed > 0) {
-        const reaminingBalance = await this.withdrawRewardPoints(
+        const remainingBalance = await this.withdrawRewardPoints(
           bayDetails.id,
           order.card.devNomer,
           order.rewardPointsUsed,
           balance,
         );
-        balance = reaminingBalance;
+        balance = remainingBalance;
       }
 
       // Send start command to carwash
@@ -68,8 +71,19 @@ export class StartPosUseCase {
         throw new CarwashStartFailedException(carWashResponse.errorMessage);
       }
 
-      order.orderStatus = OrderStatus.COMPLETED;
+      // Verify carwash has actually started with retries
+      const startSuccess = await this.verifyCarWashStarted(
+        order.carWashId,
+        order.bayNumber,
+      );
 
+      if (!startSuccess) {
+        throw new CarwashStartFailedException(
+          'Car wash bay did not start after multiple verification attempts',
+        );
+      }
+
+      order.orderStatus = OrderStatus.COMPLETED;
       await this.orderRepository.update(order);
 
       this.logger.log(
@@ -89,7 +103,6 @@ export class StartPosUseCase {
         balance: balance,
       };
     } catch (error: any) {
-      // Withdraw reward points if used
       order.orderStatus = OrderStatus.FAILED;
       order.excecutionError = error.message;
       await this.orderRepository.update(order);
@@ -103,7 +116,109 @@ export class StartPosUseCase {
         },
         `Order failed ${order.id}`,
       );
+
+      throw error;
     }
+  }
+
+  /**
+   * Verifies that the car wash bay has actually started by checking if it's busy
+   * Retries up to MAX_RETRY_ATTEMPTS with a delay between attempts
+   *
+   * @param carWashId - The ID of the car wash
+   * @param bayNumber - The bay number to check
+   * @returns true if verification was successful, false otherwise
+   */
+  private async verifyCarWashStarted(
+    carWashId: number,
+    bayNumber: number,
+  ): Promise<boolean> {
+    let attempts = 0;
+
+    while (attempts < this.MAX_RETRY_ATTEMPTS) {
+      attempts++;
+
+      this.logger.log(
+        {
+          action: 'verify_carwash_started',
+          carWashId,
+          bayNumber,
+          attempt: attempts,
+          timestamp: new Date(),
+        },
+        `Verifying car wash started - attempt ${attempts}/${this.MAX_RETRY_ATTEMPTS}`,
+      );
+
+      // Wait for the specified delay
+      await this.sleep(this.VERIFICATION_DELAY_MS);
+
+      try {
+        // Ping the bay to see if it's busy (which means it started)
+        const pingResult = await this.posService.ping({
+          posId: carWashId,
+          bayNumber: bayNumber,
+        });
+
+        // If the bay is busy, it means the car wash started successfully
+        if (pingResult.status !== 'Free') {
+          this.logger.log(
+            {
+              action: 'verify_carwash_started_success',
+              carWashId,
+              bayNumber,
+              attempt: attempts,
+              timestamp: new Date(),
+            },
+            `Car wash verified as started on attempt ${attempts}`,
+          );
+          return true;
+        }
+
+        this.logger.log(
+          {
+            action: 'verify_carwash_still_available',
+            carWashId,
+            bayNumber,
+            attempt: attempts,
+            timestamp: new Date(),
+          },
+          `Car wash bay still shows as available, retrying...`,
+        );
+
+        // If we're at the max attempts, we'll exit the loop and return false
+        if (attempts >= this.MAX_RETRY_ATTEMPTS) {
+          this.logger.error(
+            {
+              action: 'verify_carwash_failed',
+              carWashId,
+              bayNumber,
+              timestamp: new Date(),
+            },
+            `Failed to verify car wash started after ${this.MAX_RETRY_ATTEMPTS} attempts`,
+          );
+        }
+      } catch (error) {
+        this.logger.error(
+          {
+            action: 'verify_carwash_ping_error',
+            carWashId,
+            bayNumber,
+            attempt: attempts,
+            error: error.message,
+            timestamp: new Date(),
+          },
+          `Error pinging car wash during verification: ${error.message}`,
+        );
+
+        // Continue to next attempt despite error
+      }
+    }
+
+    return false;
+  }
+
+  private async sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private async withdrawRewardPoints(

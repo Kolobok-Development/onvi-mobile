@@ -24,6 +24,7 @@ import { IPosService } from '../../infrastructure/pos/interface/pos.interface';
 import { RegisterPaymentUseCase } from '../../application/usecases/order/register-payment.use-case';
 import { IRegisterPaymentDto } from '../../application/usecases/order/dto/register-payment.dto';
 import { GetOrderByIdUseCase } from '../../application/usecases/order/get-order-by-id.use-case';
+import { GetOrderByTransactionIdUseCase } from '../../application/usecases/order/get-order-by-transaction-id.use-case';
 import { OrderNotFoundException } from '../../domain/order/exceptions/order-base.exceptions';
 
 @Controller('order')
@@ -34,6 +35,7 @@ export class OrderController {
     private readonly posService: IPosService,
     private readonly registerPaymentUseCase: RegisterPaymentUseCase,
     private readonly getOrderByIdUseCase: GetOrderByIdUseCase,
+    private readonly getOrderByTransactionIdUseCase: GetOrderByTransactionIdUseCase,
   ) {}
 
   @UseGuards(JwtGuard)
@@ -125,6 +127,36 @@ export class OrderController {
       posId: Number(query.carWashId),
       bayNumber: Number(query.bayNumber),
     });
+  }
+
+  @Get('transaction/:transactionId')
+  @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async getOrderByTransactionId(@Param('transactionId') transactionId: string, @Req() req: any) {
+    try {
+      return await this.getOrderByTransactionIdUseCase.execute(transactionId);
+    } catch (e) {
+      if (e instanceof OrderNotFoundException) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.NOT_FOUND,
+        });
+      } else if (e instanceof ClientException) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.UNPROCESSABLE_ENTITY,
+        });
+      } else {
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
+      }
+    }
   }
 
   @Get(':id')

@@ -31,6 +31,18 @@ export class OrderRepository implements IOrderRepository {
     return Order.fromEntity(orderEntity);
   }
 
+  async findByTransactionId(transactionId: string): Promise<Order> {
+    const orderEntity = await this.orderRepository.findOne({
+      where: {
+        transactionId: transactionId,
+      },
+    });
+
+    if (!orderEntity) return null;
+
+    return Order.fromEntity(orderEntity);
+  }
+
   async updateOrderStatus(id: number, status: OrderStatus): Promise<void> {
     const order = await this.orderRepository.findOne({
       where: { id: id },

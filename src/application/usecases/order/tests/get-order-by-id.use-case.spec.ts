@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { GetOrderByIdUseCase } from './get-order-by-id.use-case';
-import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
+import { GetOrderByIdUseCase } from '../get-order-by-id.use-case';
+import { IOrderRepository } from '../../../../domain/order/order-repository.abstract';
 import { Logger } from 'nestjs-pino';
-import { Order } from '../../../domain/order/model/order';
-import { Card } from '../../../domain/account/card/model/card';
-import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
-import { OrderNotFoundException } from '../../../domain/order/exceptions/order-base.exceptions';
+import { Order } from '../../../../domain/order/model/order';
+import { Card } from '../../../../domain/account/card/model/card';
+import { OrderStatus } from '../../../../domain/order/enum/order-status.enum';
+import { OrderNotFoundException } from '../../../../domain/order/exceptions/order-base.exceptions';
 import { validCreateCardDto } from './mock.data';
-import { ICreateOrderDto } from '../../../domain/order/dto/create-order.dto';
+import { ICreateOrderDto } from '../../../../domain/order/dto/create-order.dto';
 
 describe('GetOrderByIdUseCase', () => {
   let getOrderByIdUseCase: GetOrderByIdUseCase;

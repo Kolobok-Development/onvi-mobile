@@ -1,19 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RegisterPaymentUseCase } from './register-payment.use-case';
-import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
-import { PaymentUsecase } from '../payment/payment.usecase';
+import { RegisterPaymentUseCase } from '../register-payment.use-case';
+import { IOrderRepository } from '../../../../domain/order/order-repository.abstract';
+import { PaymentUsecase } from '../../payment/payment.usecase';
 import { Logger } from 'nestjs-pino';
-import { IRegisterPaymentDto } from './dto/register-payment.dto';
-import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
-import { Order } from '../../../domain/order/model/order';
-import { Card } from '../../../domain/account/card/model/card';
+import { IRegisterPaymentDto } from '../dto/register-payment.dto';
+import { OrderStatus } from '../../../../domain/order/enum/order-status.enum';
+import { Order } from '../../../../domain/order/model/order';
+import { Card } from '../../../../domain/account/card/model/card';
 import {
   InvalidOrderStateException,
   OrderNotFoundException,
-} from '../../../domain/order/exceptions/order-base.exceptions';
-import { PaymentRegistrationFailedException } from '../../../domain/payment/exceptions/payment-base.exceptions';
+} from '../../../../domain/order/exceptions/order-base.exceptions';
+import { PaymentRegistrationFailedException } from '../../../../domain/payment/exceptions/payment-base.exceptions';
 import { validCreateCardDto } from './mock.data';
-import { ICreateOrderDto } from '../../../domain/order/dto/create-order.dto';
+import { ICreateOrderDto } from '../../../../domain/order/dto/create-order.dto';
 
 describe('RegisterPaymentUseCase', () => {
   let registerPaymentUseCase: RegisterPaymentUseCase;

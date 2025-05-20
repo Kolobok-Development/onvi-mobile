@@ -1,8 +1,8 @@
 // Basic valid mock
-import { ICreateCardDto } from '../../../domain/dto/account-create-card.dto';
-import { ICreateClientDto } from '../../../domain/dto/account-create-client.dto';
-import { ClientType } from '../../../domain/account/client/enum/clinet-type.enum';
-import { Tariff } from '../../../domain/account/card/model/tariff';
+import { ICreateCardDto } from '../../../../domain/dto/account-create-card.dto';
+import { ICreateClientDto } from '../../../../domain/dto/account-create-client.dto';
+import { ClientType } from '../../../../domain/account/client/enum/clinet-type.enum';
+import { Tariff } from '../../../../domain/account/card/model/tariff';
 
 /*
     ________________CARD DATA_______________

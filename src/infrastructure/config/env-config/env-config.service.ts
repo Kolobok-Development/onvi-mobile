@@ -64,4 +64,16 @@ export class EnvConfigService implements IJwtConfig {
   getWebhookSecret(): string {
     return this.configService.get<string>('WEBHOOK_SECRET');
   }
+  getRedisHost(): string {
+    return this.configService.get<string>('REDIS_ORDER_HOST');
+  }
+  getRedisPort(): number {
+    return this.configService.get<number>('REDIS_ORDER_PORT');
+  }
+  getRedisUsername(): string {
+    return this.configService.get<string>('REDIS_ORDER_USER');
+  }
+  getRedisPwsd(): string {
+    return this.configService.get<string>('REDIS_DEVICE_PASSWORD');
+  }
 }

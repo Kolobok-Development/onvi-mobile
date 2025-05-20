@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { StartPosUseCase } from './start-pos.use-case';
-import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
-import { ITransactionRepository } from '../../../domain/transaction/transaction-repository.abstract';
-import { IPosService } from '../../../infrastructure/pos/interface/pos.interface';
+import { StartPosUseCase } from '../start-pos.use-case';
+import { IOrderRepository } from '../../../../domain/order/order-repository.abstract';
+import { ITransactionRepository } from '../../../../domain/transaction/transaction-repository.abstract';
+import { IPosService } from '../../../../infrastructure/pos/interface/pos.interface';
 import { Logger } from 'nestjs-pino';
-import { Order } from '../../../domain/order/model/order';
-import { Card } from '../../../domain/account/card/model/card';
-import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
+import { Order } from '../../../../domain/order/model/order';
+import { Card } from '../../../../domain/account/card/model/card';
+import { OrderStatus } from '../../../../domain/order/enum/order-status.enum';
 import {
   InvalidOrderStateException,
   OrderNotFoundException,
-} from '../../../domain/order/exceptions/order-base.exceptions';
-import { SendStatus } from '../../../infrastructure/order/enum/send-status.enum';
-import { ICreateOrderDto } from '../../../domain/order/dto/create-order.dto';
+} from '../../../../domain/order/exceptions/order-base.exceptions';
+import { SendStatus } from '../../../../infrastructure/order/enum/send-status.enum';
+import { ICreateOrderDto } from '../../../../domain/order/dto/create-order.dto';
 import { validCreateCardDto } from './mock.data';
 
 describe('StartPosUseCase', () => {

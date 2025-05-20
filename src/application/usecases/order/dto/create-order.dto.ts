@@ -3,9 +3,6 @@ import { IsDefined, IsNumber, IsString } from 'class-validator';
 import { IsNull } from 'typeorm';
 
 export class CreateOrderDto {
-  @Optional()
-  @IsString()
-  transactionId?: string;
   @IsNumber()
   @IsDefined()
   sum: number;
