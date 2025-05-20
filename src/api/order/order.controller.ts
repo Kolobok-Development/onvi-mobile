@@ -123,6 +123,7 @@ export class OrderController {
   @Get('ping')
   @UseGuards(JwtGuard)
   async pingCarWash(@Query() query: any) {
+    console.log(query);
     return await this.posService.ping({
       posId: Number(query.carWashId),
       bayNumber: Number(query.bayNumber),
