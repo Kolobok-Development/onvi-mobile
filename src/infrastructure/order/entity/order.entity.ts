@@ -5,7 +5,7 @@ export class OrderEntity {
   @PrimaryGeneratedColumn({ name: 'ID' })
   id: number;
 
-  @Column({ type: 'date', name: 'createdAt' })
+  @Column({ type: 'timestamp', name: 'createdAt' })
   createdAt: Date;
 
   @Column({ nullable: true, name: 'transactionId' })
