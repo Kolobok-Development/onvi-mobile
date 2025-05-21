@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
 import { Logger } from 'nestjs-pino';
 import { OrderNotFoundException } from '../../../domain/order/exceptions/order-base.exceptions';
+import { Client } from '../../../domain/account/client/model/client';
 
 @Injectable()
 export class GetOrderByIdUseCase {
@@ -10,7 +11,7 @@ export class GetOrderByIdUseCase {
     @Inject(Logger) private readonly logger: Logger,
   ) {}
 
-  async execute(orderId: number): Promise<any> {
+  async execute(orderId: number, client: Client): Promise<any> {
     const order = await this.orderRepository.findOneById(orderId);
 
     if (!order) {
@@ -26,7 +27,8 @@ export class GetOrderByIdUseCase {
       `Order details retrieved for order ID ${order.id}`,
     );
 
-    let estimateCardBalance = order.card.balance;
+    const card = client.getCard();
+    let estimateCardBalance = card.balance;
 
     if (order.rewardPointsUsed > 0) {
       estimateCardBalance -= order.rewardPointsUsed;

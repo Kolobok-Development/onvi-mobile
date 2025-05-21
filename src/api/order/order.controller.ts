@@ -96,7 +96,6 @@ export class OrderController {
       const { user } = req;
       return await this.validateOrderPromocodeUsecase.validatePromo(data, user);
     } catch (e) {
-      console.log(e);
       if (e instanceof PromoCodeNotFoundException) {
         throw new CustomHttpException({
           type: e.type,
@@ -123,7 +122,6 @@ export class OrderController {
   @Get('ping')
   @UseGuards(JwtGuard)
   async pingCarWash(@Query() query: any) {
-    console.log(query);
     return await this.posService.ping({
       posId: Number(query.carWashId),
       bayNumber: Number(query.bayNumber),
@@ -165,7 +163,8 @@ export class OrderController {
   @HttpCode(HttpStatus.OK)
   async getOrderById(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
     try {
-      return await this.getOrderByIdUseCase.execute(id);
+      const { user } = req;
+      return await this.getOrderByIdUseCase.execute(id, user);
     } catch (e) {
       if (e instanceof OrderNotFoundException) {
         throw new CustomHttpException({
