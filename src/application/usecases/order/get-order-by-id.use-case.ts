@@ -42,8 +42,8 @@ export class GetOrderByIdUseCase {
       sum: order.sum,
       cashback: order.cashback,
       card: {
-        id: order.card.cardId,
-        number: order.card.devNomer,
+        id: card.cardId,
+        number: card.devNomer,
         balance: estimateCardBalance,
       },
       promoCodeId: order.promoCodeId,
