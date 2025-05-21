@@ -11,7 +11,7 @@ export class PaymentWebhookController {
     private readonly processOrderWebhook: ProcessOrderWebhookUseCase,
   ) {}
 
-  @Get('/webhook')
+  @Post('/webhook')
   @HttpCode(HttpStatus.OK)
   async handlePyamentSatus(
     @Body() webhookData: PaymentStatusGatewayWebhookDto,
