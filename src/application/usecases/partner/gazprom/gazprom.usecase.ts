@@ -19,6 +19,12 @@ export class GazpromUsecase {
 
     async reference(user: Client, reference: string): Promise<any> {
         const partner = await this.partnerRepository.findOneByName('Gazprom');
+        const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(user.clientId, partner.id);
+        if (clientPartner) {
+            try {
+                return await this.gazpromRepository.getSession(clientPartner.partnerUserId)
+            } catch (e) {}
+        }
         const clientGazprom = {
             status: 'CREATED'
         }
