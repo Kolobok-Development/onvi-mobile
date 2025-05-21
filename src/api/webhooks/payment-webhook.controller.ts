@@ -17,6 +17,7 @@ export class PaymentWebhookController {
     @Body() webhookData: PaymentStatusGatewayWebhookDto,
   ): Promise<any> {
     try {
+      console.log(webhookData);
       await this.processOrderWebhook.execute(webhookData);
     } catch (e) {
       if (e instanceof OrderNotFoundException) {
