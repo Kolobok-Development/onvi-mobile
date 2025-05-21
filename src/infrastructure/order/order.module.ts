@@ -19,6 +19,7 @@ import { GetOrderByTransactionIdUseCase } from '../../application/usecases/order
 import { PaymentWebhookController } from '../../api/webhooks/payment-webhook.controller';
 import { BullModule } from '@nestjs/bullmq';
 import { ProcessOrderWebhookUseCase } from '../../application/usecases/order/process-order-webhook.use-case';
+import { StartPosProcess } from '../../application/usecases/order/process/start-pos.process';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { ProcessOrderWebhookUseCase } from '../../application/usecases/order/pro
     GetOrderByIdUseCase,
     GetOrderByTransactionIdUseCase,
     ProcessOrderWebhookUseCase,
+    StartPosProcess,
   ],
   exports: [OrderRepositoryProvider],
 })

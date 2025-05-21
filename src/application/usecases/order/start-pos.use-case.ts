@@ -31,8 +31,6 @@ export class StartPosUseCase {
       throw new OrderNotFoundException(orderId.toString());
     }
 
-    let balance = order.card.balance;
-
     // Verify order is in PAYED status
     if (order.orderStatus !== OrderStatus.PAYED) {
       throw new InvalidOrderStateException(
@@ -50,15 +48,15 @@ export class StartPosUseCase {
       });
 
       // Withdraw reward points if used
-      if (order.rewardPointsUsed > 0) {
-        const remainingBalance = await this.withdrawRewardPoints(
-          bayDetails.id,
-          order.card.devNomer,
-          order.rewardPointsUsed,
-          balance,
-        );
-        balance = remainingBalance;
-      }
+      // if (order.rewardPointsUsed > 0) {
+      //   const remainingBalance = await this.withdrawRewardPoints(
+      //     bayDetails.id,
+      //     order.card.devNomer,
+      //     order.rewardPointsUsed,
+      //     balance,
+      //   );
+      //   balance = remainingBalance;
+      // }
 
       // Send start command to carwash
       const carWashResponse = await this.posService.send({
@@ -100,7 +98,6 @@ export class StartPosUseCase {
         orderId: order.id,
         orderStatus: OrderStatus.COMPLETED,
         posStatus: carWashResponse.sendStatus,
-        balance: balance,
       };
     } catch (error: any) {
       order.orderStatus = OrderStatus.FAILED;
@@ -221,23 +218,23 @@ export class StartPosUseCase {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  private async withdrawRewardPoints(
-    bayId: string,
-    unqNumber: string,
-    amount: number,
-    balance: number,
-  ): Promise<number> {
-    const withdraw = await this.transactionRepository.withdraw(
-      bayId,
-      unqNumber,
-      amount.toString(),
-      '1',
-    );
-
-    if (!withdraw) {
-      throw new RewardPointsWithdrawalException();
-    }
-
-    return balance - amount;
-  }
+  //   private async withdrawRewardPoints(
+  //     bayId: string,
+  //     unqNumber: string,
+  //     amount: number,
+  //     balance: number,
+  //   ): Promise<number> {
+  //     const withdraw = await this.transactionRepository.withdraw(
+  //       bayId,
+  //       unqNumber,
+  //       amount.toString(),
+  //       '1',
+  //     );
+  //
+  //     if (!withdraw) {
+  //       throw new RewardPointsWithdrawalException();
+  //     }
+  //
+  //     return balance - amount;
+  //   }
 }

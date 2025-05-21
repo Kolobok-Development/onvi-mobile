@@ -37,6 +37,7 @@ export class ProcessOrderWebhookUseCase {
 
     await this.orderRepository.update(updatedOrder);
 
+    console.log('sending to queue')
     //add to the task
     await this.dataQueue.add('pos-process', {
       orderId: order.id,
