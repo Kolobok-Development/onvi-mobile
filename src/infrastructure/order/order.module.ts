@@ -11,7 +11,15 @@ import { AccountModule } from '../account/account.module';
 import { TransactionModule } from '../transaction/transaction.module';
 import { PosModule } from '../pos/pos.module';
 import { CreateOrderUseCase } from '../../application/usecases/order/create-order.use-case';
-import { OrderUsecase } from '../../application/usecases/order/order.usecase';
+import { ValidateOrderPromocodeUsecase } from '../../application/usecases/order/validate-order-promocode.usecase';
+import { RegisterPaymentUseCase } from '../../application/usecases/order/register-payment.use-case';
+import { StartPosUseCase } from '../../application/usecases/order/start-pos.use-case';
+import { GetOrderByIdUseCase } from '../../application/usecases/order/get-order-by-id.use-case';
+import { GetOrderByTransactionIdUseCase } from '../../application/usecases/order/get-order-by-transaction-id.use-case';
+import { PaymentWebhookController } from '../../api/webhooks/payment-webhook.controller';
+import { BullModule } from '@nestjs/bullmq';
+import { ProcessOrderWebhookUseCase } from '../../application/usecases/order/process-order-webhook.use-case';
+import { StartPosProcess } from '../../application/usecases/order/process/start-pos.process';
 
 @Module({
   imports: [
@@ -23,12 +31,26 @@ import { OrderUsecase } from '../../application/usecases/order/order.usecase';
     AccountModule,
     TransactionModule,
     PosModule,
+    BullModule.registerQueue({
+      name: 'pos-process',
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true,
+        attempts: 3,
+      },
+    }),
   ],
-  controllers: [OrderController],
+  controllers: [OrderController, PaymentWebhookController],
   providers: [
     OrderRepositoryProvider,
     CreateOrderUseCase,
-    OrderUsecase, // Ensure CreateOrderUseCase is registered
+    ValidateOrderPromocodeUsecase,
+    RegisterPaymentUseCase,
+    StartPosUseCase,
+    GetOrderByIdUseCase,
+    GetOrderByTransactionIdUseCase,
+    ProcessOrderWebhookUseCase,
+    StartPosProcess,
   ],
   exports: [OrderRepositoryProvider],
 })

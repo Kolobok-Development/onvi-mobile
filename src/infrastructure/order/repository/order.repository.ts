@@ -19,6 +19,30 @@ export class OrderRepository implements IOrderRepository {
     return Order.fromEntity(newOrder);
   }
 
+  async findOneById(id: number): Promise<Order> {
+    const orderEntity = await this.orderRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!orderEntity) return null;
+
+    return Order.fromEntity(orderEntity);
+  }
+
+  async findByTransactionId(transactionId: string): Promise<Order> {
+    const orderEntity = await this.orderRepository.findOne({
+      where: {
+        transactionId: transactionId,
+      },
+    });
+
+    if (!orderEntity) return null;
+
+    return Order.fromEntity(orderEntity);
+  }
+
   async updateOrderStatus(id: number, status: OrderStatus): Promise<void> {
     const order = await this.orderRepository.findOne({
       where: { id: id },
@@ -44,9 +68,14 @@ export class OrderRepository implements IOrderRepository {
   }
 
   async update(order: Order): Promise<void> {
-    return Promise.resolve(undefined);
-  }
+    const existingOrder = await this.orderRepository.findOne({
+      where: { id: order.id },
+    });
 
+    if (!existingOrder) return null;
+
+    await this.orderRepository.save(order);
+  }
 
   private toOrderEntity(order: Order): OrderEntity {
     const orderEntity: OrderEntity = new OrderEntity();

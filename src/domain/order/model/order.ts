@@ -3,6 +3,7 @@ import { ICreateOrderDto } from '../dto/create-order.dto';
 import { Card } from '../../account/card/model/card';
 import { OrderEntity } from '../../../infrastructure/order/entity/order.entity';
 import { OrderProcessingException } from '../exceptions/order-processing.exception';
+import { InsufficientRewardPointsException } from '../exceptions/insufficient-reward-roints.exception';
 
 interface OrderOptions {
   id?: number;
@@ -76,7 +77,7 @@ export class Order {
 
     if (rewardPointsUsed > 0) {
       if (card.balance < sum) {
-        throw new OrderProcessingException();
+        throw new InsufficientRewardPointsException();
       }
 
       if (rewardPointsUsed <= 0) {
@@ -84,13 +85,11 @@ export class Order {
       }
     } else if (card.isLocked === 1) {
       throw new OrderProcessingException();
-    } else if (!transactionId) {
-      throw new OrderProcessingException();
     } else if (sum < 0) {
       throw new OrderProcessingException();
     }
 
-    const orderStatus: OrderStatus = OrderStatus.CREATED;
+    const orderStatus: OrderStatus = data.status;
 
     return new Order(
       createdAt,
@@ -109,12 +108,19 @@ export class Order {
   }
 
   public static fromEntity(entity: OrderEntity): Order {
-    const statusMappings = {
-      CREATED: OrderStatus.CREATED,
-      CANCELED: OrderStatus.CANCELED,
-      COMPLETED: OrderStatus.COMPLETED,
+    const statusMappings: Record<string, OrderStatus> = {
+      created: OrderStatus.CREATED,
+      payment_processing: OrderStatus.PAYMENT_PROCESSING,
+      waiting_payment: OrderStatus.WAITING_PAYMENT,
+      payment_authorized: OrderStatus.PAYMENT_AUTHORIZED,
+      payed: OrderStatus.PAYED,
+      failed: OrderStatus.FAILED,
+      completed: OrderStatus.COMPLETED,
+      canceled: OrderStatus.CANCELED,
+      refunded: OrderStatus.REFUNDED,
     };
-    const orderStatus = statusMappings[entity.orderStatus];
+    const orderStatus =
+      statusMappings[entity.orderStatus] || OrderStatus.CREATED;
     const order = new Order(
       entity.createdAt,
       entity.sum,

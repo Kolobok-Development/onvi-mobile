@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IPaymentRepository } from '../../../domain/payment/adapter/payment.interface';
 import { CreatePaymentDto } from './dto/create-payment.dto';
-import { Client } from '../../../domain/account/client/model/client';
 import { Amount, Payment } from '../../../domain/payment/model/payment';
 import {
   Item,
@@ -16,7 +15,10 @@ export class PaymentUsecase {
     private readonly env: EnvConfigService,
   ) {}
 
-  public async create(data: CreatePaymentDto, clint: Client) {
+  public async create(
+    data: CreatePaymentDto,
+    receiptReturnPhoneNumber: string,
+  ) {
     const amount: Amount = {
       value: String(data.amount),
       currency: 'RUB',
@@ -26,8 +28,8 @@ export class PaymentUsecase {
       amount,
       capture: true,
       description: data.description,
-      paymentMethodType: data.paymentMethod,
-      returnUrl: data.returnUrl,
+      paymentMethodType: null,
+      returnUrl: null,
     });
 
     const purchaseItem: Item = {
@@ -39,7 +41,7 @@ export class PaymentUsecase {
       payment_mode: 'full_payment',
     };
     const recipt: ReciptDto = {
-      phone: clint.correctPhone,
+      phone: receiptReturnPhoneNumber,
       items: [purchaseItem],
     };
 

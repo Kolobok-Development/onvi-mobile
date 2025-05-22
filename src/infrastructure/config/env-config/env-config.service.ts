@@ -52,12 +52,28 @@ export class EnvConfigService implements IJwtConfig {
     return this.configService.get<string>('LOGTAIL_ERROR_SOURCE_TOKEN');
   }
   getGazpromAuthToken(): string {
-    return this.configService.get<string>('GAZPROM_API_KEY')
+    return this.configService.get<string>('GAZPROM_API_KEY');
   }
   getGazpromBaseUrl(): string {
-    return this.configService.get<string>('GAZPROM_BASE_URL')
+    return this.configService.get<string>('GAZPROM_BASE_URL');
   }
   getGazpromPartnerId(): number {
-    return this.configService.get<number>('GAZPROM_PARTNER_ID')
+    return this.configService.get<number>('GAZPROM_PARTNER_ID');
+  }
+
+  getWebhookSecret(): string {
+    return this.configService.get<string>('WEBHOOK_SECRET');
+  }
+  getRedisHost(): string {
+    return this.configService.get<string>('REDIS_ORDER_HOST');
+  }
+  getRedisPort(): number {
+    return this.configService.get<number>('REDIS_ORDER_PORT');
+  }
+  getRedisUsername(): string {
+    return this.configService.get<string>('REDIS_ORDER_USER');
+  }
+  getRedisPwsd(): string {
+    return this.configService.get<string>('REDIS_DEVICE_PASSWORD');
   }
 }

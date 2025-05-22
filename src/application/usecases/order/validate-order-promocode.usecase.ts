@@ -9,7 +9,7 @@ import { InvalidPromoCodeException } from '../../../domain/promo-code/exceptions
 import { PromoCodeNotFoundException } from '../../../domain/promo-code/exceptions/promo-code-not-found.exception';
 
 @Injectable()
-export class OrderUsecase {
+export class ValidateOrderPromocodeUsecase {
   constructor(private readonly promoCodeRepository: IPromoCodeRepository) {}
 
   async validatePromo(
@@ -23,7 +23,7 @@ export class OrderUsecase {
     );
     const currentDate = new Date();
 
-    if (!PromoCode) throw new PromoCodeNotFoundException(promoCodeValue);
+    if (!promoCode) throw new PromoCodeNotFoundException(promoCodeValue);
 
     //validate promocode date
     if (
