@@ -13,18 +13,25 @@ import {PromoCodeService} from '../../services/promocode-service';
 import {OrderCreationFailedException} from '../../../domain/order/exceptions/order-base.exceptions';
 import {Logger} from 'nestjs-pino';
 import {DeviceType} from "../../../domain/order/enum/device-type.enum";
+import {CardService} from "../../services/card-service";
+import {InsufficientFreeVacuumException} from "../../../domain/order/exceptions/insufficient-free-vacuum.exception";
+import {InjectQueue} from "@nestjs/bullmq";
+import {Queue} from "bullmq";
 
 @Injectable()
 export class CreateOrderUseCase {
   constructor(
     private readonly orderRepository: IOrderRepository,
     private readonly promoCodeService: PromoCodeService,
+    private readonly cardService: CardService,
     private readonly tariffRepository: ITariffRepository,
     private readonly posService: IPosService,
     @Inject(Logger) private readonly logger: Logger,
+    @InjectQueue('pos-process') private readonly dataQueue: Queue,
   ) {}
 
   async execute(request: CreateOrderDto, account: Client): Promise<any> {
+    const isFreeVacuum = request.sum === 0 && request.bayType === DeviceType.VACUUME;
     // Step 1: Verify bay availability via ping request
     await this.verifyBayAvailability(request);
 
@@ -32,6 +39,13 @@ export class CreateOrderUseCase {
     const card = account.getCard();
     const tariff = await this.tariffRepository.findCardTariff(card);
     const cashback = Math.ceil((request.sum * tariff.bonus) / 100);
+
+    if (isFreeVacuum) {
+      const vacuumInfo = await this.cardService.getFreeVacuum(account);
+      if (vacuumInfo.remains <= 0) {
+        throw new InsufficientFreeVacuumException();
+      }
+    }
 
     const order = Order.create({
       card: card,
@@ -72,6 +86,25 @@ export class CreateOrderUseCase {
       },
       `Order created ${order.id}`,
     );
+
+    if(isFreeVacuum){
+      const updatedOrder = {
+        ...newOrder,
+        orderStatus: OrderStatus.FREE_PROCESSING,
+      };
+
+      await this.orderRepository.update(updatedOrder);
+
+      //add to the task
+      await this.dataQueue.add('pos-process', {
+        orderId: order.id,
+      });
+
+      return {
+        orderId: updatedOrder.id,
+        status: OrderStatus.FREE_PROCESSING,
+      };
+    }
 
     return {
       orderId: newOrder.id,

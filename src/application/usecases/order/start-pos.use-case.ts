@@ -28,6 +28,7 @@ export class StartPosUseCase {
 
   async execute(orderId: number): Promise<any> {
     const order = await this.orderRepository.findOneById(orderId);
+    const isFreeVacuum = order.sum === 0 && order.bayType === DeviceType.VACUUME;
 
     if (!order) {
       throw new OrderNotFoundException(orderId.toString());
@@ -36,7 +37,13 @@ export class StartPosUseCase {
     if (!order.card) throw new CardForOrderNotFoundException(order.id.toString());
 
     // Verify order is in PAYED status
-    if (order.orderStatus !== OrderStatus.PAYED) {
+    if(isFreeVacuum) {
+      throw new InvalidOrderStateException(
+          order.id.toString(),
+          order.orderStatus,
+          OrderStatus.FREE_PROCESSING,
+      );
+    } else if (order.orderStatus !== OrderStatus.PAYED) {
       throw new InvalidOrderStateException(
         order.id.toString(),
         order.orderStatus,
@@ -51,17 +58,6 @@ export class StartPosUseCase {
         bayNumber: order.bayNumber,
         type: order.bayType,
       });
-
-      // Withdraw reward points if used
-      // if (order.rewardPointsUsed > 0) {
-      //   const remainingBalance = await this.withdrawRewardPoints(
-      //     bayDetails.id,
-      //     order.card.devNomer,
-      //     order.rewardPointsUsed,
-      //     balance,
-      //   );
-      //   balance = remainingBalance;
-      // }
 
       // Send start command to carwash
       const carWashResponse = await this.posService.send({
@@ -230,24 +226,4 @@ export class StartPosUseCase {
   private async sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
-
-  //   private async withdrawRewardPoints(
-  //     bayId: string,
-  //     unqNumber: string,
-  //     amount: number,
-  //     balance: number,
-  //   ): Promise<number> {
-  //     const withdraw = await this.transactionRepository.withdraw(
-  //       bayId,
-  //       unqNumber,
-  //       amount.toString(),
-  //       '1',
-  //     );
-  //
-  //     if (!withdraw) {
-  //       throw new RewardPointsWithdrawalException();
-  //     }
-  //
-  //     return balance - amount;
-  //   }
 }
