@@ -84,6 +84,7 @@ export class RegisterPaymentUseCase {
         `Payment has been registered for order ${order.id} with amount ${data.amount}`,
       );
 
+      console.log(paymentResult)
       return {
         status: OrderStatus.WAITING_PAYMENT,
         paymentId: paymentResult.id,
