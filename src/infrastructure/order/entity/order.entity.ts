@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {DeviceType} from "../../../domain/order/enum/device-type.enum";
+import {CardEntity} from "../../account/entity/card.entity";
 
 @Entity({ name: 'ONVI_ORDERS', synchronize: false })
 export class OrderEntity {
@@ -13,6 +15,10 @@ export class OrderEntity {
 
   @Column({ name: 'cardId' })
   cardId: number;
+
+  @ManyToOne(() => CardEntity, { eager: true })
+  @JoinColumn({ name: 'cardId' })
+  card: CardEntity;
 
   @Column({ name: 'SUM' })
   sum: number;
@@ -40,4 +46,7 @@ export class OrderEntity {
 
   @Column({name: 'CASHBACK_AMOUNT'})
   cashback: number;
+
+  @Column({ name: 'bayType' })
+  bayType: DeviceType;
 }

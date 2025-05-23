@@ -2,6 +2,7 @@ import { Client } from '../../client/model/client';
 import { CardType } from '../enum/card-type.enum';
 import { ICreateCardDto } from '../../../dto/account-create-card.dto';
 import { CardEntity } from '../../../../infrastructure/account/entity/card.entity';
+import {VACUUM_FREE_LIMIT} from "../../../../infrastructure/common/constants/constants";
 
 export class Card {
   cardId?: number;
@@ -17,6 +18,7 @@ export class Card {
   realBalance: number;
   airBalance: number;
   nomer: string;
+  vacuumFreeLimit: number;
   tag?: string;
 
   constructor(
@@ -26,6 +28,7 @@ export class Card {
     balance: number,
     airBalance: number,
     realBalance: number,
+    vacuumFreeLimit: number,
     dateBegin: Date,
     {
       cardId,
@@ -59,6 +62,7 @@ export class Card {
     this.airBalance = airBalance;
     this.nomer = nomer;
     this.tag = tag;
+    this.vacuumFreeLimit = vacuumFreeLimit;
   }
 
   public static create(data: ICreateCardDto): Card {
@@ -73,6 +77,7 @@ export class Card {
       balance,
       airBalance,
       realBalance,
+      VACUUM_FREE_LIMIT,
       beginDate,
       { clientId },
     );

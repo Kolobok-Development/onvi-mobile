@@ -4,6 +4,8 @@ import { Card } from '../../account/card/model/card';
 import { OrderEntity } from '../../../infrastructure/order/entity/order.entity';
 import { OrderProcessingException } from '../exceptions/order-processing.exception';
 import { InsufficientRewardPointsException } from '../exceptions/insufficient-reward-roints.exception';
+import {DeviceType} from "../enum/device-type.enum";
+import {CardMapper} from "../../../infrastructure/account/mapper/card.mapper";
 
 interface OrderOptions {
   id?: number;
@@ -26,6 +28,7 @@ export class Order {
   rewardPointsUsed?: number;
   carWashId: number;
   bayNumber: number;
+  bayType: DeviceType;
   excecutionError?: string;
   cashback: number;
 
@@ -35,6 +38,7 @@ export class Order {
     orderStatus: OrderStatus,
     carWashId: number,
     bayNumber: number,
+    bayType: DeviceType,
     cashback: number,
     {
       id,
@@ -53,6 +57,7 @@ export class Order {
     this.orderStatus = orderStatus;
     this.carWashId = carWashId;
     this.bayNumber = bayNumber;
+    this.bayType = bayType;
     this.excecutionError = excecutionError;
     this.transactionId = transactionId;
     this.promoCodeId = promoCodeId;
@@ -69,6 +74,7 @@ export class Order {
       promoCodeId,
       carWashId,
       bayNumber,
+      bayType,
       rewardPointsUsed,
       cashback,
     } = data;
@@ -97,6 +103,7 @@ export class Order {
       orderStatus,
       carWashId,
       bayNumber,
+      bayType,
       cashback,
       {
         transactionId,
@@ -127,6 +134,7 @@ export class Order {
       orderStatus,
       entity.carWashId,
       entity.bayNumber,
+      entity.bayType,
       entity.cashback,
       {
         id: entity.id,
@@ -134,6 +142,7 @@ export class Order {
         rewardPointsUsed: entity.rewardPointsUsed,
         discountAmount: entity.discountAmount,
         excecutionError: entity.excecutionError,
+        card: entity.card ? CardMapper.fromEntity(entity.card) : undefined,
       },
     );
 

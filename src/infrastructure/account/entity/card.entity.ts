@@ -82,6 +82,9 @@ export class CardEntity {
   @Column({ type: 'number', name: 'MAIN_CARD_ID', nullable: true })
   mainCardId: number;
 
+  @Column({ type: 'number', name: 'DAY_FREE_LIMIT', nullable: true })
+  vacuumFreeLimit: number;
+
   @OneToMany(() => PromoCodeUsageEntity, (usage) => usage.card)
   promoUsages: PromoCodeUsageEntity[];
 

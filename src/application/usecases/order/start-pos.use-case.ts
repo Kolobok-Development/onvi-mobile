@@ -1,16 +1,18 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
-import { Logger } from 'nestjs-pino';
-import { IPosService } from '../../../infrastructure/pos/interface/pos.interface';
+import {Inject, Injectable} from '@nestjs/common';
+import {IOrderRepository} from '../../../domain/order/order-repository.abstract';
+import {Logger} from 'nestjs-pino';
+import {IPosService} from '../../../infrastructure/pos/interface/pos.interface';
 import {
-  InvalidOrderStateException,
-  OrderNotFoundException,
+    CardForOrderNotFoundException,
+    InvalidOrderStateException,
+    OrderNotFoundException,
 } from '../../../domain/order/exceptions/order-base.exceptions';
-import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
-import { ITransactionRepository } from '../../../domain/transaction/transaction-repository.abstract';
-import { RewardPointsWithdrawalException } from '../../../domain/order/exceptions/reward-points-withdrawal.exception';
-import { SendStatus } from '../../../infrastructure/order/enum/send-status.enum';
-import { CarwashStartFailedException } from '../../../domain/order/exceptions/pos-start-faild.exception';
+import {OrderStatus} from '../../../domain/order/enum/order-status.enum';
+import {ITransactionRepository} from '../../../domain/transaction/transaction-repository.abstract';
+import {SendStatus} from '../../../infrastructure/order/enum/send-status.enum';
+import {CarwashStartFailedException} from '../../../domain/order/exceptions/pos-start-faild.exception';
+import {DeviceType} from "../../../domain/order/enum/device-type.enum";
+import {Order} from "../../../domain/order/model/order";
 
 @Injectable()
 export class StartPosUseCase {
@@ -31,6 +33,8 @@ export class StartPosUseCase {
       throw new OrderNotFoundException(orderId.toString());
     }
 
+    if (!order.card) throw new CardForOrderNotFoundException(order.id.toString());
+
     // Verify order is in PAYED status
     if (order.orderStatus !== OrderStatus.PAYED) {
       throw new InvalidOrderStateException(
@@ -45,6 +49,7 @@ export class StartPosUseCase {
       const bayDetails = await this.posService.ping({
         posId: order.carWashId,
         bayNumber: order.bayNumber,
+        type: order.bayType,
       });
 
       // Withdraw reward points if used
@@ -71,8 +76,7 @@ export class StartPosUseCase {
 
       // Verify carwash has actually started with retries
       const startSuccess = await this.verifyCarWashStarted(
-        order.carWashId,
-        order.bayNumber,
+        order, bayDetails.id
       );
 
       if (!startSuccess) {
@@ -118,18 +122,13 @@ export class StartPosUseCase {
     }
   }
 
-  /**
-   * Verifies that the car wash bay has actually started by checking if it's busy
-   * Retries up to MAX_RETRY_ATTEMPTS with a delay between attempts
-   *
-   * @param carWashId - The ID of the car wash
-   * @param bayNumber - The bay number to check
-   * @returns true if verification was successful, false otherwise
-   */
   private async verifyCarWashStarted(
-    carWashId: number,
-    bayNumber: number,
+      order: Order,
+      deviceId: string,
   ): Promise<boolean> {
+    const carWashId = order.carWashId;
+    const bayNumber = order.bayNumber;
+    const bayType = order.bayType;
     let attempts = 0;
 
     while (attempts < this.MAX_RETRY_ATTEMPTS) {
@@ -146,6 +145,19 @@ export class StartPosUseCase {
         `Verifying car wash started - attempt ${attempts}/${this.MAX_RETRY_ATTEMPTS}`,
       );
 
+        if (attempts > 1) {
+            try {
+                this.logger.log(`Re-sending start command (attempt ${attempts})`);
+                const carWashResponse = await this.posService.send({
+                    cardNumber: order.card.devNomer,
+                    sum: (order.sum + order.rewardPointsUsed).toString(),
+                    deviceId: deviceId,
+                });
+            } catch (error) {
+                this.logger.error(`Failed to re-send start command: ${error.message}`);
+            }
+        }
+
       // Wait for the specified delay
       await this.sleep(this.VERIFICATION_DELAY_MS);
 
@@ -154,6 +166,7 @@ export class StartPosUseCase {
         const pingResult = await this.posService.ping({
           posId: carWashId,
           bayNumber: bayNumber,
+          type: bayType,
         });
 
         // If the bay is busy, it means the car wash started successfully

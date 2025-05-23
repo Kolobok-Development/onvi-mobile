@@ -1,17 +1,18 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
-import { ITariffRepository } from '../../../domain/account/card/tariff-repository.abstract';
-import { IPosService } from '../../../infrastructure/pos/interface/pos.interface';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { Client } from '../../../domain/account/client/model/client';
-import { Order } from '../../../domain/order/model/order';
-import { BayBusyException } from '../../../domain/order/exceptions/bay-busy.exception';
-import { CarwashUnavalibleException } from '../../../domain/order/exceptions/carwash-unavalible.exception';
-import { PingRequestDto } from '../../../infrastructure/pos/dto/ping-request.dto';
-import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
-import { PromoCodeService } from '../../services/promocode-service';
-import { OrderCreationFailedException } from '../../../domain/order/exceptions/order-base.exceptions';
-import { Logger } from 'nestjs-pino';
+import {Inject, Injectable} from '@nestjs/common';
+import {IOrderRepository} from '../../../domain/order/order-repository.abstract';
+import {ITariffRepository} from '../../../domain/account/card/tariff-repository.abstract';
+import {IPosService} from '../../../infrastructure/pos/interface/pos.interface';
+import {CreateOrderDto} from './dto/create-order.dto';
+import {Client} from '../../../domain/account/client/model/client';
+import {Order} from '../../../domain/order/model/order';
+import {BayBusyException} from '../../../domain/order/exceptions/bay-busy.exception';
+import {CarwashUnavalibleException} from '../../../domain/order/exceptions/carwash-unavalible.exception';
+import {PingRequestDto} from '../../../infrastructure/pos/dto/ping-request.dto';
+import {OrderStatus} from '../../../domain/order/enum/order-status.enum';
+import {PromoCodeService} from '../../services/promocode-service';
+import {OrderCreationFailedException} from '../../../domain/order/exceptions/order-base.exceptions';
+import {Logger} from 'nestjs-pino';
+import {DeviceType} from "../../../domain/order/enum/device-type.enum";
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -40,6 +41,7 @@ export class CreateOrderUseCase {
       rewardPointsUsed: request.rewardPointsUsed,
       carWashId: request.carWashId,
       bayNumber: request.bayNumber,
+      bayType: request.bayType ?? DeviceType.BAY,
       cashback: cashback,
     });
 
@@ -81,6 +83,7 @@ export class CreateOrderUseCase {
     const requestBody: PingRequestDto = {
       posId: data.carWashId,
       bayNumber: data.bayNumber,
+      type: data.bayType,
     };
     const bay = await this.posService.ping(requestBody);
 

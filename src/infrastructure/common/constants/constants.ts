@@ -1,5 +1,6 @@
 export const OTP_EXPIRY_TIME = 5 * 60 * 1000;
 export const OTP_TIME = 1440;
+export const VACUUM_FREE_LIMIT = 3;
 
 //Exception constants
 
@@ -28,6 +29,7 @@ export const ORDER_ERROR_CODES = {
   ORDER_CREATION_FAILED: 1004,
   INSUFFICIENT_REWARD_POINTS: 1005,
   REWARD_POINTS_WITHDRAWAL_FAILED: 1006,
+  CARD_FOR_ORDER_NOT_FOUND: 1007,
 };
 
 //POS

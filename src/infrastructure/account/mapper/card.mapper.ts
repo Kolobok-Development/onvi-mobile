@@ -17,6 +17,7 @@ export class CardMapper {
             realBalance,
             airBalance,
             nomer,
+            vacuumFreeLimit,
             tag,
         } = entity;
 
@@ -27,6 +28,7 @@ export class CardMapper {
             balance,
             airBalance,
             realBalance,
+            vacuumFreeLimit,
             dateBegin,
             {
                 cardId,
@@ -53,6 +55,7 @@ export class CardMapper {
         cardEntity.balance = card.balance;
         cardEntity.realBalance = card.realBalance;
         cardEntity.airBalance = card.airBalance;
+        cardEntity.vacuumFreeLimit = card.vacuumFreeLimit;
 
         return cardEntity;
     }

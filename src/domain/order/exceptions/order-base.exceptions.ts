@@ -10,6 +10,15 @@ export class OrderNotFoundException extends ClientException {
   }
 }
 
+export class OrderNotFoundByTransactionIdException extends ClientException {
+  constructor(transactionId: string) {
+    super(
+        ORDER_ERROR_CODES.ORDER_NOT_FOUND,
+        `Order with transactionId ${transactionId} not found`,
+    );
+  }
+}
+
 export class InvalidOrderStateException extends ClientException {
   constructor(orderId: string, currentState: string, expectedState: string) {
     super(
@@ -60,6 +69,15 @@ export class RewardPointsWithdrawalException extends ClientException {
     super(
       ORDER_ERROR_CODES.REWARD_POINTS_WITHDRAWAL_FAILED,
       'Failed to withdraw reward points',
+    );
+  }
+}
+
+export class CardForOrderNotFoundException extends ClientException {
+  constructor(orderId: string) {
+    super(
+        ORDER_ERROR_CODES.CARD_FOR_ORDER_NOT_FOUND,
+        `Card not found an order with ID ${orderId}`,
     );
   }
 }

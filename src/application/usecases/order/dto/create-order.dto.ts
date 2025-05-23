@@ -1,6 +1,7 @@
 import { Optional } from '@nestjs/common';
-import { IsDefined, IsNumber, IsString } from 'class-validator';
+import {IsDefined, IsEnum, IsNumber, IsString} from 'class-validator';
 import { IsNull } from 'typeorm';
+import {DeviceType} from "../../../../domain/order/enum/device-type.enum";
 
 export class CreateOrderDto {
   @IsNumber()
@@ -17,4 +18,6 @@ export class CreateOrderDto {
   @IsNumber()
   @IsDefined()
   bayNumber: number;
+  @Optional()
+  bayType?: DeviceType;
 }

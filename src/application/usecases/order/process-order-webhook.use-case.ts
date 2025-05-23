@@ -1,7 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
-import { OrderNotFoundException } from '../../../domain/order/exceptions/order-base.exceptions';
+import {
+  CardForOrderNotFoundException, OrderNotFoundByTransactionIdException,
+  OrderNotFoundException
+} from '../../../domain/order/exceptions/order-base.exceptions';
 import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -20,7 +23,7 @@ export class ProcessOrderWebhookUseCase {
       data.object.id,
     );
 
-    if (!order) throw new OrderNotFoundException(order.id.toString());
+    if (!order) throw new OrderNotFoundByTransactionIdException(data.object.id.toString());
 
     this.logger.log(
       {

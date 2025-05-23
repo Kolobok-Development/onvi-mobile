@@ -3,8 +3,9 @@ import { IOrderRepository } from '../../../domain/order/order-repository.abstrac
 import { Order } from '../../../domain/order/model/order';
 import { OrderEntity } from '../entity/order.entity';
 import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
-import { Repository } from 'typeorm';
+import {Between, Repository} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import {DeviceType} from "../../../domain/order/enum/device-type.enum";
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -84,6 +85,7 @@ export class OrderRepository implements IOrderRepository {
     orderEntity.createdAt = order.createdAt;
     orderEntity.carWashId = order.carWashId;
     orderEntity.bayNumber = order.bayNumber;
+    orderEntity.bayType = order.bayType;
     orderEntity.orderStatus = order.orderStatus;
     orderEntity.rewardPointsUsed = order.rewardPointsUsed;
     orderEntity.promoCodeId = order.promoCodeId;

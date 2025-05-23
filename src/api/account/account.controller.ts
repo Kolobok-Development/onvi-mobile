@@ -95,6 +95,25 @@ export class AccountController {
   }
 
   @UseGuards(JwtGuard)
+  @Get('/free-vacuum')
+  @HttpCode(200)
+  async getFreeVacuum(
+      @Request() request: any,
+  ): Promise<{ limit: number; remains: number }> {
+    try {
+      const { user } = request;
+      return await this.cardService.getFreeVacuum(
+          user,
+      );
+    } catch (e) {
+      throw new CustomHttpException({
+        message: e.message,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
+  @UseGuards(JwtGuard)
   @Get('/tariff')
   @HttpCode(200)
   async getAccountNotifications(@Req() request: any): Promise<any> {

@@ -31,7 +31,8 @@ export class PosService implements IPosService {
     try {
       const response = await firstValueFrom(
         this.httpService.get(
-          `${this.baseUrl}/external/collection/device?carwashId=${data.posId}&bayNumber=${data.bayNumber}`,
+          `${this.baseUrl}/external/collection/device?carwashId=${data.posId}&bayNumber=${data.bayNumber}` +
+            (data.type ? `&type=${data.type}` : ''),
           { headers: { ...headersReq } },
         ),
       );
@@ -43,12 +44,12 @@ export class PosService implements IPosService {
         errorMessage: null,
       };
     } catch (error: any) {
-      const { response } = error;
+      const errorData = error.response?.data || error.message;
       return {
         id: null,
         status: 'Unavailable',
         type: null,
-        errorMessage: response.data.error,
+        errorMessage: errorData?.error || 'Unknown error',
       };
     }
   }
@@ -74,10 +75,10 @@ export class PosService implements IPosService {
         errorMessage: null,
       };
     } catch (error: any) {
-      const { response } = error;
+      const errorData = error.response?.data || error.message;
       return {
         sendStatus: SendStatus.FAIL,
-        errorMessage: response.data.error,
+        errorMessage: errorData?.error || 'Unknown error',
       };
     }
   }
