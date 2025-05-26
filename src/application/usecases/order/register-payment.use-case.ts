@@ -90,7 +90,7 @@ export class RegisterPaymentUseCase {
       return {
         status: OrderStatus.WAITING_PAYMENT,
         paymentId: paymentResult.id,
-        confirmation_url: paymentResult.confirmation.confirmation_url,
+        confirmation_url: paymentResult?.confirmation.confirmation_url || '',
       };
     } catch (error: any) {
       order.orderStatus = OrderStatus.CANCELED;
