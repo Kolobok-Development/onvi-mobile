@@ -31,6 +31,7 @@ export class CreateOrderUseCase {
   ) {}
 
   async execute(request: CreateOrderDto, account: Client): Promise<any> {
+    console.log('start create order');
     const isFreeVacuum = request.sum === 0 && request.bayType === DeviceType.VACUUME;
     // Step 1: Verify bay availability via ping request
     await this.verifyBayAvailability(request);
@@ -88,6 +89,7 @@ export class CreateOrderUseCase {
     );
 
     if(isFreeVacuum){
+      console.log('freeVacuum start');
       const updatedOrder = {
         ...newOrder,
         orderStatus: OrderStatus.FREE_PROCESSING,
@@ -100,12 +102,14 @@ export class CreateOrderUseCase {
         orderId: order.id,
       });
 
+      console.log('end create order, status: ' + OrderStatus.FREE_PROCESSING);
       return {
         orderId: updatedOrder.id,
         status: OrderStatus.FREE_PROCESSING,
       };
     }
 
+    console.log('end create order, status: ' + OrderStatus.CREATED);
     return {
       orderId: newOrder.id,
       status: OrderStatus.CREATED,

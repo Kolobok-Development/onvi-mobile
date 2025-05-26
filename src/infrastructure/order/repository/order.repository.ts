@@ -93,6 +93,7 @@ export class OrderRepository implements IOrderRepository {
     orderEntity.transactionId = order.transactionId;
     orderEntity.excecutionError = order.excecutionError;
     orderEntity.cardId = order.card.cardId;
+    orderEntity.cashback = order.cashback;
 
     return orderEntity;
   }

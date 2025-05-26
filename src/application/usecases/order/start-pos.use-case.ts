@@ -8,11 +8,13 @@ import {
     OrderNotFoundException,
 } from '../../../domain/order/exceptions/order-base.exceptions';
 import {OrderStatus} from '../../../domain/order/enum/order-status.enum';
-import {ITransactionRepository} from '../../../domain/transaction/transaction-repository.abstract';
 import {SendStatus} from '../../../infrastructure/order/enum/send-status.enum';
 import {CarwashStartFailedException} from '../../../domain/order/exceptions/pos-start-faild.exception';
 import {DeviceType} from "../../../domain/order/enum/device-type.enum";
 import {Order} from "../../../domain/order/model/order";
+import {IGazpromRepository} from "../../../domain/partner/gazprom/gazprom-repository.abstract";
+import {IPartnerRepository} from "../../../domain/partner/partner-repository.abstract";
+import {PartnerOfferStatusEnum} from "../../../infrastructure/partner/enum/partner-offer-status.enum";
 
 @Injectable()
 export class StartPosUseCase {
@@ -23,10 +25,12 @@ export class StartPosUseCase {
     private readonly orderRepository: IOrderRepository,
     @Inject(Logger) private readonly logger: Logger,
     private readonly posService: IPosService,
-    private readonly transactionRepository: ITransactionRepository,
+    private readonly gazpromRepository: IGazpromRepository,
+    private readonly partnerRepository: IPartnerRepository,
   ) {}
 
   async execute(orderId: number): Promise<any> {
+    console.log('start pos data, orderId: ' + orderId);
     const order = await this.orderRepository.findOneById(orderId);
     const isFreeVacuum = order.sum === 0 && order.bayType === DeviceType.VACUUME;
 
@@ -66,6 +70,8 @@ export class StartPosUseCase {
         deviceId: bayDetails.id,
       });
 
+      console.log('send pos data, deviceId: ' + bayDetails.id);
+
       if (carWashResponse.sendStatus === SendStatus.FAIL) {
         throw new CarwashStartFailedException(carWashResponse.errorMessage);
       }
@@ -83,6 +89,7 @@ export class StartPosUseCase {
 
       order.orderStatus = OrderStatus.COMPLETED;
       await this.orderRepository.update(order);
+      await this.sendGazprom(order, PartnerOfferStatusEnum.SUCCESS);
 
       this.logger.log(
         {
@@ -94,6 +101,7 @@ export class StartPosUseCase {
         `Order completed ${order.id}`,
       );
 
+      console.log('end pos data, status: ' + OrderStatus.COMPLETED);
       return {
         orderId: order.id,
         orderStatus: OrderStatus.COMPLETED,
@@ -103,8 +111,10 @@ export class StartPosUseCase {
       order.orderStatus = OrderStatus.FAILED;
       order.excecutionError = error.message;
       await this.orderRepository.update(order);
+      await this.sendGazprom(order, PartnerOfferStatusEnum.FAILED);
+      console.log('end pos data, status: ' + OrderStatus.FAILED);
 
-      this.logger.log(
+        this.logger.log(
         {
           orderId: order.id,
           action: 'carwash_start_failed',
@@ -149,6 +159,7 @@ export class StartPosUseCase {
                     sum: (order.sum + order.rewardPointsUsed).toString(),
                     deviceId: deviceId,
                 });
+                console.log('send pos data, deviceId: ' + deviceId);
             } catch (error) {
                 this.logger.error(`Failed to re-send start command: ${error.message}`);
             }
@@ -167,6 +178,7 @@ export class StartPosUseCase {
 
         // If the bay is busy, it means the car wash started successfully
         if (pingResult.status !== 'Free') {
+          console.log('send pos data success: ' + deviceId);
           this.logger.log(
             {
               action: 'verify_carwash_started_success',
@@ -225,5 +237,22 @@ export class StartPosUseCase {
 
   private async sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private async sendGazprom(order: Order, status: PartnerOfferStatusEnum): Promise<void> {
+      const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(order.card.clientId, 2921);
+      if(clientPartner) {
+          console.log('start send Gazprom: ' + clientPartner.id);
+          await this.gazpromRepository.updateData(
+              clientPartner.partnerUserId,
+              { meta:
+                      {
+                          bonus_points: order.cashback.toString(),
+                          last_visit: order.createdAt,
+                          offer_status: status
+                      }
+              }
+          )
+      }
   }
 }
