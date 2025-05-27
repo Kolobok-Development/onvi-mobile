@@ -42,12 +42,14 @@ export class StartPosUseCase {
 
     // Verify order is in PAYED status
     if(isFreeVacuum && order.orderStatus !== OrderStatus.FREE_PROCESSING) {
+      console.log('err free vacuum')
       throw new InvalidOrderStateException(
           order.id.toString(),
           order.orderStatus,
           OrderStatus.FREE_PROCESSING,
       );
     } else if (order.orderStatus !== OrderStatus.PAYED) {
+        console.log('err payed')
       throw new InvalidOrderStateException(
         order.id.toString(),
         order.orderStatus,
@@ -62,6 +64,7 @@ export class StartPosUseCase {
         bayNumber: order.bayNumber,
         type: order.bayType,
       });
+      console.log(bayDetails)
 
       // Send start command to carwash
       const carWashResponse = await this.posService.send({
@@ -108,6 +111,7 @@ export class StartPosUseCase {
         posStatus: carWashResponse.sendStatus,
       };
     } catch (error: any) {
+      console.log('err')
       order.orderStatus = OrderStatus.FAILED;
       order.excecutionError = error.message;
       await this.orderRepository.update(order);
