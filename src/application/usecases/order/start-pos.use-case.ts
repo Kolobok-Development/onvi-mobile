@@ -79,6 +79,7 @@ export class StartPosUseCase {
         sum: (order.sum + order.rewardPointsUsed).toString(),
         deviceId: bayDetails.id,
       });
+      console.log(carWashResponse)
 
       console.log('send pos data, deviceId: ' + bayDetails.id);
 
