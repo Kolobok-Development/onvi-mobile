@@ -53,7 +53,7 @@ export class StartPosUseCase {
           order.orderStatus,
           OrderStatus.FREE_PROCESSING,
       );
-    } else if (order.orderStatus !== OrderStatus.PAYED) {
+    } else if (!isFreeVacuum && order.orderStatus !== OrderStatus.PAYED) {
         console.log('err payed')
       order.orderStatus = OrderStatus.FAILED;
       await this.orderRepository.update(order);
