@@ -125,6 +125,7 @@ export class OrderController {
     return await this.posService.ping({
       posId: Number(query.carWashId),
       bayNumber: Number(query.bayNumber),
+      type: query?.bayType,
     });
   }
 

@@ -27,7 +27,6 @@ export class PosService implements IPosService {
 
   async ping(data: PingRequestDto): Promise<PingResponseDto> {
     const headersReq = this.setHeaders();
-    console.log(JSON.stringify(data));
     try {
       const response = await firstValueFrom(
         this.httpService.get(
@@ -36,6 +35,7 @@ export class PosService implements IPosService {
           { headers: { ...headersReq } },
         ),
       );
+      console.log(response)
 
       return {
         id: response.data.identifier,
