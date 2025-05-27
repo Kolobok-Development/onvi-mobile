@@ -43,6 +43,11 @@ export class StartPosUseCase {
     // Verify order is in PAYED status
     if(isFreeVacuum && order.orderStatus !== OrderStatus.FREE_PROCESSING) {
       console.log('err free vacuum')
+      console.log(isFreeVacuum)
+      console.log(order.orderStatus)
+        console.log(OrderStatus.FREE_PROCESSING)
+      order.orderStatus = OrderStatus.FAILED;
+      await this.orderRepository.update(order);
       throw new InvalidOrderStateException(
           order.id.toString(),
           order.orderStatus,
@@ -50,6 +55,8 @@ export class StartPosUseCase {
       );
     } else if (order.orderStatus !== OrderStatus.PAYED) {
         console.log('err payed')
+      order.orderStatus = OrderStatus.FAILED;
+      await this.orderRepository.update(order);
       throw new InvalidOrderStateException(
         order.id.toString(),
         order.orderStatus,
