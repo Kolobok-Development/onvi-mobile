@@ -100,7 +100,7 @@ export class CreateOrderUseCase {
 
       //add to the task
       await this.dataQueue.add('pos-process', {
-        orderId: order.id,
+        orderId: updatedOrder.id,
       });
 
       console.log('end create order, status: ' + OrderStatus.FREE_PROCESSING);
