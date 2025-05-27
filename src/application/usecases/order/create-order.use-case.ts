@@ -47,74 +47,80 @@ export class CreateOrderUseCase {
       if (vacuumInfo.remains <= 0) {
         throw new InsufficientFreeVacuumException();
       }
-    }
-
-    const order = Order.create({
-      card: card,
-      status: OrderStatus.CREATED, // Set initial status
-      sum: request.sum,
-      promoCodeId: request.promoCodeId ?? null,
-      rewardPointsUsed: request.rewardPointsUsed,
-      carWashId: request.carWashId,
-      bayNumber: request.bayNumber,
-      bayType: request.bayType ?? DeviceType.BAY,
-      cashback: cashback,
-    });
-
-    // Apply promo code if applicable
-    if (order.promoCodeId) {
-      order.discountAmount = await this.promoCodeService.applyPromoCode(
-        order,
-        card,
-      );
-    }
-
-    // Step 6: Save the order
-    const newOrder = await this.orderRepository.create(order);
-    if (!newOrder) {
-      throw new OrderCreationFailedException();
-    }
-
-    // Log order creation
-    this.logger.log(
-      {
-        orderId: order.id,
-        action: 'order_created',
-        timestamp: new Date(),
-        details: {
-          orderId: order.id,
-          clientId: account.clientId,
-        },
-      },
-      `Order created ${order.id}`,
-    );
-
-    if(isFreeVacuum){
       console.log('freeVacuum start');
-      const updatedOrder = {
-        ...newOrder,
-        orderStatus: OrderStatus.FREE_PROCESSING,
-      };
 
-      await this.orderRepository.update(updatedOrder);
+      const order = Order.create({
+        card: card,
+        status: OrderStatus.FREE_PROCESSING, // Set initial status
+        sum: request.sum,
+        promoCodeId: request.promoCodeId ?? null,
+        rewardPointsUsed: request.rewardPointsUsed,
+        carWashId: request.carWashId,
+        bayNumber: request.bayNumber,
+        bayType: request.bayType ?? DeviceType.BAY,
+        cashback: cashback,
+      });
 
+      const newOrder = await this.orderRepository.create(order);
       //add to the task
       await this.dataQueue.add('pos-process', {
-        orderId: updatedOrder.id,
+        orderId: newOrder.id,
       });
 
       console.log('end create order, status: ' + OrderStatus.FREE_PROCESSING);
+      console.log('id: ' + newOrder.id);
       return {
-        orderId: updatedOrder.id,
+        orderId: newOrder.id,
         status: OrderStatus.FREE_PROCESSING,
       };
-    }
+    } else {
 
-    console.log('end create order, status: ' + OrderStatus.CREATED);
-    return {
-      orderId: newOrder.id,
-      status: OrderStatus.CREATED,
-    };
+      const order = Order.create({
+        card: card,
+        status: OrderStatus.FREE_PROCESSING, // Set initial status
+        sum: request.sum,
+        promoCodeId: request.promoCodeId ?? null,
+        rewardPointsUsed: request.rewardPointsUsed,
+        carWashId: request.carWashId,
+        bayNumber: request.bayNumber,
+        bayType: request.bayType ?? DeviceType.BAY,
+        cashback: cashback,
+      });
+
+      // Apply promo code if applicable
+      if (order.promoCodeId) {
+        order.discountAmount = await this.promoCodeService.applyPromoCode(
+            order,
+            card,
+        );
+      }
+
+      // Step 6: Save the order
+      const newOrder = await this.orderRepository.create(order);
+      if (!newOrder) {
+        throw new OrderCreationFailedException();
+      }
+
+      // Log order creation
+      this.logger.log(
+          {
+            orderId: order.id,
+            action: 'order_created',
+            timestamp: new Date(),
+            details: {
+              orderId: order.id,
+              clientId: account.clientId,
+            },
+          },
+          `Order created ${order.id}`,
+      );
+
+      console.log('end create order, status: ' + OrderStatus.CREATED);
+      return {
+        orderId: newOrder.id,
+        status: OrderStatus.CREATED,
+      };
+    }
   }
 
   private async verifyBayAvailability(data: CreateOrderDto): Promise<void> {
