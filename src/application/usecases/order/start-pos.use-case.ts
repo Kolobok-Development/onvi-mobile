@@ -41,7 +41,7 @@ export class StartPosUseCase {
     if (!order.card) throw new CardForOrderNotFoundException(order.id.toString());
 
     // Verify order is in PAYED status
-    if(isFreeVacuum) {
+    if(isFreeVacuum && order.orderStatus !== OrderStatus.FREE_PROCESSING) {
       throw new InvalidOrderStateException(
           order.id.toString(),
           order.orderStatus,
