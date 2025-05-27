@@ -62,6 +62,7 @@ export class CreateOrderUseCase {
       });
 
       const newOrder = await this.orderRepository.create(order);
+      console.log(newOrder)
       //add to the task
       await this.dataQueue.add('pos-process', {
         orderId: newOrder.id,

@@ -1,9 +1,9 @@
-import { OrderStatus } from '../enum/order-status.enum';
-import { ICreateOrderDto } from '../dto/create-order.dto';
-import { Card } from '../../account/card/model/card';
-import { OrderEntity } from '../../../infrastructure/order/entity/order.entity';
-import { OrderProcessingException } from '../exceptions/order-processing.exception';
-import { InsufficientRewardPointsException } from '../exceptions/insufficient-reward-roints.exception';
+import {OrderStatus} from '../enum/order-status.enum';
+import {ICreateOrderDto} from '../dto/create-order.dto';
+import {Card} from '../../account/card/model/card';
+import {OrderEntity} from '../../../infrastructure/order/entity/order.entity';
+import {OrderProcessingException} from '../exceptions/order-processing.exception';
+import {InsufficientRewardPointsException} from '../exceptions/insufficient-reward-roints.exception';
 import {DeviceType} from "../enum/device-type.enum";
 import {CardMapper} from "../../../infrastructure/account/mapper/card.mapper";
 
@@ -120,6 +120,7 @@ export class Order {
       payment_processing: OrderStatus.PAYMENT_PROCESSING,
       waiting_payment: OrderStatus.WAITING_PAYMENT,
       payment_authorized: OrderStatus.PAYMENT_AUTHORIZED,
+      free_processing: OrderStatus.FREE_PROCESSING,
       payed: OrderStatus.PAYED,
       failed: OrderStatus.FAILED,
       completed: OrderStatus.COMPLETED,
