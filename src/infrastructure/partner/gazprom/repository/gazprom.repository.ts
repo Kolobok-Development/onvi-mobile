@@ -157,6 +157,7 @@ export class GazpromRepository implements IGazpromRepository {
           config,
         ),
       );
+      console.log(request.data);
       return request.data;
     } catch (err) {
       const { response } = err;
