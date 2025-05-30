@@ -21,10 +21,6 @@ export class RegisterPaymentUseCase {
 
   async execute(data: IRegisterPaymentDto): Promise<any> {
     console.log('start register orderId: ' + data.orderId);
-    if (data.err) {
-      console.log('start err')
-      await this.simulateRealisticErrors(data);
-    }
 
     const order = await this.orderRepository.findOneById(data.orderId);
 
@@ -116,57 +112,6 @@ export class RegisterPaymentUseCase {
       );
 
       throw new PaymentRegistrationFailedException(error.message);
-    }
-  }
-
-
-  private async simulateRealisticErrors(data: IRegisterPaymentDto): Promise<void> {
-    // Только ошибки, которые уже могут возникнуть в коде
-    const realisticErrorScenarios = [
-      {
-        name: 'OrderNotFound',
-        condition: () => Math.random() < 0.5, // 10% chance
-        action: () => {
-          throw new OrderNotFoundException(data.orderId.toString());
-        }
-      },
-      {
-        name: 'InvalidOrderState',
-        condition: () => Math.random() < 0.5, // 15% chance
-        action: () => {
-          // Только те статусы, которые могут быть в реальности
-          const invalidStatus = [OrderStatus.PAYED, OrderStatus.CANCELED, OrderStatus.PAYMENT_PROCESSING]
-              [Math.floor(Math.random() * 3)];
-          throw new InvalidOrderStateException(
-              data.orderId.toString(),
-              invalidStatus,
-              OrderStatus.CREATED
-          );
-        }
-      },
-      {
-        name: 'PaymentRegistrationFailed',
-        condition: () => Math.random() < 0.5, // 20% chance
-        action: () => {
-          // Только те ошибки, которые могут возникнуть при работе с paymentUsecase
-          const paymentErrors = [
-            'Payment service timeout',
-            'Invalid payment token',
-            'Payment gateway error'
-          ];
-          const randomError = paymentErrors[Math.floor(Math.random() * paymentErrors.length)];
-          throw new PaymentRegistrationFailedException(randomError);
-        }
-      }
-    ];
-
-    // Проверяем сценарии ошибок
-    for (const scenario of realisticErrorScenarios) {
-      if (scenario.condition()) {
-        this.logger.log(`Simulating realistic error: ${scenario.name}`);
-        scenario.action();
-        break;
-      }
     }
   }
 }

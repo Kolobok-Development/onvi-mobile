@@ -35,10 +35,6 @@ export class CreateOrderUseCase {
     console.log(request)
     const isFreeVacuum = request.sum === 0 && request.bayType === DeviceType.VACUUME;
 
-    if (request.err) {
-      console.log('start err')
-      await this.simulateRandomError(request, account);
-    }
     // Step 1: Verify bay availability via ping request
     await this.verifyBayAvailability(request);
 
@@ -141,51 +137,6 @@ export class CreateOrderUseCase {
       throw new BayBusyException(data.bayNumber);
     } else if (bay.status === 'Unavailable') {
       throw new CarwashUnavalibleException();
-    }
-  }
-
-  private async simulateRandomError(request: CreateOrderDto, account: Client): Promise<void> {
-    // Список возможных ошибок для симуляции
-    const errorScenarios = [
-      {
-        name: 'BayBusy',
-        condition: () => Math.random() < 0.2, // 20% chance
-        action: () => {
-          throw new BayBusyException(request.bayNumber);
-        }
-      },
-      {
-        name: 'CarwashUnavailable',
-        condition: () => Math.random() < 0.2, // 20% chance
-        action: () => {
-          throw new CarwashUnavalibleException();
-        }
-      },
-      {
-        name: 'InsufficientFreeVacuum',
-        condition: () => request.sum === 0 &&
-            request.bayType === DeviceType.VACUUME &&
-            Math.random() < 0.3, // 30% chance for free vacuum
-        action: () => {
-          throw new InsufficientFreeVacuumException();
-        }
-      },
-      {
-        name: 'OrderCreationFailed',
-        condition: () => Math.random() < 0.25, // 10% chance
-        action: () => {
-          throw new OrderCreationFailedException();
-        }
-      },
-    ];
-
-    // Проверяем каждую возможную ошибку
-    for (const scenario of errorScenarios) {
-      if (scenario.condition()) {
-        console.log(`Simulating error: ${scenario.name}`);
-        scenario.action();
-        break; // Останавливаем после первой сработавшей ошибки
-      }
     }
   }
 }

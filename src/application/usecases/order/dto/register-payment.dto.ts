@@ -4,5 +4,4 @@ export interface IRegisterPaymentDto {
   amount: string;
   description: string;
   receiptReturnPhoneNumber: string;
-  err?: number;
 }
