@@ -19,22 +19,14 @@ export class GazpromUsecase {
 
     async reference(user: Client, reference: string): Promise<any> {
         const partner = await this.partnerRepository.findOneByName('Gazprom');
-        const clientGazprom = {
-            status: 'CREATED'
-        }
-        const partnerUserId = `m01-${user.clientId}`;
-        const partnerClient = PartnerClient.create({ metaData: JSON.stringify(clientGazprom), partnerUserId: partnerUserId});
-        await this.partnerRepository.apply(partnerClient, partner, user.clientId);
-        return await this.gazpromRepository.reference(reference, partnerUserId, user.correctPhone);
-    }
-
-    async activationSession(user: Client): Promise<any> {
-
-        const partner = await this.partnerRepository.findOneByName('Gazprom');
         const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(user.clientId, partner.id);
         if (clientPartner) {
             try {
-                return await this.gazpromRepository.getSession(clientPartner.partnerUserId)
+                const sessionData = await this.gazpromRepository.getSession(clientPartner.partnerUserId);
+                const subscriptionData = await this.gazpromRepository.getSubscriptionData(clientPartner.partnerUserId);
+                clientPartner.metaData = JSON.parse(JSON.stringify(subscriptionData));
+                await this.partnerRepository.updatePartnerClient(clientPartner);
+                return sessionData;
             } catch (e) {}
         }
         const clientGazprom = {
@@ -43,7 +35,37 @@ export class GazpromUsecase {
         const partnerUserId = `m01-${user.clientId}`;
         const partnerClient = PartnerClient.create({ metaData: JSON.stringify(clientGazprom), partnerUserId: partnerUserId});
         await this.partnerRepository.apply(partnerClient, partner, user.clientId);
-        return await this.gazpromRepository.registration(partnerUserId, user.correctPhone);
+        const referenceData = await this.gazpromRepository.reference(reference, partnerUserId, user.correctPhone);
+        const subscriptionData = await this.gazpromRepository.getSubscriptionData(partnerClient.partnerUserId);
+        partnerClient.metaData = JSON.parse(JSON.stringify(subscriptionData));
+        await this.partnerRepository.updatePartnerClient(partnerClient);
+        return referenceData;
+    }
+
+    async activationSession(user: Client): Promise<any> {
+
+        const partner = await this.partnerRepository.findOneByName('Gazprom');
+        const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(user.clientId, partner.id);
+        if (clientPartner) {
+            try {
+                const sessionData = await this.gazpromRepository.getSession(clientPartner.partnerUserId);
+                const subscriptionData = await this.gazpromRepository.getSubscriptionData(clientPartner.partnerUserId);
+                clientPartner.metaData = JSON.parse(JSON.stringify(subscriptionData));
+                await this.partnerRepository.updatePartnerClient(clientPartner);
+                return sessionData;
+            } catch (e) {}
+        }
+        const clientGazprom = {
+            status: 'CREATED'
+        }
+        const partnerUserId = `m01-${user.clientId}`;
+        const partnerClient = PartnerClient.create({ metaData: JSON.stringify(clientGazprom), partnerUserId: partnerUserId});
+        await this.partnerRepository.apply(partnerClient, partner, user.clientId);
+        const sessionData = await this.gazpromRepository.registration(partnerUserId, user.correctPhone);
+        const subscriptionData = await this.gazpromRepository.getSubscriptionData(partnerClient.partnerUserId);
+        partnerClient.metaData = JSON.parse(JSON.stringify(subscriptionData));
+        await this.partnerRepository.updatePartnerClient(partnerClient);
+        return sessionData;
     }
 
     async getSubscriptionData(user: Client): Promise<any> {

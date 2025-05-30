@@ -12,6 +12,7 @@ import { TransactionModule } from '../transaction/transaction.module';
 import { PosModule } from '../pos/pos.module';
 import { CreateOrderUseCase } from '../../application/usecases/order/create-order.use-case';
 import { OrderUsecase } from '../../application/usecases/order/order.usecase';
+import {PartnerModule} from "../partner/partner.module";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { OrderUsecase } from '../../application/usecases/order/order.usecase';
     AccountModule,
     TransactionModule,
     PosModule,
+    PartnerModule
   ],
   controllers: [OrderController],
   providers: [

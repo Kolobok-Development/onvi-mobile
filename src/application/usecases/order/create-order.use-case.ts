@@ -23,6 +23,9 @@ import { InsufficientRewardPointsException } from '../../../domain/order/excepti
 import { RewardPointsWithdrawalException } from '../../../domain/order/exceptions/reward-points-withdrawal.exception';
 import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
 import { PromoCodeService } from '../../services/promocode-service';
+import {IPartnerRepository} from "../../../domain/partner/partner-repository.abstract";
+import {IGazpromRepository} from "../../../domain/partner/gazprom/gazprom-repository.abstract";
+import {PartnerOfferStatusEnum} from "../../../infrastructure/partner/enum/partner-offer-status.enum";
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -33,6 +36,8 @@ export class CreateOrderUseCase {
     private readonly paymentUsecase: PaymentUsecase,
     private readonly tariffRepository: ITariffRepository,
     private readonly posService: IPosService,
+    private readonly gazpromRepository: IGazpromRepository,
+    private readonly partnerRepository: IPartnerRepository,
   ) {}
 
   async execute(request: CreateOrderDto, account: Client): Promise<any> {
@@ -49,6 +54,7 @@ export class CreateOrderUseCase {
 
     // Step 4: Create the order
     const order = this.createOrder(request, card, cashback);
+
 
     // Step 5: Apply promo code if applicable using PromoCodeService
     if (order.promoCodeId) {
@@ -83,6 +89,11 @@ export class CreateOrderUseCase {
       OrderStatus.COMPLETED,
     );
 
+
+    console.log(order)
+    await this.sendGazprom(order, PartnerOfferStatusEnum.SUCCESS);
+
+
     return carWashResponse;
   }
 
@@ -92,6 +103,7 @@ export class CreateOrderUseCase {
     const requestBody: PingRequestDto = {
       posId: data.carWashId,
       bayNumber: data.bayNumber,
+      type: data?.bayType,
     };
     const bay = await this.posService.ping(requestBody);
 
@@ -204,5 +216,22 @@ export class CreateOrderUseCase {
     }
 
     return carWashResponse;
+  }
+
+  private async sendGazprom(order: Order, status: PartnerOfferStatusEnum): Promise<void> {
+    const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(order.card.clientId, 2921);
+    if(clientPartner) {
+      console.log('start send Gazprom: ' + clientPartner.id);
+      await this.gazpromRepository.updateData(
+          clientPartner.partnerUserId,
+          { meta:
+                {
+                  bonus_points: order.cashback.toString(),
+                  last_visit: order.createdAt,
+                  offer_status: status
+                }
+          }
+      )
+    }
   }
 }

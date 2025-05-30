@@ -86,12 +86,13 @@ export class OrderController {
     }
   }
 
-  @Get('/ping')
+  @Get('ping')
   @UseGuards(JwtGuard)
   async pingCarWash(@Query() query: any) {
     return await this.posService.ping({
       posId: Number(query.carWashId),
       bayNumber: Number(query.bayNumber),
+      type: query?.bayType,
     });
   }
 }

@@ -17,8 +17,8 @@ export class PosService implements IPosService {
   private sourceCode: number;
 
   constructor(
-    private readonly httpService: HttpService,
-    private readonly envConfig: EnvConfigService,
+      private readonly httpService: HttpService,
+      private readonly envConfig: EnvConfigService,
   ) {
     this.apiKey = envConfig.getDsCloudApiKey();
     this.baseUrl = envConfig.getDsCloudBaseUrl();
@@ -29,11 +29,13 @@ export class PosService implements IPosService {
     const headersReq = this.setHeaders();
     try {
       const response = await firstValueFrom(
-        this.httpService.get(
-          `${this.baseUrl}/external/collection/device?carwashId=${data.posId}&bayNumber=${data.bayNumber}`,
-          { headers: { ...headersReq } },
-        ),
+          this.httpService.get(
+              `${this.baseUrl}/external/collection/device?carwashId=${data.posId}&bayNumber=${data.bayNumber}` +
+              (data.type ? `&type=${data.type}` : ''),
+              { headers: { ...headersReq } },
+          ),
       );
+      console.log(response)
 
       return {
         id: response.data.identifier,
@@ -42,12 +44,12 @@ export class PosService implements IPosService {
         errorMessage: null,
       };
     } catch (error: any) {
-      const { response } = error;
+      const errorData = error.response?.data || error.message;
       return {
         id: null,
         status: 'Unavailable',
         type: null,
-        errorMessage: response.data.error,
+        errorMessage: errorData?.error || 'Unknown error',
       };
     }
   }
@@ -62,21 +64,21 @@ export class PosService implements IPosService {
       };
 
       const response = await firstValueFrom(
-        this.httpService.post(
-          `${this.baseUrl}/external/mobile/write/${data.deviceId}`,
-          body,
-          { headers: { ...headersReq } },
-        ),
+          this.httpService.post(
+              `${this.baseUrl}/external/mobile/write/${data.deviceId}`,
+              body,
+              { headers: { ...headersReq } },
+          ),
       );
       return {
         sendStatus: SendStatus.SUCCESS,
         errorMessage: null,
       };
     } catch (error: any) {
-      const { response } = error;
+      const errorData = error.response?.data || error.message;
       return {
         sendStatus: SendStatus.FAIL,
-        errorMessage: response.data.error,
+        errorMessage: errorData?.error || 'Unknown error',
       };
     }
   }
