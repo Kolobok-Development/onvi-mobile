@@ -22,7 +22,8 @@ export class RegisterPaymentUseCase {
   async execute(data: IRegisterPaymentDto): Promise<any> {
     console.log('start register orderId: ' + data.orderId);
     if (data.err) {
-      await this.simulatePaymentErrors(data);
+      console.log('start err')
+      await this.simulateRealisticErrors(data);
     }
 
     const order = await this.orderRepository.findOneById(data.orderId);
@@ -119,61 +120,51 @@ export class RegisterPaymentUseCase {
   }
 
 
-  private async simulatePaymentErrors(data: IRegisterPaymentDto): Promise<void> {
-    // Конфигурация вероятностей ошибок (можно вынести в конфиг)
-    const errorScenarios = [
+  private async simulateRealisticErrors(data: IRegisterPaymentDto): Promise<void> {
+    // Только ошибки, которые уже могут возникнуть в коде
+    const realisticErrorScenarios = [
       {
         name: 'OrderNotFound',
-        condition: () => Math.random() < 0.1, // 10% chance
+        condition: () => Math.random() < 0.5, // 10% chance
         action: () => {
           throw new OrderNotFoundException(data.orderId.toString());
         }
       },
       {
         name: 'InvalidOrderState',
-        condition: () => Math.random() < 0.15, // 15% chance
+        condition: () => Math.random() < 0.5, // 15% chance
         action: () => {
+          // Только те статусы, которые могут быть в реальности
+          const invalidStatus = [OrderStatus.PAYED, OrderStatus.CANCELED, OrderStatus.PAYMENT_PROCESSING]
+              [Math.floor(Math.random() * 3)];
           throw new InvalidOrderStateException(
               data.orderId.toString(),
-              Math.random() > 0.5 ? OrderStatus.PAYED : OrderStatus.CANCELED,
+              invalidStatus,
               OrderStatus.CREATED
           );
         }
       },
       {
-        name: 'PaymentServiceUnavailable',
-        condition: () => Math.random() < 0.2, // 20% chance
-        action: async () => {
-          // Симулируем таймаут или ошибку сервиса
-          if (Math.random() > 0.5) {
-            await new Promise(resolve => setTimeout(resolve, 15000)); // 15s timeout
-            throw new Error('Payment service timeout');
-          } else {
-            throw new Error('Payment service unavailable');
-          }
-        }
-      },
-      {
-        name: 'InsufficientFunds',
-        condition: () => Math.random() < 0.1, // 10% chance
+        name: 'PaymentRegistrationFailed',
+        condition: () => Math.random() < 0.5, // 20% chance
         action: () => {
-          throw new Error('Insufficient funds');
-        }
-      },
-      {
-        name: 'PaymentDeclined',
-        condition: () => Math.random() < 0.1, // 10% chance
-        action: () => {
-          throw new Error('Payment declined by bank');
+          // Только те ошибки, которые могут возникнуть при работе с paymentUsecase
+          const paymentErrors = [
+            'Payment service timeout',
+            'Invalid payment token',
+            'Payment gateway error'
+          ];
+          const randomError = paymentErrors[Math.floor(Math.random() * paymentErrors.length)];
+          throw new PaymentRegistrationFailedException(randomError);
         }
       }
     ];
 
     // Проверяем сценарии ошибок
-    for (const scenario of errorScenarios) {
+    for (const scenario of realisticErrorScenarios) {
       if (scenario.condition()) {
-        this.logger.log(`Simulating payment error: ${scenario.name}`);
-        await scenario.action();
+        this.logger.log(`Simulating realistic error: ${scenario.name}`);
+        scenario.action();
         break;
       }
     }

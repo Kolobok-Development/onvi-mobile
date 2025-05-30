@@ -32,9 +32,11 @@ export class CreateOrderUseCase {
 
   async execute(request: CreateOrderDto, account: Client): Promise<any> {
     console.log('start create order');
+    console.log(request)
     const isFreeVacuum = request.sum === 0 && request.bayType === DeviceType.VACUUME;
 
     if (request.err) {
+      console.log('start err')
       await this.simulateRandomError(request, account);
     }
     // Step 1: Verify bay availability via ping request
@@ -170,27 +172,18 @@ export class CreateOrderUseCase {
       },
       {
         name: 'OrderCreationFailed',
-        condition: () => Math.random() < 0.1, // 10% chance
+        condition: () => Math.random() < 0.25, // 10% chance
         action: () => {
           throw new OrderCreationFailedException();
         }
       },
-      // Можно добавить задержку для симуляции таймаута
-      {
-        name: 'Timeout',
-        condition: () => Math.random() < 0.15, // 15% chance
-        action: async () => {
-          await new Promise(resolve => setTimeout(resolve, 10000)); // 10 секунд
-          throw new Error('Simulated timeout');
-        }
-      }
     ];
 
     // Проверяем каждую возможную ошибку
     for (const scenario of errorScenarios) {
       if (scenario.condition()) {
-        this.logger.log(`Simulating error: ${scenario.name}`);
-        await scenario.action();
+        console.log(`Simulating error: ${scenario.name}`);
+        scenario.action();
         break; // Останавливаем после первой сработавшей ошибки
       }
     }
