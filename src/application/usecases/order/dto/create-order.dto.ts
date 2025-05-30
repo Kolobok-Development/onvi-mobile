@@ -20,4 +20,6 @@ export class CreateOrderDto {
   bayNumber: number;
   @Optional()
   bayType?: DeviceType;
+  @Optional()
+  err?: number;
 }

@@ -21,6 +21,10 @@ export class RegisterPaymentUseCase {
 
   async execute(data: IRegisterPaymentDto): Promise<any> {
     console.log('start register orderId: ' + data.orderId);
+    if (data.err) {
+      await this.simulatePaymentErrors(data);
+    }
+
     const order = await this.orderRepository.findOneById(data.orderId);
 
     if (!order) {
@@ -111,6 +115,67 @@ export class RegisterPaymentUseCase {
       );
 
       throw new PaymentRegistrationFailedException(error.message);
+    }
+  }
+
+
+  private async simulatePaymentErrors(data: IRegisterPaymentDto): Promise<void> {
+    // Конфигурация вероятностей ошибок (можно вынести в конфиг)
+    const errorScenarios = [
+      {
+        name: 'OrderNotFound',
+        condition: () => Math.random() < 0.1, // 10% chance
+        action: () => {
+          throw new OrderNotFoundException(data.orderId.toString());
+        }
+      },
+      {
+        name: 'InvalidOrderState',
+        condition: () => Math.random() < 0.15, // 15% chance
+        action: () => {
+          throw new InvalidOrderStateException(
+              data.orderId.toString(),
+              Math.random() > 0.5 ? OrderStatus.PAYED : OrderStatus.CANCELED,
+              OrderStatus.CREATED
+          );
+        }
+      },
+      {
+        name: 'PaymentServiceUnavailable',
+        condition: () => Math.random() < 0.2, // 20% chance
+        action: async () => {
+          // Симулируем таймаут или ошибку сервиса
+          if (Math.random() > 0.5) {
+            await new Promise(resolve => setTimeout(resolve, 15000)); // 15s timeout
+            throw new Error('Payment service timeout');
+          } else {
+            throw new Error('Payment service unavailable');
+          }
+        }
+      },
+      {
+        name: 'InsufficientFunds',
+        condition: () => Math.random() < 0.1, // 10% chance
+        action: () => {
+          throw new Error('Insufficient funds');
+        }
+      },
+      {
+        name: 'PaymentDeclined',
+        condition: () => Math.random() < 0.1, // 10% chance
+        action: () => {
+          throw new Error('Payment declined by bank');
+        }
+      }
+    ];
+
+    // Проверяем сценарии ошибок
+    for (const scenario of errorScenarios) {
+      if (scenario.condition()) {
+        this.logger.log(`Simulating payment error: ${scenario.name}`);
+        await scenario.action();
+        break;
+      }
     }
   }
 }

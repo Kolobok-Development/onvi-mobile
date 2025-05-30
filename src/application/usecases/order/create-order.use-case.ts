@@ -32,8 +32,11 @@ export class CreateOrderUseCase {
 
   async execute(request: CreateOrderDto, account: Client): Promise<any> {
     console.log('start create order');
-    console.log(request)
     const isFreeVacuum = request.sum === 0 && request.bayType === DeviceType.VACUUME;
+
+    if (request.err) {
+      await this.simulateRandomError(request, account);
+    }
     // Step 1: Verify bay availability via ping request
     await this.verifyBayAvailability(request);
 
@@ -72,7 +75,7 @@ export class CreateOrderUseCase {
       console.log('id: ' + newOrder.id);
       return {
         orderId: newOrder.id,
-        status: OrderStatus.FREE_PROCESSING,
+        status: newOrder.orderStatus,
       };
     } else {
 
@@ -119,7 +122,7 @@ export class CreateOrderUseCase {
       console.log('end create order, status: ' + OrderStatus.CREATED);
       return {
         orderId: newOrder.id,
-        status: OrderStatus.CREATED,
+        status: newOrder.orderStatus,
       };
     }
   }
@@ -136,6 +139,60 @@ export class CreateOrderUseCase {
       throw new BayBusyException(data.bayNumber);
     } else if (bay.status === 'Unavailable') {
       throw new CarwashUnavalibleException();
+    }
+  }
+
+  private async simulateRandomError(request: CreateOrderDto, account: Client): Promise<void> {
+    // Список возможных ошибок для симуляции
+    const errorScenarios = [
+      {
+        name: 'BayBusy',
+        condition: () => Math.random() < 0.2, // 20% chance
+        action: () => {
+          throw new BayBusyException(request.bayNumber);
+        }
+      },
+      {
+        name: 'CarwashUnavailable',
+        condition: () => Math.random() < 0.2, // 20% chance
+        action: () => {
+          throw new CarwashUnavalibleException();
+        }
+      },
+      {
+        name: 'InsufficientFreeVacuum',
+        condition: () => request.sum === 0 &&
+            request.bayType === DeviceType.VACUUME &&
+            Math.random() < 0.3, // 30% chance for free vacuum
+        action: () => {
+          throw new InsufficientFreeVacuumException();
+        }
+      },
+      {
+        name: 'OrderCreationFailed',
+        condition: () => Math.random() < 0.1, // 10% chance
+        action: () => {
+          throw new OrderCreationFailedException();
+        }
+      },
+      // Можно добавить задержку для симуляции таймаута
+      {
+        name: 'Timeout',
+        condition: () => Math.random() < 0.15, // 15% chance
+        action: async () => {
+          await new Promise(resolve => setTimeout(resolve, 10000)); // 10 секунд
+          throw new Error('Simulated timeout');
+        }
+      }
+    ];
+
+    // Проверяем каждую возможную ошибку
+    for (const scenario of errorScenarios) {
+      if (scenario.condition()) {
+        this.logger.log(`Simulating error: ${scenario.name}`);
+        await scenario.action();
+        break; // Останавливаем после первой сработавшей ошибки
+      }
     }
   }
 }
