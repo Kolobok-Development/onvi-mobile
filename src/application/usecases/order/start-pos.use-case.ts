@@ -32,6 +32,7 @@ export class StartPosUseCase {
   async execute(orderId: number): Promise<any> {
     console.log('start pos data, orderId: ' + orderId);
     const order = await this.orderRepository.findOneById(orderId);
+    console.log(order);
     const isFreeVacuum = order.sum === 0 && order.bayType === DeviceType.VACUUME;
 
     if (!order) {
@@ -43,8 +44,7 @@ export class StartPosUseCase {
     // Verify order is in PAYED status
     if(isFreeVacuum && order.orderStatus !== OrderStatus.FREE_PROCESSING) {
       console.log('err free vacuum')
-      console.log(isFreeVacuum)
-      console.log(order.orderStatus)
+      console.log(order)
       order.orderStatus = OrderStatus.FAILED;
       await this.orderRepository.update(order);
       throw new InvalidOrderStateException(
@@ -54,8 +54,7 @@ export class StartPosUseCase {
       );
     } else if (!isFreeVacuum && order.orderStatus !== OrderStatus.PAYED) {
         console.log('err payed')
-        console.log(isFreeVacuum)
-        console.log(order.orderStatus)
+        console.log(order)
       order.orderStatus = OrderStatus.FAILED;
       await this.orderRepository.update(order);
       throw new InvalidOrderStateException(
