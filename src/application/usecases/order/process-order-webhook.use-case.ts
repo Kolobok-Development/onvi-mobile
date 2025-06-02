@@ -27,6 +27,7 @@ export class ProcessOrderWebhookUseCase {
     const order = await this.orderRepository.findByTransactionId(
       data.object.id,
     );
+    console.log(order)
 
     if (!order) throw new OrderNotFoundByTransactionIdException(data.object.id.toString());
 
@@ -45,7 +46,7 @@ export class ProcessOrderWebhookUseCase {
       orderStatus: OrderStatus.PAYED,
     };
 
-    await this.orderRepository.update(updatedOrder);
+    const updatedOrderLog = await this.orderRepository.update(updatedOrder);
 
     if (updatedOrder.rewardPointsUsed > 0) {
       console.log('start deduction of bonuses');
@@ -68,6 +69,7 @@ export class ProcessOrderWebhookUseCase {
     }
 
     console.log('end webhook order, orderId: ' + order.id);
+    console.log(updatedOrderLog)
     //add to the task
     await this.dataQueue.add('pos-process', {
       orderId: order.id,
