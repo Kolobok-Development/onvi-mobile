@@ -117,7 +117,7 @@ export class CreateOrderUseCase {
           `Order created ${order.id}`,
       );
 
-      console.log('end create order, status: ' + OrderStatus.CREATED);
+      console.log('end create order, status: ' + newOrder.orderStatus);
       return {
         orderId: newOrder.id,
         status: newOrder.orderStatus,

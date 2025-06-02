@@ -87,7 +87,7 @@ export class RegisterPaymentUseCase {
       );
 
       console.log('end register orderId: ' + data.orderId);
-      console.log(paymentResult)
+      console.log(finalOrderUpdate)
       return {
         status: OrderStatus.WAITING_PAYMENT,
         paymentId: paymentResult.id,
