@@ -46,7 +46,8 @@ export class ProcessOrderWebhookUseCase {
       orderStatus: OrderStatus.PAYED,
     };
 
-    const updatedOrderLog = await this.orderRepository.update(updatedOrder);
+    console.log(updatedOrder)
+    await this.orderRepository.update(updatedOrder);
 
     if (updatedOrder.rewardPointsUsed > 0) {
       console.log('start deduction of bonuses');
@@ -69,7 +70,6 @@ export class ProcessOrderWebhookUseCase {
     }
 
     console.log('end webhook order, orderId: ' + order.id);
-    console.log(updatedOrderLog)
     //add to the task
     await this.dataQueue.add('pos-process', {
       orderId: order.id,
