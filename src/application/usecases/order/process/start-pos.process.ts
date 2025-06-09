@@ -11,7 +11,6 @@ export class StartPosProcess extends WorkerHost {
   }
 
   async process(job: Job<any>): Promise<void> {
-    console.log('starting_process...');
     await this.startPosUseCase.execute(job.data.orderId);
   }
 }

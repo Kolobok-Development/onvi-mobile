@@ -20,7 +20,7 @@ import { PaymentWebhookController } from '../../api/webhooks/payment-webhook.con
 import { BullModule } from '@nestjs/bullmq';
 import { ProcessOrderWebhookUseCase } from '../../application/usecases/order/process-order-webhook.use-case';
 import { StartPosProcess } from '../../application/usecases/order/process/start-pos.process';
-import {PartnerModule} from "../partner/partner.module";
+import { PartnerModule } from '../partner/partner.module';
 
 @Module({
   imports: [

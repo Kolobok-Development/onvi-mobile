@@ -1,25 +1,25 @@
-import {Inject, Injectable} from '@nestjs/common';
-import {IOrderRepository} from '../../../domain/order/order-repository.abstract';
-import {Logger} from 'nestjs-pino';
-import {IPosService} from '../../../infrastructure/pos/interface/pos.interface';
+import { Inject, Injectable } from '@nestjs/common';
+import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
+import { Logger } from 'nestjs-pino';
+import { IPosService } from '../../../infrastructure/pos/interface/pos.interface';
 import {
-    CardForOrderNotFoundException,
-    InvalidOrderStateException,
-    OrderNotFoundException,
+  CardForOrderNotFoundException,
+  InvalidOrderStateException,
+  OrderNotFoundException,
 } from '../../../domain/order/exceptions/order-base.exceptions';
-import {OrderStatus} from '../../../domain/order/enum/order-status.enum';
-import {SendStatus} from '../../../infrastructure/order/enum/send-status.enum';
-import {CarwashStartFailedException} from '../../../domain/order/exceptions/pos-start-faild.exception';
-import {DeviceType} from "../../../domain/order/enum/device-type.enum";
-import {Order} from "../../../domain/order/model/order";
-import {IGazpromRepository} from "../../../domain/partner/gazprom/gazprom-repository.abstract";
-import {IPartnerRepository} from "../../../domain/partner/partner-repository.abstract";
-import {PartnerOfferStatusEnum} from "../../../infrastructure/partner/enum/partner-offer-status.enum";
+import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
+import { SendStatus } from '../../../infrastructure/order/enum/send-status.enum';
+import { CarwashStartFailedException } from '../../../domain/order/exceptions/pos-start-faild.exception';
+import { DeviceType } from '../../../domain/order/enum/device-type.enum';
+import { Order } from '../../../domain/order/model/order';
+import { IGazpromRepository } from '../../../domain/partner/gazprom/gazprom-repository.abstract';
+import { IPartnerRepository } from '../../../domain/partner/partner-repository.abstract';
+import { PartnerOfferStatusEnum } from '../../../infrastructure/partner/enum/partner-offer-status.enum';
 
 @Injectable()
 export class StartPosUseCase {
-  private readonly MAX_RETRY_ATTEMPTS = 3;
-  private readonly VERIFICATION_DELAY_MS = 5000; // 5 seconds
+  private readonly MAX_RETRY_ATTEMPTS = 4;
+  public VERIFICATION_DELAY_MS = 0;
 
   constructor(
     private readonly orderRepository: IOrderRepository,
@@ -30,31 +30,28 @@ export class StartPosUseCase {
   ) {}
 
   async execute(orderId: number): Promise<any> {
-    console.log('start pos data, orderId: ' + orderId);
     const order = await this.orderRepository.findOneById(orderId);
-    console.log(order);
-    const isFreeVacuum = order.sum === 0 && order.bayType === DeviceType.VACUUME;
+
+    const isFreeVacuum =
+      order.sum === 0 && order.bayType === DeviceType.VACUUME;
 
     if (!order) {
       throw new OrderNotFoundException(orderId.toString());
     }
 
-    if (!order.card) throw new CardForOrderNotFoundException(order.id.toString());
+    if (!order.card)
+      throw new CardForOrderNotFoundException(order.id.toString());
 
-    // Verify order is in PAYED status
-    if(isFreeVacuum && order.orderStatus !== OrderStatus.FREE_PROCESSING) {
-      console.log('err free vacuum')
-      console.log(order)
+    // Verify order is in PAYED status or Free order
+    if (isFreeVacuum && order.orderStatus !== OrderStatus.FREE_PROCESSING) {
       order.orderStatus = OrderStatus.FAILED;
       await this.orderRepository.update(order);
       throw new InvalidOrderStateException(
-          order.id.toString(),
-          order.orderStatus,
-          OrderStatus.FREE_PROCESSING,
+        order.id.toString(),
+        order.orderStatus,
+        OrderStatus.FREE_PROCESSING,
       );
     } else if (!isFreeVacuum && order.orderStatus !== OrderStatus.PAYED) {
-        console.log('err payed')
-        console.log(order)
       order.orderStatus = OrderStatus.FAILED;
       await this.orderRepository.update(order);
       throw new InvalidOrderStateException(
@@ -71,7 +68,6 @@ export class StartPosUseCase {
         bayNumber: order.bayNumber,
         type: order.bayType,
       });
-      console.log(bayDetails)
 
       // Send start command to carwash
       const carWashResponse = await this.posService.send({
@@ -79,17 +75,16 @@ export class StartPosUseCase {
         sum: (order.sum + order.rewardPointsUsed).toString(),
         deviceId: bayDetails.id,
       });
-      console.log(carWashResponse)
-
-      console.log('send pos data, deviceId: ' + bayDetails.id);
 
       if (carWashResponse.sendStatus === SendStatus.FAIL) {
         throw new CarwashStartFailedException(carWashResponse.errorMessage);
       }
 
       // Verify carwash has actually started with retries
-      const startSuccess = await this.verifyCarWashStarted(
-        order, bayDetails.id
+      const startSuccess: boolean = await this.verifyCarWashStartedRecursive(
+        order,
+        bayDetails.id,
+        1,
       );
 
       if (!startSuccess) {
@@ -119,14 +114,14 @@ export class StartPosUseCase {
         posStatus: carWashResponse.sendStatus,
       };
     } catch (error: any) {
-      console.log('err')
+      console.log('err');
       order.orderStatus = OrderStatus.FAILED;
       order.excecutionError = error.message;
       await this.orderRepository.update(order);
       await this.sendGazprom(order, PartnerOfferStatusEnum.FAILED);
       console.log('end pos data, status: ' + OrderStatus.FAILED);
 
-        this.logger.log(
+      this.logger.log(
         {
           orderId: order.id,
           action: 'carwash_start_failed',
@@ -140,131 +135,134 @@ export class StartPosUseCase {
     }
   }
 
-  private async verifyCarWashStarted(
-      order: Order,
-      deviceId: string,
+  private async verifyCarWashStartedRecursive(
+    order: Order,
+    deviceId: string,
+    cycle: number,
   ): Promise<boolean> {
     const carWashId = order.carWashId;
     const bayNumber = order.bayNumber;
-    const bayType = order.bayType;
-    let attempts = 0;
+    const MAX_RETRY_CYCLES = 3;
 
-    while (attempts < this.MAX_RETRY_ATTEMPTS) {
-      attempts++;
-
-      this.logger.log(
+    if (cycle > MAX_RETRY_CYCLES) {
+      this.logger.error(
         {
-          action: 'verify_carwash_started',
+          action: 'verify_carwash_failed_final',
           carWashId,
           bayNumber,
-          attempt: attempts,
+          totalCycles: MAX_RETRY_CYCLES,
           timestamp: new Date(),
         },
-        `Verifying car wash started - attempt ${attempts}/${this.MAX_RETRY_ATTEMPTS}`,
+        `Failed to verify car wash started after ${MAX_RETRY_CYCLES} cycles`,
       );
+      return false;
+    }
 
-        if (attempts > 1) {
-            try {
-                this.logger.log(`Re-sending start command (attempt ${attempts})`);
-                const carWashResponse = await this.posService.send({
-                    cardNumber: order.card.devNomer,
-                    sum: (order.sum + order.rewardPointsUsed).toString(),
-                    deviceId: deviceId,
-                });
-                console.log('send pos data, deviceId: ' + deviceId);
-            } catch (error) {
-                this.logger.error(`Failed to re-send start command: ${error.message}`);
-            }
-        }
+    this.logger.log(`Starting verification cycle ${cycle}/${MAX_RETRY_CYCLES}`);
 
-      // Wait for the specified delay
-      await this.sleep(this.VERIFICATION_DELAY_MS);
+    // Try 4 ping attempts
+    const pingResult = await this.performPingAttempts(order, cycle);
+
+    if (pingResult.success) {
+      this.logger.log(`Car wash verified as started on cycle ${cycle}`);
+      console.log('send pos data success: ' + deviceId);
+      return true;
+    }
+
+    // If not the last cycle, resend command and try again
+    if (cycle < MAX_RETRY_CYCLES) {
+      this.logger.log(`Resending start command after cycle ${cycle}`);
 
       try {
-        // Ping the bay to see if it's busy (which means it started)
-        const pingResult = await this.posService.ping({
-          posId: carWashId,
-          bayNumber: bayNumber,
-          type: bayType,
+        await this.posService.send({
+          cardNumber: order.card.devNomer,
+          sum: (order.sum + order.rewardPointsUsed).toString(),
+          deviceId: deviceId,
         });
 
-        // If the bay is busy, it means the car wash started successfully
-        if (pingResult.status !== 'Free') {
-          console.log('send pos data success: ' + deviceId);
-          this.logger.log(
-            {
-              action: 'verify_carwash_started_success',
-              carWashId,
-              bayNumber,
-              attempt: attempts,
-              timestamp: new Date(),
-            },
-            `Car wash verified as started on attempt ${attempts}`,
-          );
-          return true;
-        }
+        await this.sleep(1000); // Brief delay before next cycle
 
-        this.logger.log(
-          {
-            action: 'verify_carwash_still_available',
-            carWashId,
-            bayNumber,
-            attempt: attempts,
-            timestamp: new Date(),
-          },
-          `Car wash bay still shows as available, retrying...`,
-        );
-
-        // If we're at the max attempts, we'll exit the loop and return false
-        if (attempts >= this.MAX_RETRY_ATTEMPTS) {
-          this.logger.error(
-            {
-              action: 'verify_carwash_failed',
-              carWashId,
-              bayNumber,
-              timestamp: new Date(),
-            },
-            `Failed to verify car wash started after ${this.MAX_RETRY_ATTEMPTS} attempts`,
-          );
-        }
+        // Recursive call for next cycle
+        return this.verifyCarWashStartedRecursive(order, deviceId, cycle + 1);
       } catch (error) {
-        this.logger.error(
-          {
-            action: 'verify_carwash_ping_error',
-            carWashId,
-            bayNumber,
-            attempt: attempts,
-            error: error.message,
-            timestamp: new Date(),
-          },
-          `Error pinging car wash during verification: ${error.message}`,
-        );
+        this.logger.error(`Failed to resend start command: ${error.message}`);
 
-        // Continue to next attempt despite error
+        // Continue to next cycle even if resend failed
+        await this.sleep(1000);
+        return this.verifyCarWashStartedRecursive(order, deviceId, cycle + 1);
       }
     }
 
     return false;
   }
 
+  private async performPingAttempts(
+    order: Order,
+    cycle: number,
+  ): Promise<{ success: boolean }> {
+    const carWashId = order.carWashId;
+    const bayNumber = order.bayNumber;
+    const bayType = order.bayType;
+    const MAX_PING_ATTEMPTS = 4;
+    const INITIAL_DELAY_MS = 3000;
+    const DELAY_INCREMENT_MS = 3000;
+
+    for (let pingAttempt = 1; pingAttempt <= MAX_PING_ATTEMPTS; pingAttempt++) {
+      try {
+        const pingResult = await this.posService.ping({
+          posId: carWashId,
+          bayNumber: bayNumber,
+          type: bayType,
+        });
+
+        if (pingResult.status !== 'Free') {
+          return { success: true };
+        }
+
+        // Wait before next ping (except for last attempt)
+        if (pingAttempt < MAX_PING_ATTEMPTS) {
+          const currentDelay =
+            INITIAL_DELAY_MS + (pingAttempt - 1) * DELAY_INCREMENT_MS;
+          await this.sleep(currentDelay);
+        }
+      } catch (error) {
+        this.logger.error(
+          `Error pinging car wash on cycle ${cycle}, ping ${pingAttempt}: ${error.message}`,
+        );
+
+        if (pingAttempt < MAX_PING_ATTEMPTS) {
+          const currentDelay =
+            INITIAL_DELAY_MS + (pingAttempt - 1) * DELAY_INCREMENT_MS;
+          await this.sleep(currentDelay);
+        }
+      }
+    }
+
+    return { success: false };
+  }
+
   private async sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  private async sendGazprom(order: Order, status: PartnerOfferStatusEnum): Promise<void> {
-      const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(order.card.clientId, 2921);
-      if(clientPartner) {
-          console.log('start send Gazprom: ' + clientPartner.id);
-          await this.gazpromRepository.updateData(
-              clientPartner.partnerUserId,
-              { meta:
-                      {
-                          bonus_points: order.cashback.toString(),
-                          last_visit: order.createdAt,
-                          offer_status: status
-                      }
-              }
-          )
-      }
+  private async sendGazprom(
+    order: Order,
+    status: PartnerOfferStatusEnum,
+  ): Promise<void> {
+    const clientPartner =
+      await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(
+        order.card.clientId,
+        2921,
+      );
+    if (clientPartner) {
+      console.log('start send Gazprom: ' + clientPartner.id);
+      await this.gazpromRepository.updateData(clientPartner.partnerUserId, {
+        meta: {
+          bonus_points: order.cashback.toString(),
+          last_visit: order.createdAt,
+          offer_status: status,
+        },
+      });
+    }
   }
 }
