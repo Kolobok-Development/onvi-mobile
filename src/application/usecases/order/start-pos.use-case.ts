@@ -95,7 +95,7 @@ export class StartPosUseCase {
 
       order.orderStatus = OrderStatus.COMPLETED;
       await this.orderRepository.update(order);
-      await this.sendGazprom(order, PartnerOfferStatusEnum.SUCCESS);
+      await this.sendGazprom(order, PartnerOfferStatusEnum.ACTIVE);
 
       this.logger.log(
         {
