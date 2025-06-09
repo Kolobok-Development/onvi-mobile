@@ -1,4 +1,4 @@
 export enum PartnerOfferStatusEnum {
-    SUCCESS = 'SUCCESS',
+    ACTIVE = 'ACTIVE',
     FAILED = 'FAILED',
 }

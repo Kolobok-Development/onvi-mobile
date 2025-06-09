@@ -31,7 +31,11 @@ export class GazpromUsecase {
         const partnerUserId = `m01-${user.clientId}`;
         const partnerClient = PartnerClient.create({ metaData: JSON.stringify(clientGazprom), partnerUserId: partnerUserId});
         await this.partnerRepository.apply(partnerClient, partner, user.clientId);
-        return await this.gazpromRepository.reference(reference, partnerUserId, user.correctPhone);
+        const referenceData = await this.gazpromRepository.reference(reference, partnerUserId, user.correctPhone);
+        const subscriptionData = await this.gazpromRepository.getSubscriptionData(partnerClient.partnerUserId);
+        partnerClient.metaData = JSON.parse(JSON.stringify(subscriptionData));
+        await this.partnerRepository.updatePartnerClient(partnerClient);
+        return referenceData;
     }
 
     async activationSession(user: Client): Promise<any> {
@@ -52,12 +56,48 @@ export class GazpromUsecase {
         return await this.gazpromRepository.registration(partnerUserId, user.correctPhone);
     }
 
-    async getSubscriptionData(user: Client): Promise<any> {
+    async getSubscriptionDataGazprom(user: Client): Promise<any> {
         const partner = await this.partnerRepository.findOneByName('Gazprom');
         const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(user.clientId, partner.id);
         const subscriptionData = await this.gazpromRepository.getSubscriptionData(clientPartner.partnerUserId);
         clientPartner.metaData = JSON.parse(JSON.stringify(subscriptionData));
         return await this.partnerRepository.updatePartnerClient(clientPartner);
+    }
+
+    async getSubscriptionData(user: Client): Promise<{
+        status: string;
+        start_at?: string;
+        expiration_at?: string;
+    }> {
+        const partner = await this.partnerRepository.findOneByName('Gazprom');
+        const clientPartner = await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(user.clientId, partner.id);
+        if (!clientPartner?.metaData) {
+            return { status: 'ABSENT' };
+        }
+
+        const metaData = clientPartner.metaData as unknown as {
+            items?: Array<{
+                status?: string;
+                start_at?: string;
+                expiration_at?: string;
+            }>;
+        };
+        if (
+            !metaData.items ||
+            !Array.isArray(metaData.items) ||
+            metaData.items.length === 0 ||
+            !metaData.items[0] ||
+            !metaData.items[0].status
+        ) {
+            return { status: 'ABSENT' };
+        }
+
+        const firstItem = metaData.items[0];
+        return {
+            status: firstItem.status,
+            start_at: firstItem.start_at,
+            expiration_at: firstItem.expiration_at,
+        };
     }
 
     async updatePartnerData(user: Client, metaData: GazpromUpdateOperDto): Promise<any> {
