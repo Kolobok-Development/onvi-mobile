@@ -23,11 +23,9 @@ export class ProcessOrderWebhookUseCase {
   ) {}
 
   async execute(data: PaymentStatusGatewayWebhookDto): Promise<any> {
-    console.log('start webhook order, transactionId: ' + data.object.id);
     const order = await this.orderRepository.findByTransactionId(
       data.object.id,
     );
-    console.log(order)
 
     if (!order) throw new OrderNotFoundByTransactionIdException(data.object.id.toString());
 
@@ -46,11 +44,9 @@ export class ProcessOrderWebhookUseCase {
       orderStatus: OrderStatus.PAYED,
     };
 
-    console.log(updatedOrder)
     await this.orderRepository.update(updatedOrder);
 
     if (updatedOrder.rewardPointsUsed > 0) {
-      console.log('start deduction of bonuses');
       const bayDetails = await this.posService.ping({
         posId: order.carWashId,
         bayNumber: order.bayNumber,
@@ -63,13 +59,12 @@ export class ProcessOrderWebhookUseCase {
           order.rewardPointsUsed.toString(),
           '1',
       );
-      console.log('end deduction of bonuses');
+
       if (!withdraw) {
         throw new RewardPointsWithdrawalException();
       }
     }
 
-    console.log('end webhook order, orderId: ' + order.id);
     //add to the task
     await this.dataQueue.add('pos-process', {
       orderId: order.id,

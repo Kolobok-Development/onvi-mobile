@@ -1,5 +1,4 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { JwtModule } from './infrastructure/services/jwt/jwt.module';
 import { AccountModule } from './infrastructure/account/account.module';
@@ -9,7 +8,6 @@ import { DateModule } from './infrastructure/services/date/date.module';
 import { EnvConfigModule } from './infrastructure/config/env-config/env-config.module';
 import { BcryptModule } from './infrastructure/services/bcrypt/bcrypt.module';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './infrastructure/common/strategies/local.strategy';
 import { OrderModule } from './infrastructure/order/order.module';
 import { PromocodeModule } from './infrastructure/promo-code/promocode.module';
 import { PaymentModule } from './infrastructure/payment/payment.module';
@@ -22,10 +20,13 @@ import { LoggerModule } from 'nestjs-pino';
 import { EnvConfigService } from './infrastructure/config/env-config/env-config.service';
 import { BalanceWsModule } from './websockets/balance/balance-ws.module';
 import { BullModule } from '@nestjs/bullmq';
+import { ThrottlerConfigModule } from './infrastructure/throttler/throttler.module';
+import { TrustedHostsMiddleware } from './infrastructure/security/trusted-hosts.middleware';
 
 @Module({
   imports: [
     PassportModule.register({}),
+    ThrottlerConfigModule,
     BullModule.forRootAsync({
       imports: [EnvConfigModule],
       useFactory: (env: EnvConfigService) => ({
@@ -152,4 +153,14 @@ import { BullModule } from '@nestjs/bullmq';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply the TrustedHosts middleware to webhook routes
+    consumer
+      .apply(TrustedHostsMiddleware)
+      .forRoutes(
+        { path: 'payment-webhook/webhook', method: RequestMethod.POST },
+        { path: 'balance/webhook', method: RequestMethod.POST },
+      );
+  }
+}

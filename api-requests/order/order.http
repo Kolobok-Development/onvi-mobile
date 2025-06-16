@@ -1,0 +1,47 @@
+### Order API Requests
+
+### Create Order
+POST {{baseUrl}}/order/create
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "carWashId": 1,
+  "bayNumber": 2,
+  "serviceType": "wash",
+  "amount": 50.00,
+  "promoCode": "DISCOUNT10"
+}
+
+### Register Payment
+POST {{baseUrl}}/order/register
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "orderId": 123,
+  "paymentMethod": "card",
+  "transactionId": "txn_12345"
+}
+
+### Validate Promo Code
+POST {{baseUrl}}/order/promo/validate
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "promoCode": "DISCOUNT10",
+  "orderAmount": 50.00
+}
+
+### Ping Car Wash
+GET {{baseUrl}}/order/ping?carWashId=1&bayNumber=2&bayType=wash
+Authorization: {{authToken}}
+
+### Get Order by Transaction ID
+GET {{baseUrl}}/order/transaction/txn_12345
+Authorization: {{authToken}}
+
+### Get Order by ID
+GET {{baseUrl}}/order/123
+Authorization: {{authToken}}

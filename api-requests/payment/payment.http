@@ -1,0 +1,17 @@
+### Payment API Requests
+
+### Create Payment
+POST {{baseUrl}}/payment
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "amount": 100.00,
+  "currency": "USD",
+  "paymentMethod": "card",
+  "orderId": 123
+}
+
+### Get Payment Credentials
+GET {{baseUrl}}/payment/credentials
+Authorization: {{authToken}}

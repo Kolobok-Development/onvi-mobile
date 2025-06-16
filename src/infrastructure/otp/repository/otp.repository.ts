@@ -3,7 +3,9 @@ import { Otp } from '../../../domain/otp/model/otp';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OtpEntity } from '../entity/otp.entity';
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { MoreThanOrEqual } from 'typeorm';
+import { Logger } from 'nestjs-pino';
 import { Observable } from 'rxjs';
 import { SendSmsResponseDto } from '../../../application/usecases/auth/dto/send-sms.dto';
 import { map } from 'rxjs/operators';
@@ -22,6 +24,7 @@ export class OtpRepository implements IOtpRepository {
     @InjectRepository(OtpEntity)
     private readonly otpRepository: Repository<OtpEntity>,
     private readonly httpService: HttpService,
+    @Inject(Logger) private readonly logger: Logger,
   ) {
     this.urlSms = process.env.BEELINE_URL;
     this.loginSms = process.env.BEELINE_LOGIN;
@@ -44,6 +47,18 @@ export class OtpRepository implements IOtpRepository {
     await this.otpRepository.delete({ phone: phone });
   }
 
+  async getRecentAttempts(phone: string): Promise<number> {
+    const oneHourAgo = new Date();
+    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+
+    return this.otpRepository.count({
+      where: {
+        phone: phone,
+        createDate: MoreThanOrEqual(oneHourAgo),
+      },
+    });
+  }
+
   async send(otp: Otp): Promise<any> {
     const header: any = this.setHeaders();
     const params: string = this.setParams(
@@ -55,7 +70,7 @@ export class OtpRepository implements IOtpRepository {
         .post(this.urlSms, params, header)
         .pipe(
           map((axiosResponse: AxiosResponse) => {
-            console.log(axiosResponse)
+            console.log(axiosResponse);
             return { message: 'Success', to: otp.phone };
           }),
         )

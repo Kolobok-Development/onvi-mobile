@@ -4,6 +4,8 @@ export class Otp {
   otp: string;
   createDate: Date;
   expireDate: Date;
+  ipAddress?: string;
+  attempts: number = 0;
 
   constructor(id: number, phone: string, otp: string, expireDate: Date) {
     this.id = id;

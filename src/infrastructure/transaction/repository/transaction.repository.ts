@@ -56,4 +56,25 @@ export class TransactionRepository implements ITransactionRepository {
     );
     return JSON.parse(runWithdrawPointsQuery[0]);
   }
+
+  async add(
+    cardId: string,
+    typeOperId: string,
+    sum: string,
+    comment?: string,
+    userId?: string,
+  ): Promise<any> {
+    const addOperationQuery = `begin :p0 := cwash.CARD_PKG.add_oper(:p1, :p2, :p3, :p4, :p5); end;`;
+
+    const result = await this.dataSource.query(addOperationQuery, [
+      { dir: oracledb.BIND_OUT, type: oracledb.STRING }, // :result
+      cardId, // :p_card_id
+      typeOperId, // :p_type_oper_id
+      sum, // :p_sum
+      comment || null, // :p_comment
+      userId || null, // :p_user_id
+    ]);
+
+    return JSON.parse(result[0]);
+  }
 }

@@ -1,0 +1,78 @@
+### Account API Requests
+
+### Get Current Account
+GET {{baseUrl}}/account/me
+Authorization: {{authToken}}
+
+### Get Orders History
+GET {{baseUrl}}/account/orders?size=10&page=1
+Authorization: {{authToken}}
+
+### Get Free Vacuum
+GET {{baseUrl}}/account/free-vacuum
+Authorization: {{authToken}}
+
+### Get Account Tariff
+GET {{baseUrl}}/account/tariff
+Authorization: {{authToken}}
+
+### Get Active Promotion
+GET {{baseUrl}}/account/activePromotion
+Authorization: {{authToken}}
+
+### Update Account Info
+PATCH {{baseUrl}}/account
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+
+### Create Meta
+POST {{baseUrl}}/account/meta/create
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "metaType": "example",
+  "metaValue": "value"
+}
+
+### Update Meta
+POST {{baseUrl}}/account/meta/update
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "metaId": 1,
+  "metaValue": "new-value"
+}
+
+### Get Transfer Data
+GET {{baseUrl}}/account/transfer?devNomer=123456
+Authorization: {{authToken}}
+
+### Transfer Account
+POST {{baseUrl}}/account/transfer
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "devNomer": "123456",
+  "amount": 100.00
+}
+
+### Update Notifications
+PATCH {{baseUrl}}/account/notifications
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "notification": true
+}
+
+### Delete Account
+DELETE {{baseUrl}}/account
+Authorization: {{authToken}}

@@ -1,4 +1,6 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottleType } from '../../infrastructure/common/decorators/throttler.decorator';
 import { PaymentStatusGatewayWebhookDto } from './dto/payment-gateway-webhook.dto';
 import { ProcessOrderWebhookUseCase } from '../../application/usecases/order/process-order-webhook.use-case';
 import { OrderNotFoundException } from '../../domain/order/exceptions/order-base.exceptions';
@@ -6,6 +8,7 @@ import { CustomHttpException } from '../../infrastructure/common/exceptions/cust
 import { ClientException } from '../../infrastructure/common/exceptions/base.exceptions';
 
 @Controller('payment-webhook')
+@UseGuards(ThrottlerGuard)
 export class PaymentWebhookController {
   constructor(
     private readonly processOrderWebhook: ProcessOrderWebhookUseCase,
@@ -13,6 +16,7 @@ export class PaymentWebhookController {
 
   @Post('/webhook')
   @HttpCode(HttpStatus.OK)
+  @ThrottleType('webhook')
   async handlePyamentSatus(
     @Body() webhookData: PaymentStatusGatewayWebhookDto,
   ): Promise<any> {

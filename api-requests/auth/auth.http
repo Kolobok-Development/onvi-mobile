@@ -1,0 +1,36 @@
+### Auth API Requests
+
+### Send OTP
+POST {{baseUrl}}/auth/send/otp
+Content-Type: application/json
+
+{
+  "phone": "+79999999999"
+}
+
+### Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "phone": "+79999999999",
+  "otp": "0000"
+}
+
+### Register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "phone": "+79999999999",
+  "otp": "123456"
+}
+
+### Refresh Token
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "refreshToken": "your-refresh-token-here"
+}

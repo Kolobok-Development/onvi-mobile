@@ -76,4 +76,7 @@ export class EnvConfigService implements IJwtConfig {
   getRedisPwsd(): string {
     return this.configService.get<string>('REDIS_DEVICE_PASSWORD');
   }
+  getCacheRedisString(): string {
+    return this.configService.get<string>('CACHE_REDIS_URL');
+  }
 }

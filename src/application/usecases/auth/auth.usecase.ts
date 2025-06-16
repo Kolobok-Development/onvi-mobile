@@ -222,21 +222,33 @@ export class AuthUsecase {
     return phone.replace(/^\s*\+|\s*/g, '');
   }
 
-  public async sendOtp(phone: string): Promise<any> {
-    //1) Send otp through sms
-    //Generate expitry time
+  public async sendOtp(phone: string, ipAddress = 'unknown'): Promise<any> {
+    // First check if this phone is allowed to request OTP (throttling/tracking)
+
+    // Generate expiry time
     const otpTime = this.dateService.generateOtpTime();
-    //Create new otp model
+
+    // Generate OTP code
     let otpCode = this.generateOtp();
-    console.log(otpCode);
-    if (phone == '+79999999999') {
+
+    // Test account bypass - ONLY FOR DEVELOPMENT
+    if (process.env.NODE_ENV !== 'production' && phone === '+79999999999') {
       otpCode = '0000';
     }
+
+    // Create new OTP model
     const otp = new Otp(null, phone, otpCode, otpTime);
-    //Remove any existing otp
+    otp.ipAddress = ipAddress;
+
+    // Remove any existing OTP
     await this.otpRepository.removeOne(phone);
-    //Save new otp and return
+
+    // Save new OTP and return
     const newOtp = await this.otpRepository.create(otp);
+
+    // Track this request
+
+    // Send the OTP
     await this.otpRepository.send(newOtp);
 
     if (!newOtp) {

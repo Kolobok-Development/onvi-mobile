@@ -20,8 +20,6 @@ export class RegisterPaymentUseCase {
   ) {}
 
   async execute(data: IRegisterPaymentDto): Promise<any> {
-    console.log('start register orderId: ' + data.orderId);
-
     const order = await this.orderRepository.findOneById(data.orderId);
 
     if (!order) {
@@ -86,8 +84,6 @@ export class RegisterPaymentUseCase {
         `Payment has been registered for order ${order.id} with amount ${data.amount}`,
       );
 
-      console.log('end register orderId: ' + data.orderId);
-      console.log(finalOrderUpdate)
       return {
         status: OrderStatus.WAITING_PAYMENT,
         paymentId: paymentResult.id,

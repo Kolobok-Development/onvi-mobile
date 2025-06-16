@@ -13,6 +13,7 @@ import {
   UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthUsecase } from '../../application/usecases/auth/auth.usecase';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { LocalGuard } from '../../infrastructure/common/guards/local.guard';
@@ -32,8 +33,10 @@ import { RefreshResponseDto } from './dto/response/refresh-response.dto';
 import { use } from 'passport';
 import { CustomHttpException } from '../../infrastructure/common/exceptions/custom-http.exception';
 import { FindMethodsMetaUseCase } from '../../application/usecases/account/account-meta-find-methods';
+import { ThrottleType } from '../../infrastructure/common/decorators/throttler.decorator';
 
 @Controller('auth')
+@UseGuards(ThrottlerGuard)
 export class AuthController {
   constructor(
     private readonly authUsecase: AuthUsecase,
@@ -42,6 +45,7 @@ export class AuthController {
 
   @UseGuards(LocalGuard)
   @HttpCode(200)
+  @ThrottleType('auth')
   @Post('/login')
   async login(@Body() auth: LoginRequestDto, @Request() req: any) {
     try {
@@ -86,6 +90,7 @@ export class AuthController {
 
   @Post('/register')
   @HttpCode(201)
+  @ThrottleType('auth')
   async register(@Body() auth: RegisterRequestDto, @Request() req: any) {
     try {
       const { newClient, accessToken, refreshToken } =
@@ -132,10 +137,17 @@ export class AuthController {
 
   @HttpCode(201)
   @Post('/send/otp')
-  async sendOtp(@Body() otpRequest: OtpRequestDto) {
+  @ThrottleType('otp')
+  async sendOtp(@Body() otpRequest: OtpRequestDto, @Request() req: any) {
+    // Extract IP address from request
+    const ipAddress =
+      req.headers['x-forwarded-for']?.toString() ||
+      req.ip ||
+      req.connection.remoteAddress ||
+      'unknown';
     try {
       const phone = otpRequest.phone;
-      const otp = await this.authUsecase.sendOtp(phone);
+      const otp = await this.authUsecase.sendOtp(phone, ipAddress);
       return new OtpResponseDto({
         status: OtpStatus.SENT_SUCCESS,
         target: otp.phone,
@@ -160,6 +172,7 @@ export class AuthController {
   @HttpCode(200)
   @UseGuards(RefreshGuard)
   @Post('refresh')
+  @ThrottleType('auth')
   async refresh(@Body() body: any, @Req() request: any) {
     const { user } = request;
     const accessToken = await this.authUsecase.signAccessToken(

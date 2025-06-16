@@ -5,4 +5,5 @@ export abstract class IOtpRepository {
   abstract findOne(phone: string): Promise<Otp>;
   abstract removeOne(phone: string): Promise<void>;
   abstract send(otp: Otp): Promise<any>;
+  abstract getRecentAttempts(phone: string): Promise<number>;
 }

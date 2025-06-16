@@ -18,8 +18,6 @@ import { PartnerOfferStatusEnum } from '../../../infrastructure/partner/enum/par
 
 @Injectable()
 export class StartPosUseCase {
-  private readonly MAX_RETRY_ATTEMPTS = 4;
-  public VERIFICATION_DELAY_MS = 0;
 
   constructor(
     private readonly orderRepository: IOrderRepository,
@@ -107,19 +105,16 @@ export class StartPosUseCase {
         `Order completed ${order.id}`,
       );
 
-      console.log('end pos data, status: ' + OrderStatus.COMPLETED);
       return {
         orderId: order.id,
         orderStatus: OrderStatus.COMPLETED,
         posStatus: carWashResponse.sendStatus,
       };
     } catch (error: any) {
-      console.log('err');
       order.orderStatus = OrderStatus.FAILED;
       order.excecutionError = error.message;
       await this.orderRepository.update(order);
       await this.sendGazprom(order, PartnerOfferStatusEnum.FAILED);
-      console.log('end pos data, status: ' + OrderStatus.FAILED);
 
       this.logger.log(
         {
@@ -158,14 +153,12 @@ export class StartPosUseCase {
       return false;
     }
 
-    this.logger.log(`Starting verification cycle ${cycle}/${MAX_RETRY_CYCLES}`);
 
     // Try 4 ping attempts
     const pingResult = await this.performPingAttempts(order, cycle);
 
     if (pingResult.success) {
       this.logger.log(`Car wash verified as started on cycle ${cycle}`);
-      console.log('send pos data success: ' + deviceId);
       return true;
     }
 
@@ -203,9 +196,9 @@ export class StartPosUseCase {
     const carWashId = order.carWashId;
     const bayNumber = order.bayNumber;
     const bayType = order.bayType;
-    const MAX_PING_ATTEMPTS = 4;
+    const MAX_PING_ATTEMPTS = 5;
     const INITIAL_DELAY_MS = 3000;
-    const DELAY_INCREMENT_MS = 3000;
+    const DELAY_INCREMENT_MS = 1000;
 
     for (let pingAttempt = 1; pingAttempt <= MAX_PING_ATTEMPTS; pingAttempt++) {
       try {
@@ -241,7 +234,7 @@ export class StartPosUseCase {
     return { success: false };
   }
 
-  private async sleep(ms: number): Promise<void> {
+  private async sleep(ms: number): Promise<unknown> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 

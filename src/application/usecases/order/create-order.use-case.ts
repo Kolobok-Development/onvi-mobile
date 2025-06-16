@@ -31,8 +31,6 @@ export class CreateOrderUseCase {
   ) {}
 
   async execute(request: CreateOrderDto, account: Client): Promise<any> {
-    console.log('start create order');
-    console.log(request)
     const isFreeVacuum = request.sum === 0 && request.bayType === DeviceType.VACUUME;
 
     if (request.err) {
@@ -52,7 +50,6 @@ export class CreateOrderUseCase {
       if (vacuumInfo.remains <= 0) {
         throw new InsufficientFreeVacuumException();
       }
-      console.log('freeVacuum start');
 
       const order = Order.create({
         card: card,
@@ -67,14 +64,11 @@ export class CreateOrderUseCase {
       });
 
       const newOrder = await this.orderRepository.create(order);
-      console.log(newOrder)
       //add to the task
       await this.dataQueue.add('pos-process', {
         orderId: newOrder.id,
       });
 
-      console.log('end create order, status: ' + OrderStatus.FREE_PROCESSING);
-      console.log('id: ' + newOrder.id);
       return {
         orderId: newOrder.id,
         status: newOrder.orderStatus,
@@ -121,7 +115,6 @@ export class CreateOrderUseCase {
           `Order created ${order.id}`,
       );
 
-      console.log('end create order, status: ' + newOrder.orderStatus);
       return {
         orderId: newOrder.id,
         status: newOrder.orderStatus,

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ClientEntity } from '../entity/client.entity';
 import { Repository } from 'typeorm';
 import { Client } from '../../../domain/account/client/model/client';
-import {ClientMapper} from "../mapper/client.mapper";
+import { ClientMapper } from '../mapper/client.mapper';
 
 @Injectable()
 export class ClientRepository implements IClientRepository {
@@ -17,6 +17,18 @@ export class ClientRepository implements IClientRepository {
     const clientEntity = ClientMapper.toClientEntity(client);
     const newClient = await this.clientRepository.save(clientEntity);
     return ClientMapper.fromEntity(newClient);
+  }
+
+  async findOneById(id: number): Promise<Client> {
+    const client = await this.clientRepository.findOne({
+      where: {
+        clientId: id,
+      },
+    });
+
+    if (!client) return null;
+
+    return ClientMapper.fromEntity(client);
   }
 
   async findOneByPhone(phone: string): Promise<Client> {
@@ -33,7 +45,6 @@ export class ClientRepository implements IClientRepository {
     if (!client) return null;
     return ClientMapper.fromEntity(client);
   }
-
 
   async setRefreshToken(phone: string, token: string): Promise<void> {
     const client: Client = await this.findOneByPhone(phone);

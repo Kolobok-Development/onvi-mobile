@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity({ name: 'PHONE_CODE', synchronize: false })
 export class OtpEntity {
@@ -16,4 +21,16 @@ export class OtpEntity {
 
   @Column({ name: 'EXPIRE_DATE', type: 'date' })
   expireDate: Date;
+
+  // These fields may require database migration
+  @Column({ name: 'IP_ADDRESS', type: 'varchar2', nullable: true })
+  ipAddress: string;
+
+  @Column({ name: 'ATTEMPTS', type: 'number', default: 0 })
+  attempts: number;
+
+  // For tracking in the OTP tracker service
+  get createdAt(): Date {
+    return this.createDate;
+  }
 }

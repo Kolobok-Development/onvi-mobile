@@ -1,0 +1,19 @@
+### Promotion API Requests
+
+### Apply Promotion
+POST {{baseUrl}}/promotion/apply
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "promotionCode": "NEWUSER50",
+  "orderId": 123
+}
+
+### Get Promotion History
+GET {{baseUrl}}/promotion/history
+Authorization: {{authToken}}
+
+### Get Active Promotions
+GET {{baseUrl}}/promotion
+Authorization: {{authToken}}

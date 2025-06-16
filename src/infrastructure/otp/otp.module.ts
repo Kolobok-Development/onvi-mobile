@@ -3,10 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OtpEntity } from './entity/otp.entity';
 import { OtpRepositoryProvider } from './provider/otp-repository.provider';
 import { HttpModule } from '@nestjs/axios';
-import { OtpRepository } from './repository/otp.repository';
+import { EnvConfigModule } from '../config/env-config/env-config.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OtpEntity]), HttpModule],
+  imports: [TypeOrmModule.forFeature([OtpEntity]), HttpModule, EnvConfigModule],
   providers: [OtpRepositoryProvider],
   exports: [OtpRepositoryProvider],
 })
