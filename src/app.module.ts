@@ -26,7 +26,7 @@ import { TrustedHostsMiddleware } from './infrastructure/security/trusted-hosts.
 @Module({
   imports: [
     PassportModule.register({}),
-    ThrottlerConfigModule,
+    //ThrottlerConfigModule,
     BullModule.forRootAsync({
       imports: [EnvConfigModule],
       useFactory: (env: EnvConfigService) => ({

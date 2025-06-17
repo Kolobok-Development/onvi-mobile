@@ -15,8 +15,8 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
-import { ThrottleType } from '../../infrastructure/common/decorators/throttler.decorator';
+//import { ThrottlerGuard } from '@nestjs/throttler';
+//import { ThrottleType } from '../../infrastructure/common/decorators/throttler.decorator';
 import { JwtGuard } from '../../infrastructure/common/guards/jwt.guard';
 import { CustomHttpException } from '../../infrastructure/common/exceptions/custom-http.exception';
 import { HistOptionsDto } from '../dto/req/hist-options.dto';
@@ -44,7 +44,7 @@ import { EnvConfigService } from '../../infrastructure/config/env-config/env-con
 import { Logger } from 'nestjs-pino';
 
 @Controller('account')
-@UseGuards(ThrottlerGuard)
+//@UseGuards(ThrottlerGuard)
 export class AccountController {
   constructor(
     private readonly updateClientUseCase: UpdateClientUseCase,
@@ -263,7 +263,7 @@ export class AccountController {
   @Post('/transfer')
   @UseGuards(JwtGuard)
   @HttpCode(201)
-  @ThrottleType('sensitive')
+  //@ThrottleType('sensitive')
   async transfer(@Body() body: AccountTransferDto, @Req() req: any) {
     const { user } = req;
     try {

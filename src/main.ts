@@ -7,7 +7,7 @@ import { AllExceptionFilter } from './infrastructure/common/filters/exception.fi
 import { ValidationException } from './infrastructure/common/exceptions/validation.exception';
 import { Logger } from 'nestjs-pino';
 import * as process from 'node:process';
-import * as helmet from 'helmet';
+//import * as helmet from 'helmet';
 import { helmetConfig } from './infrastructure/security/helmet.config';
 
 async function bootstrap() {
@@ -29,10 +29,10 @@ async function bootstrap() {
   app.setGlobalPrefix('/api/v2');
 
   // Apply Helmet security middleware with custom config
-  app.use(helmet.default(helmetConfig));
+  //app.use(helmet.default(helmetConfig));
 
   // Enable CORS for mobile app domains
-  app.enableCors({
+  /*app.enableCors({
     origin:
       process.env.NODE_ENV === 'production'
         ? ['https://onvi-mobile.com', 'https://api.onvi-mobile.com']
@@ -41,7 +41,7 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
     maxAge: 86400, // 24 hours in seconds
-  });
+  });*/
   await app.listen(process.env.PORT, () => {
     console.log(`ONVI listening on port ${process.env.PORT}`);
     console.log(process.env.NODE_ENV);

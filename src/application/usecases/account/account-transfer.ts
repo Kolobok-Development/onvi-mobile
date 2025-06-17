@@ -1,7 +1,7 @@
 import { Injectable, Inject, UseGuards } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
-import { ThrottlerGuard } from '@nestjs/throttler';
-import { ThrottleType } from '../../../infrastructure/common/decorators/throttler.decorator';
+//import { ThrottlerGuard } from '@nestjs/throttler';
+//import { ThrottleType } from '../../../infrastructure/common/decorators/throttler.decorator';
 import { Client } from '../../../domain/account/client/model/client';
 import { FindMethodsCardUseCase } from './account-card-find-methods';
 import { ICardRepository } from '../../../domain/account/card/card-repository.abstract';
