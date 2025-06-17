@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install --legacy-peer-deps --save
+RUN npm install --save
 
 COPY . .
 
