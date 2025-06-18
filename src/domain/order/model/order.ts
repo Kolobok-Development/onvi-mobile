@@ -15,6 +15,7 @@ interface OrderOptions {
   promoCodeId?: number;
   discountAmount?: number;
   excecutionError?: string;
+  originalSum?: number;
 }
 export class Order {
   id?: number;
@@ -22,6 +23,7 @@ export class Order {
   transactionId?: string;
   createdAt: Date;
   sum: number;
+  originalSum?: number;
   promoCodeId?: number;
   discountAmount?: number;
   orderStatus: OrderStatus;
@@ -47,6 +49,7 @@ export class Order {
       promoCodeId,
       discountAmount,
       excecutionError,
+      originalSum,
       card,
     }: OrderOptions,
   ) {
@@ -71,13 +74,14 @@ export class Order {
       card,
       transactionId,
       sum,
+      originalSum,
       promoCodeId,
       carWashId,
       bayNumber,
       bayType,
       rewardPointsUsed,
       cashback,
-    } = data;
+    } = data; 
 
     const createdAt: Date = new Date();
 
@@ -110,6 +114,7 @@ export class Order {
         promoCodeId,
         rewardPointsUsed,
         card: card,
+        originalSum: originalSum,
       },
     );
   }

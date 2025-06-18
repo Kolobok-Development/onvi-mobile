@@ -55,6 +55,7 @@ export class CreateOrderUseCase {
         card: card,
         status: OrderStatus.FREE_PROCESSING, // Set initial status
         sum: request.sum,
+        originalSum: request.originalSum,
         promoCodeId: request.promoCodeId ?? null,
         rewardPointsUsed: request.rewardPointsUsed,
         carWashId: request.carWashId,
@@ -89,6 +90,8 @@ export class CreateOrderUseCase {
 
       // Apply promo code if applicable
       if (order.promoCodeId) {
+        console.log("ORIGINAL SUM", order.originalSum);
+        
         order.discountAmount = await this.promoCodeService.applyPromoCode(
             order,
             card,

@@ -7,6 +7,7 @@ export interface ICreateOrderDto {
   transactionId?: string;
   status: OrderStatus;
   sum: number;
+  originalSum?: number;
   promoCodeId?: number;
   rewardPointsUsed?: number;
   carWashId: number;

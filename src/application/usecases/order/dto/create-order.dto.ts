@@ -11,6 +11,10 @@ export class CreateOrderDto {
   @IsDefined()
   rewardPointsUsed: number;
   @Optional()
+  @IsNumber()
+  @IsOptional()
+  originalSum?: number;
+  @Optional()
   promoCodeId?: number;
   @IsNumber()
   @IsDefined()
