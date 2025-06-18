@@ -1,22 +1,22 @@
-import {Inject, Injectable} from '@nestjs/common';
-import {IOrderRepository} from '../../../domain/order/order-repository.abstract';
-import {ITariffRepository} from '../../../domain/account/card/tariff-repository.abstract';
-import {IPosService} from '../../../infrastructure/pos/interface/pos.interface';
-import {CreateOrderDto} from './dto/create-order.dto';
-import {Client} from '../../../domain/account/client/model/client';
-import {Order} from '../../../domain/order/model/order';
-import {BayBusyException} from '../../../domain/order/exceptions/bay-busy.exception';
-import {CarwashUnavalibleException} from '../../../domain/order/exceptions/carwash-unavalible.exception';
-import {PingRequestDto} from '../../../infrastructure/pos/dto/ping-request.dto';
-import {OrderStatus} from '../../../domain/order/enum/order-status.enum';
-import {PromoCodeService} from '../../services/promocode-service';
-import {OrderCreationFailedException} from '../../../domain/order/exceptions/order-base.exceptions';
-import {Logger} from 'nestjs-pino';
-import {DeviceType} from "../../../domain/order/enum/device-type.enum";
-import {CardService} from "../../services/card-service";
-import {InsufficientFreeVacuumException} from "../../../domain/order/exceptions/insufficient-free-vacuum.exception";
-import {InjectQueue} from "@nestjs/bullmq";
-import {Queue} from "bullmq";
+import { Inject, Injectable } from '@nestjs/common';
+import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
+import { ITariffRepository } from '../../../domain/account/card/tariff-repository.abstract';
+import { IPosService } from '../../../infrastructure/pos/interface/pos.interface';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { Client } from '../../../domain/account/client/model/client';
+import { Order } from '../../../domain/order/model/order';
+import { BayBusyException } from '../../../domain/order/exceptions/bay-busy.exception';
+import { CarwashUnavalibleException } from '../../../domain/order/exceptions/carwash-unavalible.exception';
+import { PingRequestDto } from '../../../infrastructure/pos/dto/ping-request.dto';
+import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
+import { PromoCodeService } from '../../services/promocode-service';
+import { OrderCreationFailedException } from '../../../domain/order/exceptions/order-base.exceptions';
+import { Logger } from 'nestjs-pino';
+import { DeviceType } from "../../../domain/order/enum/device-type.enum";
+import { CardService } from "../../services/card-service";
+import { InsufficientFreeVacuumException } from "../../../domain/order/exceptions/insufficient-free-vacuum.exception";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -28,7 +28,7 @@ export class CreateOrderUseCase {
     private readonly posService: IPosService,
     @Inject(Logger) private readonly logger: Logger,
     @InjectQueue('pos-process') private readonly dataQueue: Queue,
-  ) {}
+  ) { }
 
   async execute(request: CreateOrderDto, account: Client): Promise<any> {
     const isFreeVacuum = request.sum === 0 && request.bayType === DeviceType.VACUUME;
@@ -75,7 +75,6 @@ export class CreateOrderUseCase {
         status: newOrder.orderStatus,
       };
     } else {
-      this.logger.log("Original sum 1", request.sum, request.originalSum);
       const order = Order.create({
         card: card,
         status: OrderStatus.CREATED, // Set initial status
@@ -91,10 +90,10 @@ export class CreateOrderUseCase {
 
       // Apply promo code if applicable
       if (order.promoCodeId) {
-        this.logger.log("Original sum 2", order.originalSum);
+        this.logger.log(`Original sum: ${order.originalSum}`);
         order.discountAmount = await this.promoCodeService.applyPromoCode(
-            order,
-            card,
+          order,
+          card,
         );
       }
 
@@ -106,16 +105,16 @@ export class CreateOrderUseCase {
 
       // Log order creation
       this.logger.log(
-          {
+        {
+          orderId: order.id,
+          action: 'order_created',
+          timestamp: new Date(),
+          details: {
             orderId: order.id,
-            action: 'order_created',
-            timestamp: new Date(),
-            details: {
-              orderId: order.id,
-              clientId: account.clientId,
-            },
+            clientId: account.clientId,
           },
-          `Order created ${order.id}`,
+        },
+        `Order created ${order.id} `,
       );
 
       return {
@@ -161,8 +160,8 @@ export class CreateOrderUseCase {
       {
         name: 'InsufficientFreeVacuum',
         condition: () => request.sum === 0 &&
-            request.bayType === DeviceType.VACUUME &&
-            Math.random() < 0.3, // 30% chance for free vacuum
+          request.bayType === DeviceType.VACUUME &&
+          Math.random() < 0.3, // 30% chance for free vacuum
         action: () => {
           throw new InsufficientFreeVacuumException();
         }
@@ -179,7 +178,7 @@ export class CreateOrderUseCase {
     // Проверяем каждую возможную ошибку
     for (const scenario of errorScenarios) {
       if (scenario.condition()) {
-        this.logger.log(`Simulating error: ${scenario.name}`);
+        this.logger.log(`Simulating error: ${scenario.name} `);
         scenario.action();
         break; // Останавливаем после первой сработавшей ошибки
       }
