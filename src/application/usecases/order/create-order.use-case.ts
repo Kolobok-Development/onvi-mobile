@@ -75,7 +75,7 @@ export class CreateOrderUseCase {
         status: newOrder.orderStatus,
       };
     } else {
-      this.logger.log("Original sum 1", request.originalSum);
+      this.logger.log("Original sum 1", request.sum, request.originalSum);
       const order = Order.create({
         card: card,
         status: OrderStatus.CREATED, // Set initial status
