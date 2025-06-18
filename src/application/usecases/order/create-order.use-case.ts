@@ -91,6 +91,7 @@ export class CreateOrderUseCase {
       // Apply promo code if applicable
       if (order.promoCodeId) {
         this.logger.log(`Original sum: ${order.originalSum}`);
+        this.logger.log(`Sum: ${order.sum}`);
         order.discountAmount = await this.promoCodeService.applyPromoCode(
           order,
           card,
