@@ -75,7 +75,7 @@ export class CreateOrderUseCase {
         status: newOrder.orderStatus,
       };
     } else {
-
+      this.logger.log("Original sum 1", request.originalSum);
       const order = Order.create({
         card: card,
         status: OrderStatus.CREATED, // Set initial status
@@ -91,7 +91,7 @@ export class CreateOrderUseCase {
 
       // Apply promo code if applicable
       if (order.promoCodeId) {
-        this.logger.log("Original sum", order.originalSum);
+        this.logger.log("Original sum 2", order.originalSum);
         order.discountAmount = await this.promoCodeService.applyPromoCode(
             order,
             card,

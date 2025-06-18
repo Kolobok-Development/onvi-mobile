@@ -12,7 +12,6 @@ export class CreateOrderDto {
   rewardPointsUsed: number;
   @Optional()
   @IsNumber()
-  @IsOptional()
   originalSum?: number;
   @Optional()
   promoCodeId?: number;
