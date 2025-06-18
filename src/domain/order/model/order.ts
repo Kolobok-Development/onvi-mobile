@@ -57,6 +57,7 @@ export class Order {
     this.card = card;
     this.createdAt = createdAt;
     this.sum = sum;
+    this.originalSum = originalSum;
     this.orderStatus = orderStatus;
     this.carWashId = carWashId;
     this.bayNumber = bayNumber;
@@ -114,7 +115,7 @@ export class Order {
         promoCodeId,
         rewardPointsUsed,
         card: card,
-        originalSum: originalSum,
+        originalSum,
       },
     );
   }
