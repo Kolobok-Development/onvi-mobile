@@ -32,9 +32,10 @@ export class PromotionController {
     try {
       const { user } = req;
       const promotion = await this.promotionUsecase.apply(data, user);
-      return new PromotionResponseDto({
+      return new PromotionResponseDto({ 
         status: PromotionStatus.ACTIVATION_SUCCESS,
         code: promotion.code,
+        totalPoints: promotion.totalPoints,
       });
     } catch (e) {
       if (e instanceof PromotionNotFoundException) {

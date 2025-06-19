@@ -16,6 +16,7 @@ export class Promotion {
   createdBy: number;
   title: string;
   description: string;
+  totalPoints?: number;
 
   private constructor(
     type: number,

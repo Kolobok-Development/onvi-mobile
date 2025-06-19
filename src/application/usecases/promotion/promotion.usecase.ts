@@ -44,6 +44,8 @@ export class PromotionUsecase {
       throw new InvalidPromotionException(promotion.code);
     }
 
+    promotion.totalPoints = card.balance;
+
     if (promotion.type === 1) {
       const extId = this.generateUniqueExt();
       const transactionId = await this.transactionRepository.create(
@@ -52,6 +54,8 @@ export class PromotionUsecase {
         promotion.point.toString(),
         extId,
       );
+
+      promotion.totalPoints +=  promotion.point;
     } else if (promotion.type === 2) {
       await this.cardRepository.changeType(card.cardId, promotion.cashbackType);
       isActive = 1;
