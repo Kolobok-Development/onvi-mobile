@@ -43,8 +43,8 @@ export class CreateOrderUseCase {
     // Step 2: Create order with initial CREATED status
     const card = account.getCard();
     const tariff = await this.tariffRepository.findCardTariff(card);
-    const cashback = Math.ceil((request.sum * tariff.bonus) / 100);
-
+    const cashback = ((request.sum * tariff.bonus) / 100) < 1 ? 0 : Math.ceil((request.sum * tariff.bonus) / 100);
+    
     if (isFreeVacuum) {
       const vacuumInfo = await this.cardService.getFreeVacuum(account);
       if (vacuumInfo.remains <= 0) {
