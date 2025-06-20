@@ -126,10 +126,17 @@ export class BalanceGateway
     }
   }
 
-  @UseGuards(WsAuthGuard)
+  // @UseGuards(WsAuthGuard)
   @SubscribeMessage('request_balance')
   async handleMessage(client: Socket, data: any): Promise<WsResponse<any>> {
+
     this.logger.log(`Received request_balance from ${client.id}`);
+
+    const user = (client.handshake as any)?.user;
+    if (!user) {
+      this.logger.log(`Unauthorized user ${client.id}`);
+      return;
+    }
 
     try {
       // Защита на случай отсутствия пользователя в handshake
