@@ -23,12 +23,11 @@ import { Client } from '../../domain/account/client/model/client';
 })
 @UseFilters(WebsocketExceptionsFilter)
 export class BalanceGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+  implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     @Inject(Logger) private readonly logger: Logger,
     private readonly cardService: CardService,
-  ) {}
+  ) { }
 
   @WebSocketServer()
   server: Server;
@@ -61,6 +60,8 @@ export class BalanceGateway
     const user = (client?.handshake as any)?.user as Client;
     if (user) {
       this.associateUserWithSocket(client, user);
+    } else {
+      this.logger.log(`No authenticated user found in handshake for client ${client.id}`);
     }
   }
 
@@ -131,34 +132,29 @@ export class BalanceGateway
     this.logger.log(`Received request_balance from ${client.id}`);
 
     try {
-      // Get the authenticated client from the handshake
-      const authenticatedClient = (client?.handshake as any)?.user as Client;
+      // Защита на случай отсутствия пользователя в handshake
+      const authenticatedClient = (client?.handshake as any)?.user as Client | undefined;
 
       if (!authenticatedClient) {
-        this.logger.error(`No user found in request for socket ${client.id}`);
+        this.logger.log(`No user found in request for socket ${client.id}`);
         return {
           event: 'balance_update',
           data: { error: 'Unauthorized' },
         };
       }
 
-      // Associate user with socket for future updates
       this.associateUserWithSocket(client, authenticatedClient);
 
-      // Get the card from client
       const card = authenticatedClient.getCard();
 
       if (!card) {
-        this.logger.error(
-          `No card found for client ${authenticatedClient.clientId}`,
-        );
+        this.logger.log(`No card found for client ${authenticatedClient.clientId}`);
         return {
           event: 'balance_update',
           data: { error: 'No card found' },
         };
       }
 
-      // Get balance information
       const balanceInfo = await this.cardService.getCardBalance(card.devNomer);
 
       return {
@@ -166,13 +162,64 @@ export class BalanceGateway
         data: balanceInfo,
       };
     } catch (error) {
-      this.logger.error(`Error fetching balance: ${error.message}`);
+      this.logger.log(`Error fetching balance: ${error?.message ?? error}`);
+
+      // Возвращаем понятный ответ, чтобы не падал фильтр исключений
       return {
         event: 'balance_update',
         data: { error: 'Failed to fetch balance' },
       };
     }
   }
+
+  // @UseGuards(WsAuthGuard)
+  // @SubscribeMessage('request_balance')
+  // async handleMessage(client: Socket, data: any): Promise<WsResponse<any>> {
+  //   this.logger.log(`Received request_balance from ${client.id}`);
+
+  //   try {
+  //     // Get the authenticated client from the handshake
+  //     const authenticatedClient = (client?.handshake as any)?.user as Client;
+
+  //     if (!authenticatedClient) {
+  //       this.logger.error(`No user found in request for socket ${client.id}`);
+  //       return {
+  //         event: 'balance_update',
+  //         data: { error: 'Unauthorized' },
+  //       };
+  //     }
+
+  //     // Associate user with socket for future updates
+  //     this.associateUserWithSocket(client, authenticatedClient);
+
+  //     // Get the card from client
+  //     const card = authenticatedClient.getCard();
+
+  //     if (!card) {
+  //       this.logger.error(
+  //         `No card found for client ${authenticatedClient.clientId}`,
+  //       );
+  //       return {
+  //         event: 'balance_update',
+  //         data: { error: 'No card found' },
+  //       };
+  //     }
+
+  //     // Get balance information
+  //     const balanceInfo = await this.cardService.getCardBalance(card.devNomer);
+
+  //     return {
+  //       event: 'balance_update',
+  //       data: balanceInfo,
+  //     };
+  //   } catch (error) {
+  //     this.logger.error(`Error fetching balance: ${error.message}`);
+  //     return {
+  //       event: 'balance_update',
+  //       data: { error: 'Failed to fetch balance' },
+  //     };
+  //   }
+  // }
 
   @SubscribeMessage('ping')
   handlePing(client: Socket, payload: any): WsResponse<string> {
@@ -240,3 +287,4 @@ export class BalanceGateway
     }
   }
 }
+
