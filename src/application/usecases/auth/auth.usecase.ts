@@ -84,31 +84,7 @@ export class AuthUsecase {
 
     if (account) {
       this.logger.log("Зашли в 3")
-    }
-
-    //Generate token
-    const accessToken = await this.signAccessToken(phone);
-    const refreshToken = await this.signRefreshToken(phone);
-
-    //If client was deleted
-    if (
-      account &&
-      !account.isClientActive() &&
-      !account.getCard().isCardActive()
-    ) {
-      this.logger.log("Зашли в 4")
-      account.isActivated = 1;
-      account.getCard().isDel = 0;
-      account.refreshToken = refreshToken.token;
-
-      const isUpdated = await this.clientRepository.update(account);
-      const isReactivated = await this.cardRepository.reActivate(
-        account.getCard().cardId,
-      );
-
-      if (!isUpdated && !isReactivated)
-        throw new AccountNotFoundExceptions(account.phone);
-
+      
       const expirationDate = new Date();
       expirationDate.setMonth(expirationDate.getMonth() + 3);
 
@@ -142,6 +118,30 @@ export class AuthUsecase {
         },
         `Promo code ${promoCode.code} created for old client ${account.clientId}`,
       );
+    }
+
+    //Generate token
+    const accessToken = await this.signAccessToken(phone);
+    const refreshToken = await this.signRefreshToken(phone);
+
+    //If client was deleted
+    if (
+      account &&
+      !account.isClientActive() &&
+      !account.getCard().isCardActive()
+    ) {
+      this.logger.log("Зашли в 4")
+      account.isActivated = 1;
+      account.getCard().isDel = 0;
+      account.refreshToken = refreshToken.token;
+
+      const isUpdated = await this.clientRepository.update(account);
+      const isReactivated = await this.cardRepository.reActivate(
+        account.getCard().cardId,
+      );
+
+      if (!isUpdated && !isReactivated)
+        throw new AccountNotFoundExceptions(account.phone);
 
       const newClient = account;
 
