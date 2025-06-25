@@ -79,6 +79,44 @@ export class AuthUsecase {
       throw new AccountExistsException(phone);
     }
 
+    if (account.userOnvi === 1) {
+      const expirationDate = new Date();
+      expirationDate.setMonth(expirationDate.getMonth() + 3);
+
+      const promoCodeData = new PromoCode(
+        `ONVIREG${account.getCard().cardId}`,
+        1,
+        expirationDate,
+        1,
+        new Date(),
+        3,
+        1,
+        {
+          discount: 250,
+          updatedAt: new Date(),
+        },
+      );
+
+      const promoCode = await this.promoCodeUsecase.create(promoCodeData);
+      await this.promoCodeUsecase.bindClient(promoCode, account);
+
+      this.logger.log(
+        {
+          action: 'promo_code_created',
+          timestamp: new Date(),
+          clientId: account.clientId,
+          details: JSON.stringify({
+            promoCode: promoCode.code,
+            discount: 100,
+            expirationDate: expirationDate,
+          }),
+        },
+        `Promo code ${promoCode.code} created for old client ${account.clientId}`,
+      );
+    } else {
+      this.logger.log(`Promo code not created for client ${account.clientId}`);
+    }
+
     //Generate token
     const accessToken = await this.signAccessToken(phone);
     const refreshToken = await this.signRefreshToken(phone);
@@ -100,44 +138,6 @@ export class AuthUsecase {
 
       if (!isUpdated && !isReactivated)
         throw new AccountNotFoundExceptions(account.phone);
-
-      if (account.userOnvi === 1) {
-        const expirationDate = new Date();
-        expirationDate.setMonth(expirationDate.getMonth() + 3);
-
-        const promoCodeData = new PromoCode(
-          `ONVIREG${account.getCard().cardId}`,
-          1,
-          expirationDate,
-          1,
-          new Date(),
-          3,
-          1,
-          {
-            discount: 250,
-            updatedAt: new Date(),
-          },
-        );
-
-        const promoCode = await this.promoCodeUsecase.create(promoCodeData);
-        await this.promoCodeUsecase.bindClient(promoCode, account);
-
-        this.logger.log(
-          {
-            action: 'promo_code_created',
-            timestamp: new Date(),
-            clientId: account.clientId,
-            details: JSON.stringify({
-              promoCode: promoCode.code,
-              discount: 100,
-              expirationDate: expirationDate,
-            }),
-          },
-          `Promo code ${promoCode.code} created for old client ${account.clientId}`,
-        );
-      } else {
-        this.logger.log(`Promo code not created for client ${account.clientId}`);
-      }
 
       const newClient = account;
 
