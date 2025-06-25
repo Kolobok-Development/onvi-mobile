@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import {
   IJwtService,
   IJwtServicePayload,
@@ -32,8 +32,6 @@ import { ICardRepository } from '../../../domain/account/card/card-repository.ab
 import { PromoCode } from '../../../domain/promo-code/model/promo-code.model';
 import { PromocodeUsecase } from '../promocode/promocode.usecase';
 import { Logger } from 'nestjs-pino';
-import { Inject } from '@nestjs/common';
-
 
 @Injectable()
 export class AuthUsecase {
@@ -56,7 +54,7 @@ export class AuthUsecase {
     private readonly dateService: IDate,
     private readonly jwtConfig: IJwtConfig,
     private readonly bcryptService: IBcrypt,
-    private readonly promocodeUsecase: PromocodeUsecase,
+    private readonly promoCodeUsecase: PromocodeUsecase,
     @Inject(Logger) private readonly logger: Logger,
   ) {}
 
@@ -107,8 +105,8 @@ export class AuthUsecase {
         const expirationDate = new Date();
         expirationDate.setMonth(expirationDate.getMonth() + 3);
 
-        const promoCodeDate = new PromoCode(
-          `ONVIPROMO${account.getCard().cardId}`,
+        const promoCodeData = new PromoCode(
+          `ONVIREG${account.getCard().cardId}`,
           1,
           expirationDate,
           1,
@@ -116,18 +114,28 @@ export class AuthUsecase {
           3,
           1,
           {
-            discount: 250, 
+            discount: 250,
             updatedAt: new Date(),
           },
         );
 
-        const promoCode = await this.promocodeUsecase.create(promoCodeDate);
-        await this.promocodeUsecase.bindClient(promoCode, account);
+        const promoCode = await this.promoCodeUsecase.create(promoCodeData);
+        await this.promoCodeUsecase.bindClient(promoCode, account);
 
-        this.logger.log(`[Add promo] The promotional code to the client with the number: ${phone}`);
-      } else {
-        this.logger.log(`[Add promo] New client: ${phone}`);
-      }
+        this.logger.log(
+          {
+            action: 'promo_code_created',
+            timestamp: new Date(),
+            clientId: account.clientId,
+            details: JSON.stringify({
+              promoCode: promoCode.code,
+              discount: 100,
+              expirationDate: expirationDate,
+            }),
+          },
+          `Promo code ${promoCode.code} created for old client ${account.clientId}`,
+        );
+      } 
 
       const newClient = account;
 
