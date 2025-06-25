@@ -29,6 +29,11 @@ import { Card } from '../../../domain/account/card/model/card';
 import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
 import { IClientRepository } from '../../../domain/account/client/client-repository.abstract';
 import { ICardRepository } from '../../../domain/account/card/card-repository.abstract';
+import { PromoCode } from '../../../domain/promo-code/model/promo-code.model';
+import { PromocodeUsecase } from '../promocode/promocode.usecase';
+import { Logger } from 'nestjs-pino';
+import { Inject } from '@nestjs/common';
+
 
 @Injectable()
 export class AuthUsecase {
@@ -51,6 +56,8 @@ export class AuthUsecase {
     private readonly dateService: IDate,
     private readonly jwtConfig: IJwtConfig,
     private readonly bcryptService: IBcrypt,
+    private readonly promocodeUsecase: PromocodeUsecase,
+    @Inject(Logger) private readonly logger: Logger,
   ) {}
 
   //public async isAuthenticated(phone: string) {}
@@ -95,6 +102,32 @@ export class AuthUsecase {
 
       if (!isUpdated && !isReactivated)
         throw new AccountNotFoundExceptions(account.phone);
+
+      if (account.userOnvi === 1) {
+        const expirationDate = new Date();
+        expirationDate.setMonth(expirationDate.getMonth() + 3);
+
+        const promoCodeDate = new PromoCode(
+          `ONVIPROMO${account.getCard().cardId}`,
+          1,
+          expirationDate,
+          1,
+          new Date(),
+          3,
+          1,
+          {
+            discount: 250, 
+            updatedAt: new Date(),
+          },
+        );
+
+        const promoCode = await this.promocodeUsecase.create(promoCodeDate);
+        await this.promocodeUsecase.bindClient(promoCode, account);
+
+        this.logger.log(`[Add promo] The promotional code to the client with the number: ${phone}`);
+      } else {
+        this.logger.log(`[Add promo] New client: ${phone}`);
+      }
 
       const newClient = account;
 
