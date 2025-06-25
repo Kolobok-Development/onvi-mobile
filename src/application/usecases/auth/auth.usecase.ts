@@ -63,12 +63,14 @@ export class AuthUsecase {
   public async register(phone: string, otp: string): Promise<any> {
     // Validate OTP
     const currentOtp = await this.otpRepository.findOne(phone);
+    this.logger.log("Зашли в register")
 
     if (
       !currentOtp ||
       this.dateService.isExpired(currentOtp.expireDate, OTP_EXPIRY_TIME) ||
       currentOtp.otp != otp
     ) {
+      this.logger.log("Зашли в 1")
       throw new InvalidOtpException(phone);
     }
 
@@ -76,7 +78,12 @@ export class AuthUsecase {
     const account: Client = await this.clientRepository.findOneByPhone(phone);
 
     if (account && account.isActivated != 0 && account.getCard().isDel != 1) {
+      this.logger.log("Зашли в 2")
       throw new AccountExistsException(phone);
+    }
+
+    if (account) {
+      this.logger.log("Зашли в 3")
     }
 
     //Generate token
@@ -89,6 +96,7 @@ export class AuthUsecase {
       !account.isClientActive() &&
       !account.getCard().isCardActive()
     ) {
+      this.logger.log("Зашли в 4")
       account.isActivated = 1;
       account.getCard().isDel = 0;
       account.refreshToken = refreshToken.token;
@@ -128,7 +136,7 @@ export class AuthUsecase {
           clientId: account.clientId,
           details: JSON.stringify({
             promoCode: promoCode.code,
-            discount: 100,
+            discount: 250,
             expirationDate: expirationDate,
           }),
         },
