@@ -56,7 +56,7 @@ export class AuthUsecase {
     private readonly bcryptService: IBcrypt,
     private readonly promoCodeUsecase: PromocodeUsecase,
     @Inject(Logger) private readonly logger: Logger,
-  ) {}
+  ) { }
 
   //public async isAuthenticated(phone: string) {}
 
@@ -79,7 +79,28 @@ export class AuthUsecase {
       throw new AccountExistsException(phone);
     }
 
-    if (account.userOnvi && account.userOnvi === 1) {
+    //Generate token
+    const accessToken = await this.signAccessToken(phone);
+    const refreshToken = await this.signRefreshToken(phone);
+
+    //If client was deleted
+    if (
+      account &&
+      !account.isClientActive() &&
+      !account.getCard().isCardActive()
+    ) {
+      account.isActivated = 1;
+      account.getCard().isDel = 0;
+      account.refreshToken = refreshToken.token;
+
+      const isUpdated = await this.clientRepository.update(account);
+      const isReactivated = await this.cardRepository.reActivate(
+        account.getCard().cardId,
+      );
+
+      if (!isUpdated && !isReactivated)
+        throw new AccountNotFoundExceptions(account.phone);
+
       const expirationDate = new Date();
       expirationDate.setMonth(expirationDate.getMonth() + 3);
 
@@ -113,51 +134,6 @@ export class AuthUsecase {
         },
         `Promo code ${promoCode.code} created for old client ${account.clientId}`,
       );
-    } else {
-      this.logger.log(`Promo code not created for client ${account.clientId}`);
-
-      const expirationDate = new Date();
-      expirationDate.setMonth(expirationDate.getMonth() + 3);
-
-      const promoCodeData = new PromoCode(
-        `ONVIREG${account.getCard().cardId}`,
-        1,
-        expirationDate,
-        1,
-        new Date(),
-        3,
-        1,
-        {
-          discount: 250,
-          updatedAt: new Date(),
-        },
-      );
-
-      const promoCode = await this.promoCodeUsecase.create(promoCodeData);
-      await this.promoCodeUsecase.bindClient(promoCode, account);
-    }
-
-    //Generate token
-    const accessToken = await this.signAccessToken(phone);
-    const refreshToken = await this.signRefreshToken(phone);
-
-    //If client was deleted
-    if (
-      account &&
-      !account.isClientActive() &&
-      !account.getCard().isCardActive()
-    ) {
-      account.isActivated = 1;
-      account.getCard().isDel = 0;
-      account.refreshToken = refreshToken.token;
-
-      const isUpdated = await this.clientRepository.update(account);
-      const isReactivated = await this.cardRepository.reActivate(
-        account.getCard().cardId,
-      );
-
-      if (!isUpdated && !isReactivated)
-        throw new AccountNotFoundExceptions(account.phone);
 
       const newClient = account;
 
