@@ -135,7 +135,9 @@ export class AuthUsecase {
           },
           `Promo code ${promoCode.code} created for old client ${account.clientId}`,
         );
-      } 
+      } else {
+        this.logger.log(`Promo code not created for client ${account.clientId}`);
+      }
 
       const newClient = account;
 
