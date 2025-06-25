@@ -115,6 +115,26 @@ export class AuthUsecase {
       );
     } else {
       this.logger.log(`Promo code not created for client ${account.clientId}`);
+
+      const expirationDate = new Date();
+      expirationDate.setMonth(expirationDate.getMonth() + 3);
+
+      const promoCodeData = new PromoCode(
+        `ONVIREG${account.getCard().cardId}`,
+        1,
+        expirationDate,
+        1,
+        new Date(),
+        3,
+        1,
+        {
+          discount: 250,
+          updatedAt: new Date(),
+        },
+      );
+
+      const promoCode = await this.promoCodeUsecase.create(promoCodeData);
+      await this.promoCodeUsecase.bindClient(promoCode, account);
     }
 
     //Generate token
