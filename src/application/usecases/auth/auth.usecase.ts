@@ -79,7 +79,7 @@ export class AuthUsecase {
       throw new AccountExistsException(phone);
     }
 
-    if (account.userOnvi === 1) {
+    if (account.userOnvi && account.userOnvi === 1) {
       const expirationDate = new Date();
       expirationDate.setMonth(expirationDate.getMonth() + 3);
 
