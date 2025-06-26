@@ -46,6 +46,21 @@ export class ClientRepository implements IClientRepository {
     return ClientMapper.fromEntity(client);
   }
 
+  async findOneOldClientByPhone(phone: string): Promise<Client> {
+    const client = await this.clientRepository
+      .createQueryBuilder('client')
+      .leftJoin('client.cards', 'cards')
+      .where('client.correctPhone = :phone', { phone })
+      .select(['client', 'cards'])
+      .andWhere('client.userOnvi IS NULL OR client.userOnvi != :userOnvi', { userOnvi: 1 })
+      .orderBy('INS_DATE', 'DESC')
+      .limit(1)
+      .getOne();
+  
+      if (!client) return null;
+      return ClientMapper.fromEntity(client);
+  }
+
   async setRefreshToken(phone: string, token: string): Promise<void> {
     const client: Client = await this.findOneByPhone(phone);
 

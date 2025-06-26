@@ -75,14 +75,15 @@ export class AuthUsecase {
     }
 
     //Check if user already exists
-    const account: Client = await this.clientRepository.findOneByPhone(phone);
-
+    const account: Client = await this.clientRepository.findOneOldClientByPhone(phone);
+    const oldClient: Client = await this.clientRepository.findOneOldClientByPhone(phone);
+ 
     if (account && account.isActivated != 0 && account.getCard().isDel != 1) {
       this.logger.log("Зашли в 2")
       throw new AccountExistsException(phone);
     }
 
-    if (account) {
+    if (oldClient) {
       this.logger.log("Зашли в 3")
       
       const expirationDate = new Date();
