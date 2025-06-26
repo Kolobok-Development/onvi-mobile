@@ -23,11 +23,21 @@ export class ClientRepository implements IClientRepository {
   }
 
   async findOneById(id: number): Promise<Client> {
+    this.logger.log({
+      message: "id",
+      id: id
+    })
+
     const client = await this.clientRepository.findOne({
       where: {
         clientId: id,
       },
     });
+
+    this.logger.log({
+      message: "client",
+      client: client
+    })
 
     if (!client) return null;
 
