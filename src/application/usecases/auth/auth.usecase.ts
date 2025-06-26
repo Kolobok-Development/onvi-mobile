@@ -75,50 +75,13 @@ export class AuthUsecase {
     //Check if user already exists
     const account: Client = await this.clientRepository.findOneByPhone(phone);
     const oldClient: Client = await this.clientRepository.findOneOldClientByPhone(phone);
- 
+
     if (account && account.isActivated != 0 && account.getCard().isDel != 1) {
       throw new AccountExistsException(phone);
     }
 
     this.logger.log(account)
     this.logger.log(oldClient)
-
-    if (oldClient) {
-      this.logger.log("Создание промокода")
-      const expirationDate = new Date();
-      expirationDate.setMonth(expirationDate.getMonth() + 3);
-
-      const promoCodeData = new PromoCode(
-        `ONVIREG${oldClient.getCard().cardId}`,
-        1,
-        expirationDate,
-        1,
-        new Date(),
-        3,
-        1,
-        {
-          discount: 250,
-          updatedAt: new Date(),
-        },
-      );
-
-      const promoCode = await this.promoCodeUsecase.create(promoCodeData);
-      await this.promoCodeUsecase.bindClient(promoCode, oldClient);
-
-      this.logger.log(
-        {
-          action: 'promo_code_created',
-          timestamp: new Date(),
-          clientId: oldClient.clientId,
-          details: JSON.stringify({
-            promoCode: promoCode.code,
-            discount: 250,
-            expirationDate: expirationDate,
-          }),
-        },
-        `Promo code ${promoCode.code} created for old client ${oldClient.clientId}`,
-      );
-    }
 
     //Generate token
     const accessToken = await this.signAccessToken(phone);
@@ -175,6 +138,43 @@ export class AuthUsecase {
     newClient.addCard(newCard);
 
     await this.setCurrentRefreshToken(phone, refreshToken.token);
+
+    if (oldClient) {
+      this.logger.log("Создание промокода")
+      const expirationDate = new Date();
+      expirationDate.setMonth(expirationDate.getMonth() + 3);
+
+      const promoCodeData = new PromoCode(
+        `ONVIREG${newClient.getCard().cardId}`,
+        1,
+        expirationDate,
+        1,
+        new Date(),
+        3,
+        1,
+        {
+          discount: 250,
+          updatedAt: new Date(),
+        },
+      );
+
+      const promoCode = await this.promoCodeUsecase.create(promoCodeData);
+      await this.promoCodeUsecase.bindClient(promoCode, newClient);
+
+      this.logger.log(
+        {
+          action: 'promo_code_created',
+          timestamp: new Date(),
+          clientId: newClient.clientId,
+          details: JSON.stringify({
+            promoCode: promoCode.code,
+            discount: 250,
+            expirationDate: expirationDate,
+          }),
+        },
+        `Promo code ${promoCode.code} created for old client ${oldClient.clientId} with new id ${newClient.clientId}`,
+      );
+    }
 
     return { newClient, accessToken, refreshToken };
   }
