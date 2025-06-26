@@ -85,7 +85,7 @@ export class AuthUsecase {
       expirationDate.setMonth(expirationDate.getMonth() + 3);
 
       const promoCodeData = new PromoCode(
-        `ONVIREG${account.getCard().cardId}`,
+        `ONVIREG${oldClient.getCard().cardId}`,
         1,
         expirationDate,
         1,
@@ -99,20 +99,20 @@ export class AuthUsecase {
       );
 
       const promoCode = await this.promoCodeUsecase.create(promoCodeData);
-      await this.promoCodeUsecase.bindClient(promoCode, account);
+      await this.promoCodeUsecase.bindClient(promoCode, oldClient);
 
       this.logger.log(
         {
           action: 'promo_code_created',
           timestamp: new Date(),
-          clientId: account.clientId,
+          clientId: oldClient.clientId,
           details: JSON.stringify({
             promoCode: promoCode.code,
             discount: 250,
             expirationDate: expirationDate,
           }),
         },
-        `Promo code ${promoCode.code} created for old client ${account.clientId}`,
+        `Promo code ${promoCode.code} created for old client ${oldClient.clientId}`,
       );
     }
 
