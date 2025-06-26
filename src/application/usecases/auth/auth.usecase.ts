@@ -137,7 +137,6 @@ export class AuthUsecase {
     await this.setCurrentRefreshToken(phone, refreshToken.token);
 
     if (oldClient) {
-      this.logger.log("Создание промокода")
       const expirationDate = new Date();
       expirationDate.setMonth(expirationDate.getMonth() + 3);
 
