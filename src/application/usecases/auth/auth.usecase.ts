@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   IJwtService,
   IJwtServicePayload,
@@ -29,9 +29,6 @@ import { Card } from '../../../domain/account/card/model/card';
 import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
 import { IClientRepository } from '../../../domain/account/client/client-repository.abstract';
 import { ICardRepository } from '../../../domain/account/card/card-repository.abstract';
-import { PromoCode } from '../../../domain/promo-code/model/promo-code.model';
-import { PromocodeUsecase } from '../promocode/promocode.usecase';
-import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class AuthUsecase {
@@ -54,9 +51,7 @@ export class AuthUsecase {
     private readonly dateService: IDate,
     private readonly jwtConfig: IJwtConfig,
     private readonly bcryptService: IBcrypt,
-    private readonly promoCodeUsecase: PromocodeUsecase,
-    @Inject(Logger) private readonly logger: Logger,
-  ) { }
+  ) {}
 
   //public async isAuthenticated(phone: string) {}
 
@@ -74,14 +69,10 @@ export class AuthUsecase {
 
     //Check if user already exists
     const account: Client = await this.clientRepository.findOneByPhone(phone);
-    const oldClient: Client = await this.clientRepository.findOneOldClientByPhone(phone);
 
     if (account && account.isActivated != 0 && account.getCard().isDel != 1) {
       throw new AccountExistsException(phone);
     }
-
-    this.logger.log(account)
-    this.logger.log(oldClient)
 
     //Generate token
     const accessToken = await this.signAccessToken(phone);
@@ -138,43 +129,6 @@ export class AuthUsecase {
     newClient.addCard(newCard);
 
     await this.setCurrentRefreshToken(phone, refreshToken.token);
-
-    if (oldClient) {
-      this.logger.log("Создание промокода")
-      const expirationDate = new Date();
-      expirationDate.setMonth(expirationDate.getMonth() + 3);
-
-      const promoCodeData = new PromoCode(
-        `ONVIREG${newClient.getCard().cardId}`,
-        1,
-        expirationDate,
-        1,
-        new Date(),
-        3,
-        1,
-        {
-          discount: 250,
-          updatedAt: new Date(),
-        },
-      );
-
-      const promoCode = await this.promoCodeUsecase.create(promoCodeData);
-      await this.promoCodeUsecase.bindClient(promoCode, newClient);
-
-      this.logger.log(
-        {
-          action: 'promo_code_created',
-          timestamp: new Date(),
-          clientId: newClient.clientId,
-          details: JSON.stringify({
-            promoCode: promoCode.code,
-            discount: 250,
-            expirationDate: expirationDate,
-          }),
-        },
-        `Promo code ${promoCode.code} created for old client ${oldClient.clientId} with new id ${newClient.clientId}`,
-      );
-    }
 
     return { newClient, accessToken, refreshToken };
   }
