@@ -62,6 +62,11 @@ export class AccountTransferUseCase {
       input.devNomer,
     );
 
+    this.logger.log({
+      message: "card",
+      card: card,
+    })
+
     const oldClient = await this.clientRepository.findOneById(card.clientId);
 
     if (!oldClient || oldClient.userOnvi === 1) {
@@ -115,6 +120,11 @@ export class AccountTransferUseCase {
         },
         `Card ${card.cardId} deleted for balance transfer`,
       );
+
+      this.logger.log({
+        message: "before update",
+        oldClient: oldClient,
+      })
 
       await this.clientRepository.update(oldClient);
       this.logger.log(
