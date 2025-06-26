@@ -37,6 +37,7 @@ export class CardMapper {
                 isDel,
                 cmnCity,
                 tag,
+                clientId: client?.clientId,
             },
         );
     }
