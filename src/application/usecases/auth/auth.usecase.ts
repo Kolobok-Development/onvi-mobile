@@ -80,7 +80,11 @@ export class AuthUsecase {
       throw new AccountExistsException(phone);
     }
 
+    this.logger.log(account)
+    this.logger.log(oldClient)
+
     if (oldClient) {
+      this.logger.log("Создание промокода")
       const expirationDate = new Date();
       expirationDate.setMonth(expirationDate.getMonth() + 3);
 
