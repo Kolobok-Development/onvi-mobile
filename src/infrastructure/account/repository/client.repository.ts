@@ -25,7 +25,7 @@ export class ClientRepository implements IClientRepository {
   async findOneById(id: number): Promise<Client> {
     this.logger.log({
       message: "id",
-      id: id
+      coningiId: id
     })
 
     const client = await this.clientRepository.findOne({
