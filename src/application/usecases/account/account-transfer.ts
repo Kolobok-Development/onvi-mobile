@@ -57,7 +57,7 @@ export class AccountTransferUseCase {
       },
       `Balance transfer initiated for client ${client.clientId} from card ${input.devNomer}`,
     );
-
+    //возвращает объект card без поля clientId
     const card = await this.findMethodsCardUseCase.getOneByDevNomer(
       input.devNomer,
     );

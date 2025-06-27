@@ -50,14 +50,14 @@ export class CardRepository implements ICardRepository {
 
     return cards;
   }
-
+  //
   async findOneByDevNomer(devNomer: string): Promise<Card> {
-    const card = await this.cardRepository.findOne({
-      where: {
-        devNomer: devNomer
-      },
-    });
-
+    const card = await this.cardRepository
+      .createQueryBuilder('card')
+      .leftJoinAndSelect('card.client', 'client') 
+      .where('card.devNomer = :devNomer', { devNomer })
+      .getOne();
+  
     if (!card) return null;
     return CardMapper.fromEntity(card);
   }
