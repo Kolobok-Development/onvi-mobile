@@ -62,7 +62,7 @@ export class ClientRepository implements IClientRepository {
       .leftJoinAndSelect('client.cards', 'cards')
       .where('client.correctPhone = :phone', { phone: phone })
       .andWhere('client.userOnvi IS NULL OR client.userOnvi != :userOnvi', { userOnvi: 1 })
-      .orderBy('client.INS_DATE', 'DESC')
+      .orderBy('INS_DATE', 'DESC')
       .take(1)
       .getOne();
   
