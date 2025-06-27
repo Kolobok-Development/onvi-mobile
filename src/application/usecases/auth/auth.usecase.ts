@@ -137,47 +137,90 @@ export class AuthUsecase {
     await this.setCurrentRefreshToken(phone, refreshToken.token);
 
     if (oldClient) {
-
       this.logger.log({
         message: "old Client",
         oldClient: oldClient,
         oldCard: oldClient.getCard(),
         phone: phone,
-      })
-
+      });
+    
+      const airBalance = oldClient.getCard().airBalance;
+      console.log("AIR BALANCE", airBalance);
+    
+      const maxPromoCodeValue = 300;
+      const numberOfFullPromoCodes = Math.floor(airBalance / maxPromoCodeValue);
+      const remainder = airBalance % maxPromoCodeValue;
+    
       const expirationDate = new Date();
       expirationDate.setMonth(expirationDate.getMonth() + 3);
-
-      const promoCodeData = new PromoCode(
-        `ONVIREG${newClient.getCard().cardId}`,
-        1,
-        expirationDate,
-        1,
-        new Date(),
-        3,
-        1,
-        {
-          discount: 250,
-          updatedAt: new Date(),
-        },
-      );
-
-      const promoCode = await this.promoCodeUsecase.create(promoCodeData);
-      await this.promoCodeUsecase.bindClient(promoCode, newClient);
-
-      this.logger.log(
-        {
-          action: 'promo_code_created',
-          timestamp: new Date(),
-          clientId: newClient.clientId,
-          details: JSON.stringify({
-            promoCode: promoCode.code,
-            discount: 250,
-            expirationDate: expirationDate,
-          }),
-        },
-        `Promo code ${promoCode.code} created for old client ${oldClient.clientId} with new id ${newClient.clientId}`,
-      );
+    
+      // Создание полных промокодов по 300 рублей
+      for (let i = 0; i < numberOfFullPromoCodes; i++) {
+        const promoCodeData = new PromoCode(
+          `ONVIREG${newClient.getCard().cardId}_${i}`,
+          1,
+          expirationDate,
+          1,
+          new Date(),
+          3,
+          1,
+          {
+            discount: maxPromoCodeValue,
+            updatedAt: new Date(),
+          },
+        );
+    
+        const promoCode = await this.promoCodeUsecase.create(promoCodeData);
+        await this.promoCodeUsecase.bindClient(promoCode, newClient);
+    
+        this.logger.log(
+          {
+            action: 'promo_code_created',
+            timestamp: new Date(),
+            clientId: newClient.clientId,
+            details: JSON.stringify({
+              promoCode: promoCode.code,
+              discount: maxPromoCodeValue,
+              expirationDate: expirationDate,
+            }),
+          },
+          `Promo code ${promoCode.code} created for old client ${oldClient.clientId} with new id ${newClient.clientId}`,
+        );
+      }
+    
+      // Создание дополнительного промокода на остаток, если он есть
+      if (remainder > 0) {
+        const promoCodeData = new PromoCode(
+          `ONVIREG${newClient.getCard().cardId}_remainder`,
+          1,
+          expirationDate,
+          1,
+          new Date(),
+          3,
+          1,
+          {
+            discount: remainder,
+            updatedAt: new Date(),
+          },
+        );
+    
+        const promoCode = await this.promoCodeUsecase.create(promoCodeData);
+        await this.promoCodeUsecase.bindClient(promoCode, newClient);
+    
+        this.logger.log(
+          {
+            action: 'promo_code_created',
+            timestamp: new Date(),
+            clientId: newClient.clientId,
+            details: JSON.stringify({
+              promoCode: promoCode.code,
+              discount: remainder,
+              expirationDate: expirationDate,
+            }),
+          },
+          `Promo code ${promoCode.code} created for old client ${oldClient.clientId} with new id ${newClient.clientId}`,
+        );
+      }
     }
 
     return { newClient, accessToken, refreshToken };
