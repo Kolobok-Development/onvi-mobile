@@ -58,7 +58,7 @@ export class AccountTransferUseCase {
       `Balance transfer initiated for client ${client.clientId} from card ${input.devNomer}`,
     );
     //возвращает объект card без поля clientId
-    const card = await this.findMethodsCardUseCase.getOneByDevNomer(
+    const card = await this.findMethodsCardUseCase.getOneByDevNomerWithUserId(
       input.devNomer,
     );
 
@@ -159,7 +159,7 @@ export class AccountTransferUseCase {
         },
         `New transaction created for balance transfer: ${extId}`,
       );
-
+      //теперь падает здесь
       await this.transactionRepository.add(
         card.cardId.toString(),
         '5',

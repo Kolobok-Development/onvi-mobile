@@ -14,4 +14,8 @@ export class FindMethodsCardUseCase {
     async getOneByDevNomer(devNomer: string): Promise<Card> {
         return await this.cardRepository.findOneByDevNomer(devNomer);
     }
+
+    async getOneByDevNomerWithUserId(devNomer: string): Promise<Card> {
+        return await this.cardRepository.findOneByDevNomerWithUserId(devNomer);
+    }
 }
