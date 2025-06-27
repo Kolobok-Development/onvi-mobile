@@ -76,6 +76,12 @@ export class AuthUsecase {
     const account: Client = await this.clientRepository.findOneByPhone(phone);
     const oldClient: Client = await this.clientRepository.findOneOldClientByPhone(phone);
 
+    this.logger.log({
+      message: "old Client",
+      oldClient: oldClient,
+      phone: phone,
+    })
+
     if (account && account.isActivated != 0 && account.getCard().isDel != 1) {
       throw new AccountExistsException(phone);
     }

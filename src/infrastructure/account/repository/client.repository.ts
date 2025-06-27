@@ -67,18 +67,6 @@ export class ClientRepository implements IClientRepository {
       .limit(1)
       .getOne();
 
-    this.logger.log({
-      message: "old Client",
-      oldClient: client,
-      phone: phone,
-    })
-
-    this.logger.log({
-      message: "old Client after mapper",
-      oldClient: ClientMapper.fromEntity(client),
-      phone: phone,
-    })
-
     if (!client) return null;
     return ClientMapper.fromEntity(client);
   }
