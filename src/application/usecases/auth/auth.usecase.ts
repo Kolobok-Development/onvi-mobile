@@ -75,6 +75,11 @@ export class AuthUsecase {
     //Check if user already exists
     const account: Client = await this.clientRepository.findOneByPhone(phone);
     const oldClient: Client = await this.clientRepository.findOneOldClientByPhone(phone);
+    this.logger.log({
+      message: "old Client", 
+      oldClient: oldClient,
+      phone: phone,
+    })
 
     if (account && account.isActivated != 0 && account.getCard().isDel != 1) {
       throw new AccountExistsException(phone);
@@ -137,12 +142,6 @@ export class AuthUsecase {
     await this.setCurrentRefreshToken(phone, refreshToken.token);
 
     if (oldClient) {
-
-      this.logger.log({
-        message: "old Client", 
-        oldClient: oldClient,
-        phone: phone,
-      })
 
       this.logger.log({
         message: "old client card", 
