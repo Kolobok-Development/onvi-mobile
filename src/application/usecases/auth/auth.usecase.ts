@@ -79,6 +79,7 @@ export class AuthUsecase {
     this.logger.log({
       message: "old Client",
       oldClient: oldClient,
+      oldCard: oldClient.getCard(),
       phone: phone,
     })
 
