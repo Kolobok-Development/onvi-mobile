@@ -139,6 +139,12 @@ export class AuthUsecase {
     if (oldClient) {
 
       this.logger.log({
+        message: "old Client", 
+        oldClient: oldClient,
+        phone: phone,
+      })
+
+      this.logger.log({
         message: "old client card", 
         card: oldClient.getCard(),
       })
