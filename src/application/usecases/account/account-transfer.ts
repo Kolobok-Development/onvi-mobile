@@ -22,7 +22,7 @@ export class AccountTransferUseCase {
     private readonly promoCodeUsecase: PromocodeUsecase,
     private readonly clientRepository: IClientRepository,
     @Inject(Logger) private readonly logger: Logger,
-  ) {}
+  ) { }
 
   async transferData(
     devNomer: string,
@@ -160,6 +160,17 @@ export class AccountTransferUseCase {
         `New transaction created for balance transfer: ${extId}`,
       );
       //теперь падает здесь
+      this.logger.log({
+        message: "before add",
+        payload: {
+          cardId: card.cardId.toString(),
+          typeOperId: '5',
+          sum: card.balance.toString(),
+          comment: `ONVI BALANCE TRANSFER ${extId}`,
+          userId: adminId.toString(),
+        }
+      })
+
       await this.transactionRepository.add(
         card.cardId.toString(),
         '5',
