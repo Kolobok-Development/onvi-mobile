@@ -13,7 +13,7 @@ export class ClientRepository implements IClientRepository {
   constructor(
     @InjectRepository(ClientEntity)
     private readonly clientRepository: Repository<ClientEntity>,
-        @Inject(Logger) private readonly logger: Logger,
+    @Inject(Logger) private readonly logger: Logger,
   ) {}
 
   async create(client: Client): Promise<Client> {
@@ -59,13 +59,26 @@ export class ClientRepository implements IClientRepository {
   async findOneOldClientByPhone(phone: string): Promise<Client> {
     const client = await this.clientRepository
       .createQueryBuilder('client')
-      .leftJoinAndSelect('client.cards', 'cards')
+      .leftJoin('client.cards', 'cards')
       .where('client.correctPhone = :phone', { phone: phone })
-      .andWhere('client.userOnvi IS NULL OR client.userOnvi != :userOnvi', { userOnvi: 1 })
+      .select(['client', 'cards'])
+      .andWhere('client.userOnvi != :userOnvi', { userOnvi: 1 })
       .orderBy('INS_DATE', 'DESC')
-      .take(1)
+      .limit(1)
       .getOne();
-  
+
+    this.logger.log({
+      message: "old Client",
+      oldClient: client,
+      phone: phone,
+    })
+
+    this.logger.log({
+      message: "old Client after mapper",
+      oldClient: ClientMapper.fromEntity(client),
+      phone: phone,
+    })
+
     if (!client) return null;
     return ClientMapper.fromEntity(client);
   }
