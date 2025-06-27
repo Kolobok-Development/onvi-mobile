@@ -59,16 +59,15 @@ export class ClientRepository implements IClientRepository {
   async findOneOldClientByPhone(phone: string): Promise<Client> {
     const client = await this.clientRepository
       .createQueryBuilder('client')
-      .leftJoin('client.cards', 'cards')
-      .where('client.correctPhone = :phone', { phone })
-      .select(['client', 'cards'])
+      .leftJoinAndSelect('client.cards', 'cards')
+      .where('client.correctPhone = :phone', { phone: phone })
       .andWhere('client.userOnvi IS NULL OR client.userOnvi != :userOnvi', { userOnvi: 1 })
-      .orderBy('INS_DATE', 'DESC')
-      .limit(1)
+      .orderBy('client.INS_DATE', 'DESC')
+      .take(1)
       .getOne();
   
-      if (!client) return null;
-      return ClientMapper.fromEntity(client);
+    if (!client) return null;
+    return ClientMapper.fromEntity(client);
   }
 
   async setRefreshToken(phone: string, token: string): Promise<void> {
