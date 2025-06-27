@@ -138,7 +138,10 @@ export class AuthUsecase {
 
     if (oldClient) {
 
-      this.logger.log(oldClient.getCard())
+      this.logger.log({
+        message: "old client card", 
+        card: oldClient.getCard(),
+      })
 
       const expirationDate = new Date();
       expirationDate.setMonth(expirationDate.getMonth() + 3);
