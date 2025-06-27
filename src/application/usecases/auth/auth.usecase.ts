@@ -137,6 +137,9 @@ export class AuthUsecase {
     await this.setCurrentRefreshToken(phone, refreshToken.token);
 
     if (oldClient) {
+
+      this.logger.log(oldClient.getCard())
+
       const expirationDate = new Date();
       expirationDate.setMonth(expirationDate.getMonth() + 3);
 
