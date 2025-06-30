@@ -64,7 +64,7 @@ export class AccountTransferUseCase {
 
     const oldClient = await this.clientRepository.findOneById(card.clientId);
 
-    if (oldClient.phone !== "") {
+    if (oldClient.phone !== client.phone) {
       this.logger.warn(
         {
           action: 'balance_transfer_failed',
