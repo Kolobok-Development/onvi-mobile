@@ -64,7 +64,6 @@ export class AccountTransferUseCase {
 
     const oldClient = await this.clientRepository.findOneById(card.clientId);
 
-    if (oldClient.phone !== client.phone) {
     if (oldClient.phone !== "") {
       this.logger.warn(
         {
