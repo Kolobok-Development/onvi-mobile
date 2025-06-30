@@ -62,11 +62,6 @@ export class AccountTransferUseCase {
       input.devNomer,
     );
 
-    this.logger.log({
-      message: "card",
-      card: card,
-    })
-
     const oldClient = await this.clientRepository.findOneById(card.clientId);
 
     if (!oldClient || oldClient.userOnvi === 1) {
@@ -121,11 +116,6 @@ export class AccountTransferUseCase {
         `Card ${card.cardId} deleted for balance transfer`,
       );
 
-      this.logger.log({
-        message: "before update",
-        oldClient: oldClient,
-      })
-
       await this.clientRepository.update(oldClient);
       this.logger.log(
         {
@@ -159,17 +149,6 @@ export class AccountTransferUseCase {
         },
         `New transaction created for balance transfer: ${extId}`,
       );
-      //теперь падает здесь
-      this.logger.log({
-        message: "before add",
-        payload: {
-          cardId: card.cardId.toString(),
-          typeOperId: '5',
-          sum: card.balance.toString(),
-          comment: `ONVI BALANCE TRANSFER ${extId}`,
-          userId: adminId.toString(),
-        }
-      })
 
       await this.transactionRepository.add(
         card.cardId.toString(),
