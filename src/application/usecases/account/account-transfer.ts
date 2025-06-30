@@ -57,10 +57,21 @@ export class AccountTransferUseCase {
       },
       `Balance transfer initiated for client ${client.clientId} from card ${input.devNomer}`,
     );
+    console.log("Перенос аккаунда для пользователя", client.clientId)
+
+
+    console.log({
+      devNomer: input.devNomer,
+      realBalance: input.realBalance,
+      airBalance: input.airBalance,
+    });
+
     //возвращает объект card без поля clientId
     const card = await this.findMethodsCardUseCase.getOneByDevNomerWithUserId(
       input.devNomer,
     );
+
+    console.log("card", card)
 
     this.logger.log({
       message: "card",
@@ -68,6 +79,24 @@ export class AccountTransferUseCase {
     })
 
     const oldClient = await this.clientRepository.findOneById(card.clientId);
+
+    console.log("Старый клиент найден", oldClient);
+
+    if (oldClient.phone !== client.phone) {
+      this.logger.warn(
+        {
+          action: 'balance_transfer_failed',
+          timestamp: new Date(),
+          clientId: client.clientId,
+          details: JSON.stringify({
+            devNomer: input.devNomer,
+            reason: 'Client phone number and old client did not happen',
+          }),
+        },
+        `Balance transfer failed for client ${client.clientId}: client phone number and old client did not happen`,
+      );
+      throw new Error(`Balance transfer failed for client ${client.clientId}: client phone number and old client did not happen`);
+    }
 
     if (!oldClient || oldClient.userOnvi === 1) {
       this.logger.warn(
@@ -121,6 +150,8 @@ export class AccountTransferUseCase {
         `Card ${card.cardId} deleted for balance transfer`,
       );
 
+      console.log(`Card ${card.cardId} deleted for balance transfer`)
+
       this.logger.log({
         message: "before update",
         oldClient: oldClient,
@@ -138,6 +169,8 @@ export class AccountTransferUseCase {
         },
         `Old client ${oldClient.clientId} deactivated for balance transfer`,
       );
+
+      console.log(`Old client ${oldClient.clientId} deactivated for balance transfer`)
 
       await this.transactionRepository.create(
         client,
@@ -192,6 +225,8 @@ export class AccountTransferUseCase {
         `Old card transaction added for balance transfer: ${extId}`,
       );
 
+      console.log(`Old card transaction added for balance transfer: ${extId}`)
+
       const expirationDate = new Date();
       const newMonth = expirationDate.getMonth() + 3;
       expirationDate.setMonth(newMonth);
@@ -224,6 +259,8 @@ export class AccountTransferUseCase {
         `Promo code ${promoCode.code} created for air balance transfer`,
       );
 
+      console.log(`Promo code ${promoCode.code} created for air balance transfer`)
+
       await this.promoCodeUsecase.bindClient(promoCode, client);
 
       this.logger.log(
@@ -239,6 +276,8 @@ export class AccountTransferUseCase {
         },
         `Balance transfer completed successfully for client ${client.clientId}`,
       );
+
+      console.log(`Balance transfer completed successfully for client ${client.clientId}`)
 
       return promoCode;
     } catch (error) {
