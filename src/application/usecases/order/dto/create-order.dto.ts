@@ -10,7 +10,7 @@ export class CreateOrderDto {
   @IsNumber()
   @IsDefined()
   rewardPointsUsed: number;
-  @Optional()
+  @IsOptional()
   @IsNumber()
   originalSum?: number;
   @Optional()
