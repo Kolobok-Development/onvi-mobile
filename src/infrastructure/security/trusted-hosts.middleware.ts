@@ -44,19 +44,19 @@ export class TrustedHostsMiddleware implements NestMiddleware {
       const isTrustedIp = this.trustedIps.some((ip) => clientIp.includes(ip));
 
       // If the request doesn't have a valid signature and isn't from a trusted IP
-      if (!isTrustedIp) {
-        this.logger.warn({
-          message: 'Unauthorized webhook request',
-          ip: clientIp,
-          path: req.path,
-          headers: req.headers,
-        });
+      // if (!isTrustedIp) {
+      //   this.logger.warn({
+      //     message: 'Unauthorized webhook request',
+      //     ip: clientIp,
+      //     path: req.path,
+      //     headers: req.headers,
+      //   });
 
-        return res.status(403).json({
-          statusCode: 403,
-          message: 'Forbidden',
-        });
-      }
+      //   return res.status(403).json({
+      //     statusCode: 403,
+      //     message: 'Forbidden',
+      //   });
+      // }
     }
 
     next();
