@@ -46,6 +46,14 @@ export class CreateOrderUseCase {
     const cashback = ((request.sum * tariff.bonus) / 100) < 1 ? 0 : Math.ceil((request.sum * tariff.bonus) / 100);
     
     if (isFreeVacuum) {
+
+      this.logger.log(
+        {
+          message: 'FREE VACUUME request',
+          request: request,
+        }
+      );
+
       const vacuumInfo = await this.cardService.getFreeVacuum(account);
       if (vacuumInfo.remains <= 0) {
         throw new InsufficientFreeVacuumException();
@@ -63,6 +71,13 @@ export class CreateOrderUseCase {
         bayType: request.bayType ?? DeviceType.BAY,
         cashback: cashback,
       });
+
+      this.logger.log(
+        {
+          message: 'FREE VACUUME order',
+          order: order,
+        }
+      );
 
       const newOrder = await this.orderRepository.create(order);
       //add to the task
