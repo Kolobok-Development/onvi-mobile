@@ -26,6 +26,8 @@ import { IRegisterPaymentDto } from '../../application/usecases/order/dto/regist
 import { GetOrderByIdUseCase } from '../../application/usecases/order/get-order-by-id.use-case';
 import { GetOrderByTransactionIdUseCase } from '../../application/usecases/order/get-order-by-transaction-id.use-case';
 import { OrderNotFoundException } from '../../domain/order/exceptions/order-base.exceptions';
+import { Logger } from 'nestjs-pino';
+import { Inject } from '@nestjs/common';
 
 @Controller('order')
 export class OrderController {
@@ -36,12 +38,22 @@ export class OrderController {
     private readonly registerPaymentUseCase: RegisterPaymentUseCase,
     private readonly getOrderByIdUseCase: GetOrderByIdUseCase,
     private readonly getOrderByTransactionIdUseCase: GetOrderByTransactionIdUseCase,
+    @Inject(Logger) private readonly logger: Logger,
   ) {}
 
   @UseGuards(JwtGuard)
   @Post('create')
   @HttpCode(201)
   async create(@Body() data: CreateOrderDto, @Req() req: any): Promise<any> {
+
+    this.logger.log(
+      {
+        message: 'order create controller',
+        data: data,
+        request11: req
+      }
+    );
+    
     try {
       const { user } = req;
       return await this.createOrderUsecase.execute(data, user);

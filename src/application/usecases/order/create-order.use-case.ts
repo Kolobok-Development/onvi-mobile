@@ -57,7 +57,7 @@ export class CreateOrderUseCase {
 
       this.logger.log(
         {
-          message: 'FREE VACUUME request',
+          message: 'create order request',
           request: request,
         }
       );
