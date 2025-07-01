@@ -102,6 +102,14 @@ export class CreateOrderUseCase {
         throw new OrderCreationFailedException();
       }
 
+      this.logger.log(
+        {
+          message: 'order and request',
+          request: request,
+          order: order,
+        }
+      );
+
       // Log order creation
       this.logger.log(
         {
