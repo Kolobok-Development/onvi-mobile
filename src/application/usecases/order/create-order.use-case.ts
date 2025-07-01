@@ -31,6 +31,14 @@ export class CreateOrderUseCase {
   ) { }
 
   async execute(request: CreateOrderDto, account: Client): Promise<any> {
+
+    this.logger.log(
+      {
+        message: 'FREE VACUUME request',
+        request: request,
+      }
+    );
+
     const isFreeVacuum = request.sum === 0 && request.bayType === DeviceType.VACUUME;
 
     if (request.err) {
