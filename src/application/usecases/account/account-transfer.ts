@@ -12,6 +12,7 @@ import { ITransactionRepository } from '../../../domain/transaction/transaction-
 import { PromoCode } from '../../../domain/promo-code/model/promo-code.model';
 import { PromocodeUsecase } from '../promocode/promocode.usecase';
 import { IClientRepository } from '../../../domain/account/client/client-repository.abstract';
+import { PhoneNumbersDoNotMatch } from 'src/domain/account/exceptions/phone-numbers-do-not-match';
 
 @Injectable()
 export class AccountTransferUseCase {
@@ -77,7 +78,7 @@ export class AccountTransferUseCase {
         },
         `Balance transfer failed for client ${client.clientId}: client phone number and old client did not happen`,
       );
-      throw new Error(`Balance transfer failed for client ${client.clientId}: client phone number and old client did not happen`);
+      throw new PhoneNumbersDoNotMatch(client.phone, oldClient.phone);
     }
 
     if (!oldClient || oldClient.userOnvi === 1) {
