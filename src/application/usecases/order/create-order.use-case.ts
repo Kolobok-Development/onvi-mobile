@@ -32,13 +32,6 @@ export class CreateOrderUseCase {
 
   async execute(request: CreateOrderDto, account: Client): Promise<any> {
 
-    this.logger.log(
-      {
-        message: 'FREE VACUUME request',
-        request: request,
-      }
-    );
-
     const isFreeVacuum = request.sum === 0 && request.bayType === DeviceType.VACUUME;
 
     if (request.err) {
@@ -55,13 +48,6 @@ export class CreateOrderUseCase {
     
     if (isFreeVacuum) {
 
-      this.logger.log(
-        {
-          message: 'create order request',
-          request: request,
-        }
-      );
-
       const vacuumInfo = await this.cardService.getFreeVacuum(account);
       if (vacuumInfo.remains <= 0) {
         throw new InsufficientFreeVacuumException();
@@ -70,7 +56,7 @@ export class CreateOrderUseCase {
       const order = Order.create({
         card: card,
         status: OrderStatus.FREE_PROCESSING, // Set initial status
-        sum: request.sum,
+        sum: request.originalSum,
         originalSum: request.originalSum,
         promoCodeId: request.promoCodeId ?? null,
         rewardPointsUsed: request.rewardPointsUsed,
@@ -79,13 +65,6 @@ export class CreateOrderUseCase {
         bayType: request.bayType ?? DeviceType.BAY,
         cashback: cashback,
       });
-
-      this.logger.log(
-        {
-          message: 'FREE VACUUME order',
-          order: order,
-        }
-      );
 
       const newOrder = await this.orderRepository.create(order);
       //add to the task
@@ -101,7 +80,7 @@ export class CreateOrderUseCase {
       const order = Order.create({
         card: card,
         status: OrderStatus.CREATED, // Set initial status
-        sum: request.sum,
+        sum: request.originalSum,
         originalSum: request.originalSum,
         promoCodeId: request.promoCodeId ?? null,
         rewardPointsUsed: request.rewardPointsUsed,
@@ -124,14 +103,6 @@ export class CreateOrderUseCase {
       if (!newOrder) {
         throw new OrderCreationFailedException();
       }
-
-      this.logger.log(
-        {
-          message: 'order and request',
-          request: request,
-          order: order,
-        }
-      );
 
       // Log order creation
       this.logger.log(
