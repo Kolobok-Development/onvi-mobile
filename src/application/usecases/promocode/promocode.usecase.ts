@@ -7,12 +7,16 @@ import { PromoCode } from '../../../domain/promo-code/model/promo-code.model';
 export class PromocodeUsecase {
   constructor(private readonly promoCodeRepository: IPromoCodeRepository) {}
 
-  async getActivePromotionHistoryForClient(client: Client) {
+  async getActivePromotionHistoryForClient(
+    client: Client,
+    location?: { latitude: number; longitude: number },
+  ) {
     const card = client.getCard();
     const clientId = client.clientId;
     return await this.promoCodeRepository.findByUserAndActive(
       card.cardId,
       clientId,
+      location,
     );
   }
 

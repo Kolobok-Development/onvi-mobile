@@ -12,6 +12,8 @@ import { CardEntity } from '../../account/entity/card.entity';
 import { PromoCodeToUserEntity } from '../entity/promo-code-to-user.entity';
 import { ClientEntity } from '../../account/entity/client.entity';
 import { Client } from '../../../domain/account/client/model/client';
+import { GeocodingService } from '../../services/geocoding/geocoding.service';
+import { CmnCityEntity } from 'src/infrastructure/cmn-city/entity/cmn-city.entity';
 
 @Injectable()
 export class PromoCodeRepository implements IPromoCodeRepository {
@@ -24,6 +26,7 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     private readonly promoCodeLocationRepository: Repository<PromoCodeLocationEntity>,
     @InjectRepository(PromoCodeToUserEntity)
     private readonly promoCodeToUserEntity: Repository<PromoCodeToUserEntity>,
+    private readonly geocodingService: GeocodingService,
   ) {}
   async apply(
     promoCode: PromoCode,
@@ -120,11 +123,26 @@ export class PromoCodeRepository implements IPromoCodeRepository {
   async findByUserAndActive(
     cardId: number,
     clientId: number,
+    location?: { latitude: number; longitude: number },
   ): Promise<PromoCode[]> {
+    let regionCode: string | undefined;
+
+    if (location) {
+      try {
+        const geocodeResult = await this.geocodingService.reverseGeocode(
+          location.longitude,
+          location.latitude,
+        );
+        regionCode = geocodeResult.regionCode;
+      } catch (error) {
+        console.error('Failed to geocode location:', error);
+      }
+    }
+
     const currentDate = new Date();
 
     // Fetch the promo codes that are active and associated with the user via PromoCodeToUserEntity
-    const promoCodes = await this.promoCodeRepository
+    const query = this.promoCodeRepository
       .createQueryBuilder('promocode')
       .leftJoin(
         PromoCodeUsageEntity,
@@ -132,14 +150,27 @@ export class PromoCodeRepository implements IPromoCodeRepository {
         'usage.PROMO_CODE_ID = promocode.id AND usage.CARD_ID = :cardId',
         { cardId },
       )
-      .leftJoin(PromoCodeToUserEntity, 'user', 'user.USER_ID = :clientId', {
-        clientId,
-      })
+      .leftJoin(
+        PromoCodeToUserEntity,
+        'user',
+        'user.PROMO_CODE_ID = promocode.id AND user.USER_ID = :clientId',
+        { clientId },
+      )
       .where('promocode.isActive = :isActive', { isActive: 1 })
       .andWhere('promocode.expiryDate > :currentDate', { currentDate })
-      .andWhere('usage.id IS NULL')
-      .andWhere('promocode.id = user.id')
-      .getMany();
+      .andWhere('usage.id IS NULL');
+
+    // Only join cmnCity if regionCode is defined
+    if (regionCode) {
+      query.leftJoin(
+        CmnCityEntity,
+        'cmn_city',
+        'promocode.CMNCITY_ID = cmn_city.CMNCITY_ID',
+      );
+      query.andWhere('cmn_city.regionCode = :regionCode', { regionCode });
+    }
+
+    const promoCodes = await query.getMany();
 
     // Return the mapped promo codes
     return promoCodes.map((promoCode) => PromoCode.fromEntity(promoCode));

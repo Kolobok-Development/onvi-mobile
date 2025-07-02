@@ -1,7 +1,15 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { PromoCodeLocationEntity } from './promo-code-location.entity';
 import { PromoCodeUsageEntity } from './promo-code-usage.entity';
 import { PromoCodeToUserEntity } from './promo-code-to-user.entity';
+import { CmnCityEntity } from '../../cmn-city/entity/cmn-city.entity';
 
 @Entity({ name: 'MOBILE_PROMO_CODE', synchronize: false })
 export class PromoCodeEntity {
@@ -37,6 +45,10 @@ export class PromoCodeEntity {
 
   @Column({ name: 'IMAGE', type: 'varchar2', length: 255 })
   image: string;
+
+  @ManyToOne(() => CmnCityEntity, (cmnCity) => cmnCity.cmnCityId)
+  @JoinColumn({ name: 'CMNCITY_ID', referencedColumnName: 'cmnCityId' })
+  cmnCity: CmnCityEntity;
 
   @OneToMany(() => PromoCodeLocationEntity, (location) => location.promoCode)
   locations: PromoCodeLocationEntity[];

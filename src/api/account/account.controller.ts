@@ -141,11 +141,20 @@ export class AccountController {
   @UseGuards(JwtGuard)
   @Get('/activePromotion')
   @HttpCode(200)
-  async getActivePromotion(@Req() request: any): Promise<any> {
+  async getActivePromotion(
+    @Req() request: any,
+    @Query('latitude') latitude?: number,
+    @Query('longitude') longitude?: number,
+  ): Promise<any> {
     try {
       const { user } = request;
+      const location =
+        latitude !== undefined && longitude !== undefined
+          ? { latitude, longitude }
+          : undefined;
       return await this.promocodeUsecase.getActivePromotionHistoryForClient(
         user,
+        location,
       );
     } catch (e) {
       throw new CustomHttpException({
