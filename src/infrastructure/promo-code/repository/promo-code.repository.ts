@@ -158,7 +158,8 @@ export class PromoCodeRepository implements IPromoCodeRepository {
       )
       .where('promocode.isActive = :isActive', { isActive: 1 })
       .andWhere('promocode.expiryDate > :currentDate', { currentDate })
-      .andWhere('usage.id IS NULL');
+      .andWhere('usage.id IS NULL')
+      .andWhere('promocode.id = user.id');
 
     // Only join cmnCity if regionCode is defined
     if (regionCode) {
