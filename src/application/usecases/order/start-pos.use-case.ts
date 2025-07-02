@@ -70,7 +70,7 @@ export class StartPosUseCase {
       // Send start command to carwash
       const carWashResponse = await this.posService.send({
         cardNumber: order.card.devNomer,
-        sum: (order.originalSum).toString(),
+        sum: (order.sum + order.rewardPointsUsed + (order.discountAmount || 0)).toString(),
         deviceId: bayDetails.id,
       });
 
@@ -169,7 +169,7 @@ export class StartPosUseCase {
       try {
         await this.posService.send({
           cardNumber: order.card.devNomer,
-          sum: (order.originalSum).toString(),
+          sum: (order.sum + order.rewardPointsUsed + (order.discountAmount || 0)).toString(),
           deviceId: deviceId,
         });
 
