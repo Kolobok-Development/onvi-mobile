@@ -150,12 +150,9 @@ export class PromoCodeRepository implements IPromoCodeRepository {
         'usage.PROMO_CODE_ID = promocode.id AND usage.CARD_ID = :cardId',
         { cardId },
       )
-      .leftJoin(
-        PromoCodeToUserEntity,
-        'user',
-        'user.PROMO_CODE_ID = promocode.id AND user.USER_ID = :clientId',
-        { clientId },
-      )
+      .leftJoin(PromoCodeToUserEntity, 'user', 'user.USER_ID = :clientId', {
+        clientId,
+      })
       .where('promocode.isActive = :isActive', { isActive: 1 })
       .andWhere('promocode.expiryDate > :currentDate', { currentDate })
       .andWhere('usage.id IS NULL')
