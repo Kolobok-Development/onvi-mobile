@@ -18,6 +18,7 @@ export abstract class IPromoCodeRepository {
   abstract findByUserAndActive(
     cardId: number,
     clientId: number,
+    location?: { latitude: number; longitude: number },
   ): Promise<PromoCode[]>;
   abstract findMaxUsageByCard(cardId: number, id: number): Promise<any>;
 }

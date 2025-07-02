@@ -13,10 +13,11 @@ import { TariffEntity } from '../account/entity/tariff.entity';
 import { PromotionEntity } from '../promotion/entity/promotion.entity';
 import { PromotionUsageEntity } from '../promotion/entity/promotion-usage.entity';
 import { PromotionHistEntity } from '../promotion/entity/promotion-hist.entity';
-import {MetadataEntity} from "../account/entity/metadata.entity";
-import {PromoCodeToUserEntity} from "../promo-code/entity/promo-code-to-user.entity";
-import {PartnerEntity} from "../partner/entity/partner.entity";
-import {PartnerClientEntity} from "../partner/entity/partner-client.entity";
+import { MetadataEntity } from '../account/entity/metadata.entity';
+import { PromoCodeToUserEntity } from '../promo-code/entity/promo-code-to-user.entity';
+import { PartnerEntity } from '../partner/entity/partner.entity';
+import { PartnerClientEntity } from '../partner/entity/partner-client.entity';
+import { CmnCityEntity } from '../cmn-city/entity/cmn-city.entity';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import {PartnerClientEntity} from "../partner/entity/partner-client.entity";
           PromoCodeToUserEntity,
           PartnerEntity,
           PartnerClientEntity,
+          CmnCityEntity,
         ],
       }),
       inject: [ConfigService],

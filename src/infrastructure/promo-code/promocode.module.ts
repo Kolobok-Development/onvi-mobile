@@ -7,6 +7,8 @@ import { PromoCodeRepositoryProvider } from './provider/promo-code-repository.pr
 import { PromoCodeToUserEntity } from './entity/promo-code-to-user.entity';
 import { PromocodeUsecase } from '../../application/usecases/promocode/promocode.usecase';
 import { PromoCodeService } from '../../application/services/promocode-service';
+import { GeocodingModule } from '../services/geocoding/geocoding.module';
+import { CmnCityEntity } from '../cmn-city/entity/cmn-city.entity';
 
 @Module({
   imports: [
@@ -15,7 +17,9 @@ import { PromoCodeService } from '../../application/services/promocode-service';
       PromoCodeUsageEntity,
       PromoCodeLocationEntity,
       PromoCodeToUserEntity,
+      CmnCityEntity,
     ]),
+    GeocodingModule,
   ],
   providers: [PromoCodeRepositoryProvider, PromocodeUsecase, PromoCodeService],
   exports: [PromoCodeRepositoryProvider, PromocodeUsecase, PromoCodeService],
