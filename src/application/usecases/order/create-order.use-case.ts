@@ -56,7 +56,7 @@ export class CreateOrderUseCase {
       const order = Order.create({
         card: card,
         status: OrderStatus.FREE_PROCESSING, // Set initial status
-        sum: request.originalSum,
+        sum: request.sum,
         originalSum: request.originalSum,
         promoCodeId: request.promoCodeId ?? null,
         rewardPointsUsed: request.rewardPointsUsed,
@@ -80,7 +80,7 @@ export class CreateOrderUseCase {
       const order = Order.create({
         card: card,
         status: OrderStatus.CREATED, // Set initial status
-        sum: request.originalSum,
+        sum: request.sum,
         originalSum: request.originalSum,
         promoCodeId: request.promoCodeId ?? null,
         rewardPointsUsed: request.rewardPointsUsed,

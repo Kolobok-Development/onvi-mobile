@@ -169,7 +169,7 @@ export class StartPosUseCase {
       try {
         await this.posService.send({
           cardNumber: order.card.devNomer,
-          sum: (order.sum + order.rewardPointsUsed).toString(),
+          sum: (order.originalSum).toString(),
           deviceId: deviceId,
         });
 
