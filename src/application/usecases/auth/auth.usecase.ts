@@ -136,39 +136,48 @@ export class AuthUsecase {
 
     await this.setCurrentRefreshToken(phone, refreshToken.token);
 
-    const expirationDate = new Date();
-    const newMonth = expirationDate.getMonth() + 3;
-    expirationDate.setMonth(newMonth);
+    if (oldClient) {
+      this.logger.log({
+        message: "old Client",
+        oldClient: oldClient,
+        oldCard: oldClient.getCard(),
+        phone: phone,
+      });
+    
+      const expirationDate = new Date();
+      const newMonth = expirationDate.getMonth() + 3;
+      expirationDate.setMonth(newMonth);
 
-    const promoCodeDate = new PromoCode(
-      `ONVI${newCard.cardId}`,
-      1,
-      expirationDate,
-      1,
-      new Date(),
-      3,
-      1,
-      {
-        discount: 250,
-        updatedAt: new Date(),
-      },
-    );
-    const promoCode = await this.promoCodeUsecase.create(promoCodeDate);
-    this.logger.log(
-      {
-        action: 'promo_code_created',
-        timestamp: new Date(),
-        clientId: newClient.clientId,
-        details: JSON.stringify({
-          promoCode: promoCode.code,
+      const promoCodeDate = new PromoCode(
+        `ONVI${newCard.cardId}`,
+        1,
+        expirationDate,
+        1,
+        new Date(),
+        3,
+        1,
+        {
           discount: 250,
-          expirationDate: expirationDate,
-        }),
-      },
-      `Promo code ${promoCode.code} created for air balance transfer`,
-    );
+          updatedAt: new Date(),
+        },
+      );
+      const promoCode = await this.promoCodeUsecase.create(promoCodeDate);
+      this.logger.log(
+        {
+          action: 'promo_code_created',
+          timestamp: new Date(),
+          clientId: newClient.clientId,
+          details: JSON.stringify({
+            promoCode: promoCode.code,
+            discount: 250,
+            expirationDate: expirationDate,
+          }),
+        },
+        `Promo code ${promoCode.code} created for air balance transfer`,
+      );
 
-    await this.promoCodeUsecase.bindClient(promoCode, newClient);
+      await this.promoCodeUsecase.bindClient(promoCode, newClient);
+    }
 
     return { newClient, accessToken, refreshToken };
   }
