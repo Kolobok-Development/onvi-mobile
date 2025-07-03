@@ -188,39 +188,94 @@ export class AccountTransferUseCase {
         `Old card transaction added for balance transfer: ${extId}`,
       );
 
-      const expirationDate = new Date();
-      const newMonth = expirationDate.getMonth() + 3;
-      expirationDate.setMonth(newMonth);
 
-      const promoCodeDate = new PromoCode(
-        `ONVI${card.cardId}`,
-        1,
-        expirationDate,
-        1,
-        new Date(),
-        3,
-        1,
-        {
-          discount: input.airBalance,
-          updatedAt: new Date(),
-        },
-      );
-      const promoCode = await this.promoCodeUsecase.create(promoCodeDate);
+      const airBalance = input.airBalance;
+
       this.logger.log(
         {
-          action: 'promo_code_created',
-          timestamp: new Date(),
-          clientId: client.clientId,
-          details: JSON.stringify({
-            promoCode: promoCode.code,
-            discount: input.airBalance,
-            expirationDate: expirationDate,
-          }),
-        },
-        `Promo code ${promoCode.code} created for air balance transfer`,
+          message: `airBalance: ${airBalance}`
+        }
       );
+    
+      const maxPromoCodeValue = 300;
+      const numberOfFullPromoCodes = Math.floor(airBalance / maxPromoCodeValue);
+      const remainder = airBalance % maxPromoCodeValue;
+      const promoCodes = [];
+    
+      const expirationDate = new Date();
+      expirationDate.setMonth(expirationDate.getMonth() + 3);
+    
+      // Создание полных промокодов по 300 рублей
+      for (let i = 0; i < numberOfFullPromoCodes; i++) {
+        const promoCodeData = new PromoCode(
+          `ONVIREG${card.cardId}_${i}`,
+          1,
+          expirationDate,
+          1,
+          new Date(),
+          3,
+          1,
+          {
+            discount: maxPromoCodeValue,
+            updatedAt: new Date(),
+          },
+        );
+    
+        const promoCode = await this.promoCodeUsecase.create(promoCodeData);
+        await this.promoCodeUsecase.bindClient(promoCode, client);
+    
+        this.logger.log(
+          {
+            action: 'promo_code_created',
+            timestamp: new Date(),
+            clientId: client.clientId,
+            details: JSON.stringify({
+              promoCode: promoCode.code,
+              discount: maxPromoCodeValue,
+              expirationDate: expirationDate,
+            }),
+          },
+          `Promo code ${promoCode.code} created for client ${client.clientId}`,
+        );
 
-      await this.promoCodeUsecase.bindClient(promoCode, client);
+        promoCodes.push(promoCode);
+      }
+    
+      // Создание дополнительного промокода на остаток, если он есть
+      if (remainder > 0) {
+        const promoCodeData = new PromoCode(
+          `ONVIREG${card.cardId}_remainder`,
+          1,
+          expirationDate,
+          1,
+          new Date(),
+          3,
+          1,
+          {
+            discount: remainder,
+            updatedAt: new Date(),
+          },
+        );
+    
+        const promoCode = await this.promoCodeUsecase.create(promoCodeData);
+        await this.promoCodeUsecase.bindClient(promoCode, client);
+    
+        this.logger.log(
+          {
+            action: 'promo_code_created',
+            timestamp: new Date(),
+            clientId:  client.clientId,
+            details: JSON.stringify({
+              promoCode: promoCode.code,
+              discount: remainder,
+              expirationDate: expirationDate,
+            }),
+          },
+          `Promo code ${promoCode.code} created for client ${client.clientId}`,
+        );
+
+        promoCodes.push(promoCode);
+      }
 
       this.logger.log(
         {
@@ -230,13 +285,13 @@ export class AccountTransferUseCase {
           details: JSON.stringify({
             realBalance: input.realBalance,
             airBalance: input.airBalance,
-            promoCode: promoCode.code,
+            promoCode: promoCodes[0].code,
           }),
         },
         `Balance transfer completed successfully for client ${client.clientId}`,
       );
 
-      return promoCode;
+      return promoCodes[0];
     } catch (error) {
       this.logger.error(
         {
