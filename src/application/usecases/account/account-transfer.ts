@@ -203,12 +203,12 @@ export class AccountTransferUseCase {
       const promoCodes = [];
     
       const expirationDate = new Date();
-      expirationDate.setMonth(expirationDate.getMonth() + 3);
+      expirationDate.setMonth(expirationDate.getMonth() + 6);
     
       // Создание полных промокодов по 300 рублей
       for (let i = 0; i < numberOfFullPromoCodes; i++) {
         const promoCodeData = new PromoCode(
-          `ONVIREG${card.cardId}_${i}`,
+          `ONVITRANSFER${card.cardId}_${i}`,
           1,
           expirationDate,
           1,
@@ -244,7 +244,7 @@ export class AccountTransferUseCase {
       // Создание дополнительного промокода на остаток, если он есть
       if (remainder > 0) {
         const promoCodeData = new PromoCode(
-          `ONVIREG${card.cardId}_remainder`,
+          `ONVITRANSFER${card.cardId}_R`,
           1,
           expirationDate,
           1,
