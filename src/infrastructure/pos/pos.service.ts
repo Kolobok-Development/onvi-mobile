@@ -35,7 +35,7 @@ export class PosService implements IPosService {
           { headers: { ...headersReq } },
         ),
       );
-      console.log(response)
+      console.log(response);
 
       return {
         id: response.data.identifier,
@@ -44,12 +44,14 @@ export class PosService implements IPosService {
         errorMessage: null,
       };
     } catch (error: any) {
-      const errorData = error.response?.data || error.message;
+      const errorData = error.response?.data
+        ? JSON.stringify(error.response.data)
+        : error.message;
       return {
         id: null,
         status: 'Unavailable',
         type: null,
-        errorMessage: errorData?.error || 'Unknown error',
+        errorMessage: errorData || 'Unknown error',
       };
     }
   }
@@ -75,10 +77,12 @@ export class PosService implements IPosService {
         errorMessage: null,
       };
     } catch (error: any) {
-      const errorData = error.response?.data || error.message;
+      const errorData = error.response?.data
+        ? JSON.stringify(error.response.data)
+        : error.message;
       return {
         sendStatus: SendStatus.FAIL,
-        errorMessage: errorData?.error || 'Unknown error',
+        errorMessage: errorData || 'Unknown error',
       };
     }
   }
