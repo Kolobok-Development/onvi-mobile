@@ -120,7 +120,6 @@ export class GazpromRepository implements IGazpromRepository {
   ): Promise<GazpromSessionDto | GazpromErrorDto> {
     const config = this.setHeaders();
 
-    console.log('start request')
     try {
       const request: AxiosResponse = await firstValueFrom(
         this.httpService.post(
@@ -129,10 +128,8 @@ export class GazpromRepository implements IGazpromRepository {
           config,
         ),
       );
-      console.log(request)
       return { token: request.data.token };
     } catch (err) {
-      console.log(err)
       const { response } = err;
       return new GazpromErrorDto(
         response.data.code,

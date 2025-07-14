@@ -69,8 +69,7 @@ export class OtpRepository implements IOtpRepository {
       return this.httpService
         .post(this.urlSms, params, header)
         .pipe(
-          map((axiosResponse: AxiosResponse) => {
-            console.log(axiosResponse);
+          map(() => {
             return { message: 'Success', to: otp.phone };
           }),
         )

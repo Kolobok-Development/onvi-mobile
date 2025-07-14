@@ -19,7 +19,6 @@ export class PaymentUsecase {
     data: CreatePaymentDto,
     receiptReturnPhoneNumber: string,
   ) {
-    console.log('start payment create');
     const amount: Amount = {
       value: String(data.amount),
       currency: 'RUB',
@@ -46,7 +45,6 @@ export class PaymentUsecase {
       items: [purchaseItem],
     };
 
-    console.log('end payment create');
     return await this.paymentRepository.create(payment, recipt);
   }
 
