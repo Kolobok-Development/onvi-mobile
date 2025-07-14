@@ -319,7 +319,6 @@ export class AuthUsecase {
     let newNomer = '';
     do {
       newNomer = this.generateRandom12DigitNumber();
-      console.log(newNomer);
     } while (await this.cardRepository.findOneByDevNomer(newNomer));
     return newNomer;
   }

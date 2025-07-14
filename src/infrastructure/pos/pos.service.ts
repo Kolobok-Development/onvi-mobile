@@ -35,7 +35,6 @@ export class PosService implements IPosService {
           { headers: { ...headersReq } },
         ),
       );
-      console.log(response);
 
       return {
         id: response.data.identifier,

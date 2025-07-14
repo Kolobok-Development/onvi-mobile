@@ -42,9 +42,6 @@ async function bootstrap() {
     credentials: true,
     maxAge: 86400, // 24 hours in seconds
   });*/
-  await app.listen(process.env.PORT, () => {
-    console.log(`ONVI listening on port ${process.env.PORT}`);
-    console.log(process.env.NODE_ENV);
-  });
+  await app.listen(process.env.PORT);
 }
 bootstrap();

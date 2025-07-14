@@ -175,7 +175,6 @@ export class AccountController {
     try {
       return await this.updateClientUseCase.execute(body, user);
     } catch (e: any) {
-      console.log(e);
       if (e instanceof AccountNotFoundExceptions) {
         throw new CustomHttpException({
           type: e.type,

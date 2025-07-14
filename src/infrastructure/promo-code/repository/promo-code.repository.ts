@@ -135,7 +135,6 @@ export class PromoCodeRepository implements IPromoCodeRepository {
         );
         regionCode = geocodeResult.regionCode;
       } catch (error) {
-        console.error('Failed to geocode location:', error);
       }
     }
 
