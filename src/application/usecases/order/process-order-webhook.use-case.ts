@@ -39,6 +39,17 @@ export class ProcessOrderWebhookUseCase {
       `Received payment confirmation ${data.object.id}`,
     );
 
+    if (data.event === 'payment.canceled') {
+      const updatedOrder = {
+        ...order,
+        orderStatus: OrderStatus.CANCELED,
+      };
+
+      await this.orderRepository.update(updatedOrder);
+
+      return;
+    }
+
     const updatedOrder = {
       ...order,
       orderStatus: OrderStatus.PAYED,
