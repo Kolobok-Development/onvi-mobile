@@ -58,6 +58,6 @@ export type PaymentObject = {
 
 export type PaymentStatusGatewayWebhookDto = {
   type: 'notification';
-  event: 'payment.succeeded' | string; // string allows for other event types
+  event: 'payment.succeeded' | 'payment.canceled' | string; // string allows for other event types
   object: PaymentObject;
 };
