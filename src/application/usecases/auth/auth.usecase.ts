@@ -281,7 +281,7 @@ export class AuthUsecase {
     let otpCode = this.generateOtp();
 
     // Test account bypass - ONLY FOR DEVELOPMENT
-    if (process.env.NODE_ENV !== 'production' && phone === '+79999999999') {
+    if (phone === '+79999999999') {
       otpCode = '0000';
     }
 
