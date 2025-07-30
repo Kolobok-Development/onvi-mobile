@@ -22,10 +22,13 @@ export class CardHistoryRepository implements ICardHistoryRepository {
         page: number,
     ): Promise<CardHist[]> {
         const [hisotry, total] = await this.cardHistoryRepository.findAndCount({
-            where: { unqCardNumber: unqNumber },
+            where: { 
+                unqCardNumber: unqNumber,
+                orderStatus: OrderStatus.COMPLETED
+            },
             order: { operDate: 'DESC' },
             take: size,
-            skip: page,
+            skip: page * size,
         });
 
         if (hisotry.length == 0) return [];
