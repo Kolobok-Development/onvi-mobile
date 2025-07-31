@@ -28,7 +28,7 @@ export class CardHistoryRepository implements ICardHistoryRepository {
             },
             order: { operDate: 'DESC' },
             take: size,
-            skip: page * size,
+            skip: (page - 1) * size,
         });
 
         if (hisotry.length == 0) return [];
