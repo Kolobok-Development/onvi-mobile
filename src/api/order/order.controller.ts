@@ -25,6 +25,8 @@ import { RegisterPaymentUseCase } from '../../application/usecases/order/registe
 import { IRegisterPaymentDto } from '../../application/usecases/order/dto/register-payment.dto';
 import { GetOrderByIdUseCase } from '../../application/usecases/order/get-order-by-id.use-case';
 import { GetOrderByTransactionIdUseCase } from '../../application/usecases/order/get-order-by-transaction-id.use-case';
+import { UpdateOrderStatusUseCase } from '../../application/usecases/order/update-order-status.use-case';
+import { UpdateOrderStatusDto } from '../../application/usecases/order/dto/update-order-status.dto';
 import { OrderNotFoundException } from '../../domain/order/exceptions/order-base.exceptions';
 import { Logger } from 'nestjs-pino';
 import { Inject } from '@nestjs/common';
@@ -38,6 +40,7 @@ export class OrderController {
     private readonly registerPaymentUseCase: RegisterPaymentUseCase,
     private readonly getOrderByIdUseCase: GetOrderByIdUseCase,
     private readonly getOrderByTransactionIdUseCase: GetOrderByTransactionIdUseCase,
+    private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
     @Inject(Logger) private readonly logger: Logger,
   ) {}
 
@@ -178,6 +181,41 @@ export class OrderController {
     try {
       const { user } = req;
       return await this.getOrderByIdUseCase.execute(id, user);
+    } catch (e) {
+      if (e instanceof OrderNotFoundException) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.NOT_FOUND,
+        });
+      } else if (e instanceof ClientException) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.UNPROCESSABLE_ENTITY,
+        });
+      } else {
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
+      }
+    }
+  }
+
+  @Post('status/:id')
+  @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async updateOrderStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: UpdateOrderStatusDto,
+    @Req() req: any
+  ) {
+    try {
+      await this.updateOrderStatusUseCase.execute(id, data.status);
+      return { message: 'Order status updated successfully' };
     } catch (e) {
       if (e instanceof OrderNotFoundException) {
         throw new CustomHttpException({

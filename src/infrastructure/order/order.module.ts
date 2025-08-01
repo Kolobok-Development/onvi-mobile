@@ -16,6 +16,7 @@ import { RegisterPaymentUseCase } from '../../application/usecases/order/registe
 import { StartPosUseCase } from '../../application/usecases/order/start-pos.use-case';
 import { GetOrderByIdUseCase } from '../../application/usecases/order/get-order-by-id.use-case';
 import { GetOrderByTransactionIdUseCase } from '../../application/usecases/order/get-order-by-transaction-id.use-case';
+import { UpdateOrderStatusUseCase } from '../../application/usecases/order/update-order-status.use-case';
 import { PaymentWebhookController } from '../../api/webhooks/payment-webhook.controller';
 import { BullModule } from '@nestjs/bullmq';
 import { ProcessOrderWebhookUseCase } from '../../application/usecases/order/process-order-webhook.use-case';
@@ -51,6 +52,7 @@ import { PartnerModule } from '../partner/partner.module';
     StartPosUseCase,
     GetOrderByIdUseCase,
     GetOrderByTransactionIdUseCase,
+    UpdateOrderStatusUseCase,
     ProcessOrderWebhookUseCase,
     StartPosProcess,
   ],
