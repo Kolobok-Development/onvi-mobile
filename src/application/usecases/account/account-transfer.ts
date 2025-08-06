@@ -40,7 +40,7 @@ export class AccountTransferUseCase {
     return {
       cardId: card.cardId,
       realBalance: card.realBalance,
-      airBalance: Math.ceil(card.airBalance / 10) * 10,
+      airBalance: card.airBalance,
     };
   }
 
@@ -196,7 +196,11 @@ export class AccountTransferUseCase {
           message: `airBalance: ${airBalance}`
         }
       );
-    
+
+      if (airBalance === 0 || airBalance < 50) {
+        return ;
+      }
+
       const maxPromoCodeValue = 300;
       const numberOfFullPromoCodes = Math.floor(airBalance / maxPromoCodeValue);
       const remainder = airBalance % maxPromoCodeValue;
