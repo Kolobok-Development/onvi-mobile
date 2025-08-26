@@ -65,7 +65,7 @@ export class AccountTransferUseCase {
 
     const oldClient = await this.clientRepository.findOneById(card.clientId);
 
-    if (oldClient.phone !== client.phone) {
+    if (oldClient.correctPhone !== client.correctPhone) {
       this.logger.warn(
         {
           action: 'balance_transfer_failed',
@@ -78,7 +78,7 @@ export class AccountTransferUseCase {
         },
         `Balance transfer failed for client ${client.clientId}: client phone number and old client did not happen`,
       );
-      throw new PhoneNumbersDoNotMatch(client.phone, oldClient.phone);
+      throw new PhoneNumbersDoNotMatch(client.correctPhone, oldClient.correctPhone);
     }
 
     if (!oldClient || oldClient.userOnvi === 1) {
