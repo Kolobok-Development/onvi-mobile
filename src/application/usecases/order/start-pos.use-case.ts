@@ -197,7 +197,7 @@ export class StartPosUseCase {
     const bayNumber = order.bayNumber;
     const bayType = order.bayType;
     const MAX_PING_ATTEMPTS = 5;
-    const INITIAL_DELAY_MS = 3000;
+    const INITIAL_DELAY_MS = 2000; 
     const DELAY_INCREMENT_MS = 1000;
 
     for (let pingAttempt = 1; pingAttempt <= MAX_PING_ATTEMPTS; pingAttempt++) {
