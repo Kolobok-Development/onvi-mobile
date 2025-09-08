@@ -18,6 +18,7 @@ import { PromoCodeToUserEntity } from '../promo-code/entity/promo-code-to-user.e
 import { PartnerEntity } from '../partner/entity/partner.entity';
 import { PartnerClientEntity } from '../partner/entity/partner-client.entity';
 import { CmnCityEntity } from '../cmn-city/entity/cmn-city.entity';
+import { FavoritesEntity } from '../account/entity/favorites.entity';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { CmnCityEntity } from '../cmn-city/entity/cmn-city.entity';
           PartnerEntity,
           PartnerClientEntity,
           CmnCityEntity,
+          FavoritesEntity,
         ],
       }),
       inject: [ConfigService],
