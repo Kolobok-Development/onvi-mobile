@@ -28,6 +28,9 @@ import { FindMethodsCardUseCase } from '../../application/usecases/account/accou
 import { AccountTransferUseCase } from '../../application/usecases/account/account-transfer';
 import { TransactionModule } from '../transaction/transaction.module';
 import { BalanceWsModule } from '../../websockets/balance/balance-ws.module';
+import { FavoritesRepositoryProvider } from './provider/favorites-reposiroty.provider';
+import { FavoritesUseCase } from 'src/application/usecases/account/account-favorites';
+import { FavoritesEntity } from './entity/favorites.entity';
 
 const repositories: Provider[] = [
   ClientRepositoryProvider,
@@ -35,6 +38,7 @@ const repositories: Provider[] = [
   CardHistoryRepositoryProvider,
   TariffRepositoryProvider,
   MetaRepositoryProvider,
+  FavoritesRepositoryProvider,
 ];
 const metaUseCase: Provider[] = [
   CreateMetaUseCase,
@@ -47,6 +51,7 @@ const accountUseCase: Provider[] = [
   DeleteAccountUseCase,
   AccountTransferUseCase,
 ];
+const favoritesUseCase: Provider[] = [FavoritesUseCase];
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -56,6 +61,7 @@ const accountUseCase: Provider[] = [
       PromoCodeToUserEntity,
       TariffEntity,
       MetadataEntity,
+      FavoritesEntity,
     ]),
     DateModule,
     PromocodeModule,
@@ -68,7 +74,8 @@ const accountUseCase: Provider[] = [
     ...clientUseCase,
     ...cardUseCase,
     ...accountUseCase,
+    ...favoritesUseCase,
   ],
-  exports: [...repositories, ...metaUseCase, ...cardUseCase],
+  exports: [...repositories, ...metaUseCase, ...cardUseCase, ...favoritesUseCase],
 })
 export class AccountModule {}

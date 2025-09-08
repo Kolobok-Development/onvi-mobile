@@ -42,6 +42,8 @@ import { BalanceUpdateWebhookDto } from '../webhooks/dto/balance-update-webhook.
 import { BalanceGateway } from '../../websockets/balance/balance.gateway';
 import { EnvConfigService } from '../../infrastructure/config/env-config/env-config.service';
 import { Logger } from 'nestjs-pino';
+import { FavoritesUseCase } from 'src/application/usecases/account/account-favorites';
+import { AccountFavoritesDto } from '../dto/req/accout-favorites.dto';
 
 @Controller('account')
 //@UseGuards(ThrottlerGuard)
@@ -55,6 +57,7 @@ export class AccountController {
     private readonly promocodeUsecase: PromocodeUsecase,
     private readonly accountTransferUseCase: AccountTransferUseCase,
     private readonly cardService: CardService,
+    private readonly favoritesUseCase: FavoritesUseCase,
   ) {}
 
   @UseGuards(JwtGuard)
@@ -330,4 +333,54 @@ export class AccountController {
       });
     }
   }
+
+  @Get('/favorites')
+  @UseGuards(JwtGuard)
+  @HttpCode(200)
+  async getFavorites(@Req() request: any): Promise<number[]> {
+    try {
+      const { user } = request;
+      
+      return await this.favoritesUseCase.getFavoritesByClientId(user.clientId);
+    } catch (e) {
+      throw new CustomHttpException({
+        message: e.message,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
+  @Post('/favorites')
+  @UseGuards(JwtGuard)
+  @HttpCode(201)
+  async addFavorites(@Body() body: AccountFavoritesDto, @Req() request: any): Promise<number[]> {
+    try {
+      const { user } = request;
+      
+      return await this.favoritesUseCase.addFavoritesByClientId(body, user.clientId);
+    } catch (e) {
+      throw new CustomHttpException({
+        message: e.message,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
+  @Delete('/favorites')
+  @UseGuards(JwtGuard)
+  @HttpCode(200)
+  async removeFavorite(@Body() body: AccountFavoritesDto, @Req() request: any): Promise<number[]> {
+    try {
+      const { user } = request;
+
+      return await this.favoritesUseCase.removeFavoriteByClientId(body, user.clientId);
+    } catch (e) {
+      throw new CustomHttpException({
+        message: e.message,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
 }
+
+
