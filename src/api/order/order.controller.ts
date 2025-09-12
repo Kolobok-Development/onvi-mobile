@@ -30,6 +30,8 @@ import { UpdateOrderStatusDto } from '../../application/usecases/order/dto/updat
 import { OrderNotFoundException } from '../../domain/order/exceptions/order-base.exceptions';
 import { Logger } from 'nestjs-pino';
 import { Inject } from '@nestjs/common';
+import { CarwashUseCase } from 'src/application/usecases/order/carwash.use-case';
+import { LatestOptionsDto } from '../dto/req/latest-options.dto';
 
 @Controller('order')
 export class OrderController {
@@ -41,6 +43,7 @@ export class OrderController {
     private readonly getOrderByIdUseCase: GetOrderByIdUseCase,
     private readonly getOrderByTransactionIdUseCase: GetOrderByTransactionIdUseCase,
     private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
+    private readonly carwashUseCase: CarwashUseCase,
     @Inject(Logger) private readonly logger: Logger,
   ) {}
 
@@ -171,6 +174,26 @@ export class OrderController {
           code: HttpStatus.INTERNAL_SERVER_ERROR,
         });
       }
+    }
+  }
+
+  @Get('/latest')
+  @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async getLatestCarwash(
+    @Req() request: any, 
+    @Query() options: LatestOptionsDto,
+  ): Promise<number[]> {
+    try {      
+      const { user } = request;
+      const { size, page } = options;
+      
+      return await this.carwashUseCase.getLatestCarwashByUser(user, size, page);
+    } catch (e) {
+      throw new CustomHttpException({
+        message: e.message,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
     }
   }
 

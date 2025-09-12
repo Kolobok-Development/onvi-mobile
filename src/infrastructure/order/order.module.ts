@@ -22,6 +22,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { ProcessOrderWebhookUseCase } from '../../application/usecases/order/process-order-webhook.use-case';
 import { StartPosProcess } from '../../application/usecases/order/process/start-pos.process';
 import { PartnerModule } from '../partner/partner.module';
+import { CarwashUseCase } from 'src/application/usecases/order/carwash.use-case';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { PartnerModule } from '../partner/partner.module';
     UpdateOrderStatusUseCase,
     ProcessOrderWebhookUseCase,
     StartPosProcess,
+    CarwashUseCase,
   ],
   exports: [OrderRepositoryProvider],
 })
