@@ -88,7 +88,6 @@ export class ProcessOrderWebhookUseCase {
         adminId.toString(),
       );
 
-
       if (!accrual) {
         throw new CashbackAccrualException(order.id.toString());
       }
