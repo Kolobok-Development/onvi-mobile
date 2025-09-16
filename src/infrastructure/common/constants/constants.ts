@@ -45,7 +45,7 @@ export const PROMO_CODE_NOT_FOUND_ERROR_CODE = 84;
 export const INVALID_PROMO_CODE_ERROR_CODE = 88;
 //SERVER
 export const SERVER_ERROR = 574;
-  
+
 //PAYMENT
 export const PAYMENT_ERROR_CODES = {
   PROCESSING_ERROR: 1199, // Use existing code
