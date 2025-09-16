@@ -99,7 +99,7 @@ export class ProcessOrderWebhookUseCase {
     });
   }
 
-  generateUniqueExt() {
+  private generateUniqueExt(): string {
     const prefix = 'Transaction';
     const uniqueId = Date.now(); 
     return `${prefix}_${uniqueId}`;
