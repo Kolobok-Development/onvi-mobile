@@ -81,3 +81,12 @@ export class CardForOrderNotFoundException extends ClientException {
     );
   }
 }
+
+export class CashbackAccrualException extends ClientException {
+  constructor(orderId: string) {
+    super(
+      ORDER_ERROR_CODES.CASHBACK_ACCRUAL_FAILED,
+      `Failed to accrue cashback for order ${orderId}`,
+    );
+  }
+}
