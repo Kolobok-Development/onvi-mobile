@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
 import {
-  CardForOrderNotFoundException, OrderNotFoundByTransactionIdException,
+  CardForOrderNotFoundException, CashbackAccrualException, OrderNotFoundByTransactionIdException,
   OrderNotFoundException, RewardPointsWithdrawalException
 } from '../../../domain/order/exceptions/order-base.exceptions';
 import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
@@ -76,9 +76,32 @@ export class ProcessOrderWebhookUseCase {
       }
     }
 
+    if (updatedOrder.cashback > 0) {
+      const extId = this.generateUniqueExt();
+      const adminId = 3;
+
+      const accrual = await this.transactionRepository.add(
+        order.card.cardId.toString(),
+        '5',
+        order.cashback.toString(),
+        `ONVI CASHBACK ACCRUAL ${extId}`,
+        adminId.toString(),
+      );
+
+      if (!accrual) {
+        throw new CashbackAccrualException(order.id.toString());
+      }
+    } 
+
     //add to the task
     await this.dataQueue.add('pos-process', {
       orderId: order.id,
     });
+  }
+
+  private generateUniqueExt(): string {
+    const prefix = 'Transaction';
+    const uniqueId = Date.now(); 
+    return `${prefix}_${uniqueId}`;
   }
 }

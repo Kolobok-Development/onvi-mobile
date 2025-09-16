@@ -146,26 +146,26 @@ export class AccountTransferUseCase {
         `Old client ${oldClient.clientId} deactivated for balance transfer`,
       );
 
-      await this.transactionRepository.create(
-        client,
-        newCard,
-        realBalance,
-        extId,
-      );
-      this.logger.log(
-        {
-          action: 'new_transaction_created',
-          timestamp: new Date(),
-          clientId: client.clientId,
-          details: JSON.stringify({
-            clientId: client.clientId,
-            cardId: newCard.cardId,
-            amount: realBalance,
-            extId: extId,
-          }),
-        },
-        `New transaction created for balance transfer: ${extId}`,
-      );
+      // await this.transactionRepository.create(
+      //   client,
+      //   newCard,
+      //   realBalance,
+      //   extId,
+      // );
+      // this.logger.log(
+      //   {
+      //     action: 'new_transaction_created',
+      //     timestamp: new Date(),
+      //     clientId: client.clientId,
+      //     details: JSON.stringify({
+      //       clientId: client.clientId,
+      //       cardId: newCard.cardId,
+      //       amount: realBalance,
+      //       extId: extId,
+      //     }),
+      //   },
+      //   `New transaction created for balance transfer: ${extId}`,
+      // );
 
       await this.transactionRepository.add(
         card.cardId.toString(),
