@@ -82,7 +82,7 @@ export class ProcessOrderWebhookUseCase {
 
       const accrual = await this.transactionRepository.add(
         order.card.cardId.toString(),
-        '5',
+        '21',
         order.cashback.toString(),
         `ONVI CASHBACK ACCRUAL ${extId}`,
         adminId.toString(),
