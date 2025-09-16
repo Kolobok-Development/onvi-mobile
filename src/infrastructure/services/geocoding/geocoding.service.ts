@@ -57,7 +57,7 @@ export class GeocodingService {
         }
 
         this.logger.log(`Geocoded location: ${JSON.stringify(result)}`);
-        return {};
+        return result;
       }
 
       return null;
