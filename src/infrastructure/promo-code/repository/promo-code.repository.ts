@@ -126,7 +126,7 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     location?: { latitude: number; longitude: number },
   ): Promise<PromoCode[]> {
     let regionCode: string | undefined;
-
+  
     if (location) {
       try {
         const geocodeResult = await this.geocodingService.reverseGeocode(
@@ -137,26 +137,34 @@ export class PromoCodeRepository implements IPromoCodeRepository {
       } catch (error) {
       }
     }
-
+  
     const currentDate = new Date();
-
-    // Fetch the promo codes that are active and associated with the user via PromoCodeToUserEntity
+  
+    // Подзапрос для получения общего количества использований по промокоду и карте
+    const usageSubQuery = this.promoCodeRepository
+      .createQueryBuilder('promocode')
+      .subQuery()
+      .select('COALESCE(SUM(usage.usage), 0)')
+      .from(PromoCodeUsageEntity, 'usage')
+      .where('usage.PROMO_CODE_ID = promocode.id')
+      .andWhere('usage.CARD_ID = :cardId')
+      .getQuery();
+  
+    // Основной запрос
     const query = this.promoCodeRepository
       .createQueryBuilder('promocode')
       .leftJoin(
-        PromoCodeUsageEntity,
-        'usage',
-        'usage.PROMO_CODE_ID = promocode.id AND usage.CARD_ID = :cardId',
-        { cardId },
+        PromoCodeToUserEntity,
+        'user',
+        'user.PROMO_CODE_ID = promocode.id AND user.USER_ID = :clientId',
+        { clientId }
       )
-      .leftJoin(PromoCodeToUserEntity, 'user', 'user.PROMO_CODE_ID = promocode.id AND user.USER_ID = :clientId', {
-        clientId,
-      })
       .where('promocode.isActive = :isActive', { isActive: 1 })
       .andWhere('promocode.expiryDate > :currentDate', { currentDate })
-      .andWhere('usage.id IS NULL')
-      .andWhere('user.id IS NOT NULL');
-
+      .andWhere('user.id IS NOT NULL')
+      .andWhere(`(${usageSubQuery}) < promocode.usageAmount`)
+      .setParameter('cardId', cardId);
+  
     // Only join cmnCity if regionCode is defined
     if (regionCode) {
       query.leftJoin(
@@ -166,9 +174,9 @@ export class PromoCodeRepository implements IPromoCodeRepository {
       );
       query.andWhere('cmn_city.regionCode = :regionCode', { regionCode });
     }
-
+  
     const promoCodes = await query.getMany();
-
+  
     // Return the mapped promo codes
     return promoCodes.map((promoCode) => PromoCode.fromEntity(promoCode));
   }
