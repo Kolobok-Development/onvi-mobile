@@ -3,9 +3,9 @@ import {ICreateOrderDto} from '../dto/create-order.dto';
 import {Card} from '../../account/card/model/card';
 import {OrderEntity} from '../../../infrastructure/order/entity/order.entity';
 import {OrderProcessingException} from '../exceptions/order-processing.exception';
-import {InsufficientRewardPointsException} from '../exceptions/insufficient-reward-roints.exception';
 import {DeviceType} from "../enum/device-type.enum";
 import {CardMapper} from "../../../infrastructure/account/mapper/card.mapper";
+import { InsufficientRewardPointsException } from '../exceptions/order-base.exceptions';
 
 interface OrderOptions {
   id?: number;
@@ -85,9 +85,9 @@ export class Order {
     } = data; 
 
     const createdAt: Date = new Date();
-
-    if (rewardPointsUsed > 0) {
-      if (card.balance < sum) {
+    
+    if (rewardPointsUsed > 0) {      
+      if (card.balance < rewardPointsUsed) {
         throw new InsufficientRewardPointsException();
       }
 
