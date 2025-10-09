@@ -30,6 +30,16 @@ export class PaymentRepository implements IPaymentRepository {
       status: payment.status,
     };
   }
+
+  public async refund(paymentId: string, reason?: string) {
+    const refundData: any = {
+      payment_id: paymentId,
+      description: reason
+    };
+
+    const refund = await this.paymentGateway.createRefund(refundData);
+    return refund;
+  }
 }
 
 

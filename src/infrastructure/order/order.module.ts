@@ -23,6 +23,7 @@ import { ProcessOrderWebhookUseCase } from '../../application/usecases/order/pro
 import { StartPosProcess } from '../../application/usecases/order/process/start-pos.process';
 import { PartnerModule } from '../partner/partner.module';
 import { CarwashUseCase } from 'src/application/usecases/order/carwash.use-case';
+import { RefundPaymentUseCase } from 'src/application/usecases/order/refund-payment.use-case';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { CarwashUseCase } from 'src/application/usecases/order/carwash.use-case'
     ProcessOrderWebhookUseCase,
     StartPosProcess,
     CarwashUseCase,
+    RefundPaymentUseCase,
   ],
   exports: [OrderRepositoryProvider],
 })

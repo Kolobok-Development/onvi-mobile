@@ -32,6 +32,8 @@ import { Logger } from 'nestjs-pino';
 import { Inject } from '@nestjs/common';
 import { CarwashUseCase } from 'src/application/usecases/order/carwash.use-case';
 import { LatestOptionsDto } from '../dto/req/latest-options.dto';
+import { RefundPaymentDto } from 'src/application/usecases/order/dto/refund-payment.dto';
+import { RefundPaymentUseCase } from 'src/application/usecases/order/refund-payment.use-case';
 
 @Controller('order')
 export class OrderController {
@@ -44,6 +46,7 @@ export class OrderController {
     private readonly getOrderByTransactionIdUseCase: GetOrderByTransactionIdUseCase,
     private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
     private readonly carwashUseCase: CarwashUseCase,
+    private readonly refundPaymentUseCase: RefundPaymentUseCase,
     @Inject(Logger) private readonly logger: Logger,
   ) {}
 
@@ -248,6 +251,32 @@ export class OrderController {
           code: HttpStatus.NOT_FOUND,
         });
       } else if (e instanceof ClientException) {
+        throw new CustomHttpException({
+          type: e.type,
+          innerCode: e.innerCode,
+          message: e.message,
+          code: HttpStatus.UNPROCESSABLE_ENTITY,
+        });
+      } else {
+        throw new CustomHttpException({
+          message: e.message,
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+        });
+      }
+    }
+  }
+
+  @UseGuards(JwtGuard)
+  @Post('refund')
+  @HttpCode(200)
+  async refundPayment(
+    @Body() data: RefundPaymentDto,
+    @Req() req: any,
+  ): Promise<any> {
+    try {
+      return await this.refundPaymentUseCase.execute(data);
+    } catch (e) {
+      if (e instanceof ClientException) {
         throw new CustomHttpException({
           type: e.type,
           innerCode: e.innerCode,
