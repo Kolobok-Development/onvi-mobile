@@ -32,7 +32,6 @@ import { Logger } from 'nestjs-pino';
 import { Inject } from '@nestjs/common';
 import { CarwashUseCase } from 'src/application/usecases/order/carwash.use-case';
 import { LatestOptionsDto } from '../dto/req/latest-options.dto';
-import { RefundPaymentDto } from 'src/application/usecases/order/dto/refund-payment.dto';
 import { RefundPaymentUseCase } from 'src/application/usecases/order/refund-payment.use-case';
 
 @Controller('order')
