@@ -9,12 +9,14 @@ import {
 import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
 import { RefundFailedException } from '../../../domain/payment/exceptions/payment-base.exceptions';
 import { Logger } from 'nestjs-pino';
+import { IRefundPaymentRepository } from 'src/domain/payment/refund-payment-repository.abstract';
 
 @Injectable()
 export class RefundPaymentUseCase {
   constructor(
     private readonly orderRepository: IOrderRepository,
     private readonly paymentUsecase: PaymentUsecase,
+    private readonly refundPaymentRepository: IRefundPaymentRepository,
     @Inject(Logger) private readonly logger: Logger,
   ) {}
 
@@ -25,12 +27,11 @@ export class RefundPaymentUseCase {
       throw new OrderNotFoundException(data.orderId.toString());
     }
 
-    //только ли при этом статусе заказа делаем возврат?
-    if (order.orderStatus !== OrderStatus.PAYED) {
+    if (order.orderStatus === OrderStatus.COMPLETED) {
       throw new InvalidOrderStateException(
         order.id.toString(),
         order.orderStatus,
-        OrderStatus.PAYED
+        OrderStatus.COMPLETED
       );
     }
 
@@ -44,6 +45,14 @@ export class RefundPaymentUseCase {
         data.reason
       );
 
+      const refundRecordId = await this.refundPaymentRepository.createRefund({
+        orderId: order.id,
+        sum: order.sum,
+        cardId: order.card.cardId,
+        refundId: refundResult.id,
+        reason: data.reason
+      });
+
       order.orderStatus = OrderStatus.REFUNDED;
       order.excecutionError = `Refund: ${data.reason}. Refund ID: ${refundResult.id}`;
       
@@ -53,15 +62,17 @@ export class RefundPaymentUseCase {
         {
           orderId: order.id,
           refundId: refundResult.id,
+          refundRecordId: refundRecordId,
           amount: order.sum,
           reason: data.reason,
         },
-        `Refund successful for order ${order.id}`
+        `Refund successful for order ${order.id}. Refund record ID: ${refundRecordId}`
       );
 
       return {
         success: true,
         refundId: refundResult.id,
+        refundRecordId: refundRecordId,
         amount: order.sum,
         status: OrderStatus.REFUNDED,
       };

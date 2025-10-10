@@ -265,30 +265,4 @@ export class OrderController {
       }
     }
   }
-
-  @UseGuards(JwtGuard)
-  @Post('refund')
-  @HttpCode(200)
-  async refundPayment(
-    @Body() data: RefundPaymentDto,
-    @Req() req: any,
-  ): Promise<any> {
-    try {
-      return await this.refundPaymentUseCase.execute(data);
-    } catch (e) {
-      if (e instanceof ClientException) {
-        throw new CustomHttpException({
-          type: e.type,
-          innerCode: e.innerCode,
-          message: e.message,
-          code: HttpStatus.UNPROCESSABLE_ENTITY,
-        });
-      } else {
-        throw new CustomHttpException({
-          message: e.message,
-          code: HttpStatus.INTERNAL_SERVER_ERROR,
-        });
-      }
-    }
-  }
 }

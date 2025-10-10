@@ -15,6 +15,7 @@ import { Order } from '../../../domain/order/model/order';
 import { IGazpromRepository } from '../../../domain/partner/gazprom/gazprom-repository.abstract';
 import { IPartnerRepository } from '../../../domain/partner/partner-repository.abstract';
 import { PartnerOfferStatusEnum } from '../../../infrastructure/partner/enum/partner-offer-status.enum';
+import { RefundPaymentUseCase } from './refund-payment.use-case';
 
 @Injectable()
 export class StartPosUseCase {
@@ -23,6 +24,7 @@ export class StartPosUseCase {
     private readonly orderRepository: IOrderRepository,
     @Inject(Logger) private readonly logger: Logger,
     private readonly posService: IPosService,
+    private readonly refundPaymentUseCase: RefundPaymentUseCase,
     // private readonly gazpromRepository: IGazpromRepository,
     // private readonly partnerRepository: IPartnerRepository,
   ) {}
@@ -75,6 +77,23 @@ export class StartPosUseCase {
       });
 
       if (carWashResponse.sendStatus === SendStatus.FAIL) {
+        if (!isFreeVacuum) {
+          try {
+            await this.refundPaymentUseCase.execute({
+              orderId: order.id,
+              reason: `Ошибка отправки команды запуска: ${carWashResponse.errorMessage}`
+            });
+          } catch (refundError) {
+            this.logger.error(
+              {
+                orderId: order.id,
+                error: refundError.message,
+                action: 'refund_failed_on_send_command'
+              },
+              `Refund failed during send command for order ${order.id}`
+            );
+          }
+        }
         throw new CarwashStartFailedException(carWashResponse.errorMessage);
       }
 
@@ -86,6 +105,24 @@ export class StartPosUseCase {
       );
 
       if (!startSuccess) {
+        if (!isFreeVacuum) {
+          try {
+            await this.refundPaymentUseCase.execute({
+              orderId: order.id,
+              reason: 'Мойка не запустилась после всех попыток'
+            });
+          } catch (refundError) {
+            this.logger.error(
+              {
+                orderId: order.id,
+                error: refundError.message,
+                action: 'refund_failed_on_verification'
+              },
+              `Refund failed during carwash verification for order ${order.id}`
+            );
+          }
+        }
+        
         throw new CarwashStartFailedException(
           'Car wash bay did not start after multiple verification attempts',
         );
