@@ -60,4 +60,11 @@ export class PaymentUsecase {
 
     return credentials;
   }
+
+  public async refund(
+    paymentId: string, 
+    reason: string
+  ) {
+    return await this.paymentRepository.refund(paymentId, reason);
+  }
 }
