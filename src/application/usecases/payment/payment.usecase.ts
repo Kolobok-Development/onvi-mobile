@@ -63,8 +63,10 @@ export class PaymentUsecase {
 
   public async refund(
     paymentId: string, 
+    amount: number,
     reason: string
-  ) {
-    return await this.paymentRepository.refund(paymentId, reason);
+  ) {    
+    const result = await this.paymentRepository.refund(paymentId, amount, reason);
+    return result;
   }
 }

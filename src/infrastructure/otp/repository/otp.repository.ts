@@ -60,7 +60,9 @@ export class OtpRepository implements IOtpRepository {
   }
 
   async send(otp: Otp): Promise<any> {
-    const header: any = this.setHeaders();    
+    const header: any = this.setHeaders();   
+    console.log(otp.otp);
+     
     const params: string = this.setParams(
       '<#> Ваш код доступа: ' + otp.otp,
       otp.phone,

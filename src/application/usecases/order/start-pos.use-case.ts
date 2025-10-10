@@ -78,21 +78,10 @@ export class StartPosUseCase {
 
       if (carWashResponse.sendStatus === SendStatus.FAIL) {
         if (!isFreeVacuum) {
-          try {
-            await this.refundPaymentUseCase.execute({
-              orderId: order.id,
-              reason: `Ошибка отправки команды запуска: ${carWashResponse.errorMessage}`
-            });
-          } catch (refundError) {
-            this.logger.error(
-              {
-                orderId: order.id,
-                error: refundError.message,
-                action: 'refund_failed_on_send_command'
-              },
-              `Refund failed during send command for order ${order.id}`
-            );
-          }
+          await this.refundPaymentUseCase.execute({
+            orderId: order.id,
+            reason: `Ошибка отправки команды запуска: ${carWashResponse.errorMessage}`
+          });
         }
         throw new CarwashStartFailedException(carWashResponse.errorMessage);
       }
@@ -106,23 +95,11 @@ export class StartPosUseCase {
 
       if (!startSuccess) {
         if (!isFreeVacuum) {
-          try {
-            await this.refundPaymentUseCase.execute({
-              orderId: order.id,
-              reason: 'Мойка не запустилась после всех попыток'
-            });
-          } catch (refundError) {
-            this.logger.error(
-              {
-                orderId: order.id,
-                error: refundError.message,
-                action: 'refund_failed_on_verification'
-              },
-              `Refund failed during carwash verification for order ${order.id}`
-            );
-          }
+          await this.refundPaymentUseCase.execute({
+            orderId: order.id,
+            reason: 'Мойка не запустилась после всех попыток проверки'
+          });
         }
-        
         throw new CarwashStartFailedException(
           'Car wash bay did not start after multiple verification attempts',
         );

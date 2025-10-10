@@ -27,11 +27,11 @@ export class RefundPaymentUseCase {
       throw new OrderNotFoundException(data.orderId.toString());
     }
 
-    if (order.orderStatus === OrderStatus.COMPLETED) {
+    if (order.orderStatus !== OrderStatus.PAYED) {
       throw new InvalidOrderStateException(
         order.id.toString(),
         order.orderStatus,
-        OrderStatus.COMPLETED
+        OrderStatus.PAYED
       );
     }
 
@@ -42,6 +42,7 @@ export class RefundPaymentUseCase {
     try {
       const refundResult = await this.paymentUsecase.refund(
         order.transactionId,
+        order.sum,
         data.reason
       );
 
@@ -52,11 +53,6 @@ export class RefundPaymentUseCase {
         refundId: refundResult.id,
         reason: data.reason
       });
-
-      order.orderStatus = OrderStatus.REFUNDED;
-      order.excecutionError = `Refund: ${data.reason}. Refund ID: ${refundResult.id}`;
-      
-      await this.orderRepository.update(order);
 
       this.logger.log(
         {
@@ -76,16 +72,28 @@ export class RefundPaymentUseCase {
         amount: order.sum,
         status: OrderStatus.REFUNDED,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         {
           orderId: order.id,
-          error: error.message,
+          errorMessage: error?.message,
+          errorStack: error?.stack,
+          errorResponse: error?.response?.data,
+          reason: data.reason,
+          transactionId: order.transactionId,
+          orderSum: order.sum
         },
         `Refund failed for order ${order.id}`
       );
-      
-      throw new RefundFailedException(error.message);
+
+      let errorMessage = 'Unknown refund error';
+      if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.response?.data) {
+        errorMessage = JSON.stringify(error.response.data);
+      }
+
+      throw new RefundFailedException(errorMessage);
     }
   }
 }
