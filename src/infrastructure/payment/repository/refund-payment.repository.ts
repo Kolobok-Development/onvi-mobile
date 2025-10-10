@@ -24,7 +24,6 @@ export class RefundRepository implements IRefundPaymentRepository {
       cardId: refundData.cardId,
       refundId: refundData.refundId,
       reason: refundData.reason,
-      createdAt: new Date(),
     });
 
     const savedRefund = await this.refundRepository.save(refundEntity);
