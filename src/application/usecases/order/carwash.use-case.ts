@@ -16,6 +16,10 @@ export class CarwashUseCase {
 
     const orders = await this.orderRepository.getOrdersByCardId(card.cardId, size, page);
     
+    if (!orders || orders.length === 0) {
+      return [];
+    }
+    
     return orders.map(order => order.carWashId);
   }
 }

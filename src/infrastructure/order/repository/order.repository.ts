@@ -91,7 +91,12 @@ export class OrderRepository implements IOrderRepository {
       .groupBy('order.carWashId')
       .getRawMany();
   
-    // 2. Формируем список условий для поиска точных заказов
+    // Если нет последних заказов - сразу возвращаем пустой массив
+    if (latestOrders.length === 0) {
+      return [];
+    }
+    
+  // 2. Формируем список условий для поиска точных заказов
     const latestOrdersMap = new Map<number, Date>();
     latestOrders.forEach((row: any) => {
       latestOrdersMap.set(row.carWashId, new Date(row.maxCreatedAt));
