@@ -32,6 +32,7 @@ import { Logger } from 'nestjs-pino';
 import { Inject } from '@nestjs/common';
 import { CarwashUseCase } from 'src/application/usecases/order/carwash.use-case';
 import { LatestOptionsDto } from '../dto/req/latest-options.dto';
+import { RefundPaymentUseCase } from 'src/application/usecases/order/refund-payment.use-case';
 
 @Controller('order')
 export class OrderController {
@@ -44,6 +45,7 @@ export class OrderController {
     private readonly getOrderByTransactionIdUseCase: GetOrderByTransactionIdUseCase,
     private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
     private readonly carwashUseCase: CarwashUseCase,
+    private readonly refundPaymentUseCase: RefundPaymentUseCase,
     @Inject(Logger) private readonly logger: Logger,
   ) {}
 

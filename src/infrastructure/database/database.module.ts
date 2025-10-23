@@ -19,6 +19,7 @@ import { PartnerEntity } from '../partner/entity/partner.entity';
 import { PartnerClientEntity } from '../partner/entity/partner-client.entity';
 import { CmnCityEntity } from '../cmn-city/entity/cmn-city.entity';
 import { FavoritesEntity } from '../account/entity/favorites.entity';
+import { RefundEntity } from '../payment/entity/refund.entity';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { FavoritesEntity } from '../account/entity/favorites.entity';
           PartnerClientEntity,
           CmnCityEntity,
           FavoritesEntity,
+          RefundEntity,
         ],
       }),
       inject: [ConfigService],
