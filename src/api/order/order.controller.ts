@@ -32,6 +32,8 @@ import { Logger } from 'nestjs-pino';
 import { Inject } from '@nestjs/common';
 import { CarwashUseCase } from 'src/application/usecases/order/carwash.use-case';
 import { LatestOptionsDto } from '../dto/req/latest-options.dto';
+import { PingAllUseCase } from 'src/application/usecases/order/ping-all.use-case';
+import { PingAllRequestDto } from 'src/infrastructure/pos/dto/ping-all-request.dto';
 
 @Controller('order')
 export class OrderController {
@@ -44,6 +46,7 @@ export class OrderController {
     private readonly getOrderByTransactionIdUseCase: GetOrderByTransactionIdUseCase,
     private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
     private readonly carwashUseCase: CarwashUseCase,
+    private readonly pingAllUseCase: PingAllUseCase,
     @Inject(Logger) private readonly logger: Logger,
   ) {}
 
@@ -145,6 +148,32 @@ export class OrderController {
       bayNumber: Number(query.bayNumber),
       type: query?.bayType,
     });
+  }
+
+  @Get('ping-all')
+  @UseGuards(JwtGuard)
+  async pingAll(@Query() query: PingAllRequestDto) {
+    try {
+      const bayNumbers = query.bayNumbers.split(',').map(num => {
+        const parsed = parseInt(num.trim(), 10);
+        if (isNaN(parsed)) {
+          throw new Error(`Invalid bay number: ${num}`);
+        }
+        return parsed;
+      });
+
+      return await this.pingAllUseCase.execute(
+        query.carWashId,
+        bayNumbers,
+        query.bayType,
+      );
+    } catch (e) {
+      this.logger.error(`Error in ping-all endpoint: ${e.message}`, e.stack);
+      throw new CustomHttpException({
+        message: e.message,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
+    }
   }
 
   @Get('transaction/:transactionId')
