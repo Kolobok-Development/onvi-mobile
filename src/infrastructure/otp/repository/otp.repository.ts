@@ -8,7 +8,8 @@ import { MoreThanOrEqual } from 'typeorm';
 import { Logger } from 'nestjs-pino';
 import { Observable } from 'rxjs';
 import { SendSmsResponseDto } from '../../../application/usecases/auth/dto/send-sms.dto';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import { AuthentificationException } from '../../../domain/otp/exceptions/authentification.exception';
 import * as url from 'url';
@@ -67,19 +68,41 @@ export class OtpRepository implements IOtpRepository {
       otp.phone,
     );
     try {
-      return this.httpService
-        .post(this.urlSms, params, header)
-        .pipe(
-          map(() => {
-            return { message: 'Success', to: otp.phone };
-          }),
-        )
-        .subscribe((result) => {
-          console.log(result); // Здесь выведется результат операции map
-        });
+      const result = await firstValueFrom(
+        this.httpService
+          .post(this.urlSms, params, header)
+          .pipe(
+            map(() => {
+              return { message: 'Success', to: otp.phone };
+            }),
+            catchError((error) => {
+              this.logger.error(
+                {
+                  error: error.message,
+                  phone: otp.phone,
+                  url: this.urlSms,
+                },
+                `Failed to send OTP to ${otp.phone}`,
+              );
+              throw new AuthentificationException([
+                `Error sending otp to ${otp.phone}: ${error.message}`,
+              ]);
+            }),
+          ),
+      );
+      
+      this.logger.log(
+        { phone: otp.phone },
+        `OTP sent successfully to ${otp.phone}`,
+      );
+      
+      return result;
     } catch (e) {
+      if (e instanceof AuthentificationException) {
+        throw e;
+      }
       throw new AuthentificationException([
-        `Error sending otp to ${otp.phone}`,
+        `Error sending otp to ${otp.phone}: ${e.message}`,
       ]);
     }
   }
