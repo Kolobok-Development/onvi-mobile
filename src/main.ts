@@ -8,7 +8,7 @@ import { ValidationException } from './infrastructure/common/exceptions/validati
 import { Logger } from 'nestjs-pino';
 import * as process from 'node:process';
 //import * as helmet from 'helmet';
-import { helmetConfig } from './infrastructure/security/helmet.config';
+//import { helmetConfig } from './infrastructure/security/helmet.config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -24,6 +24,8 @@ async function bootstrap() {
   );
   const logger = app.get(Logger);
   app.useLogger(logger);
+  // Store app instance for logger access in interceptor
+  ResponseInterceptor.setAppInstance(app);
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new AllExceptionFilter(logger));
   app.setGlobalPrefix('/api/v2');

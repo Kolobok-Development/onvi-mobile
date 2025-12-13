@@ -3,7 +3,6 @@ import {
   ExecutionContext,
   Injectable,
   NestInterceptor,
-  Inject,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -18,7 +17,22 @@ export class ResponseFormat {
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
-  constructor(@Inject(Logger) private readonly logger: Logger) {}
+  private static appInstance: any = null;
+
+  static setAppInstance(app: any): void {
+    ResponseInterceptor.appInstance = app;
+  }
+
+  private getLogger(): Logger | null {
+    try {
+      if (ResponseInterceptor.appInstance) {
+        return ResponseInterceptor.appInstance.get(Logger);
+      }
+    } catch (e) {
+      // If logger is not available, return null (logging will be skipped)
+    }
+    return null;
+  }
 
   intercept(
     context: ExecutionContext,
@@ -62,45 +76,48 @@ export class ResponseInterceptor implements NestInterceptor {
 
         // Log slow requests (>1s) or errors for debugging
         if (duration > 1000 || statusCode >= 400) {
-          const logData = {
-            request: {
-              id: requestId,
-              method: request.method,
-              url: request.url,
-              path: request.path,
-              query: request.query,
-              params: request.params,
-              ip: ipAddress,
-              userAgent: request.headers['user-agent'] || null,
-              duration: `${duration}ms`,
-            },
-            response: {
-              statusCode: statusCode,
-              duration: `${duration}ms`,
-            },
-            user: userId
-              ? {
-                  id: userId,
-                  phone: userPhone,
-                }
-              : null,
-            context: {
-              timestamp: new Date().toISOString(),
-              environment: process.env.NODE_ENV || 'production',
-              service: 'onvi-mobile-api',
-            },
-          };
+          const logger = this.getLogger();
+          if (logger) {
+            const logData = {
+              request: {
+                id: requestId,
+                method: request.method,
+                url: request.url,
+                path: request.path,
+                query: request.query,
+                params: request.params,
+                ip: ipAddress,
+                userAgent: request.headers['user-agent'] || null,
+                duration: `${duration}ms`,
+              },
+              response: {
+                statusCode: statusCode,
+                duration: `${duration}ms`,
+              },
+              user: userId
+                ? {
+                    id: userId,
+                    phone: userPhone,
+                  }
+                : null,
+              context: {
+                timestamp: new Date().toISOString(),
+                environment: process.env.NODE_ENV || 'production',
+                service: 'onvi-mobile-api',
+              },
+            };
 
-          if (statusCode >= 400) {
-            this.logger.warn(
-              logData,
-              `[${statusCode}] ${request.method} ${request.url} - ${duration}ms`,
-            );
-          } else if (duration > 1000) {
-            this.logger.warn(
-              logData,
-              `[SLOW] ${request.method} ${request.url} - ${duration}ms`,
-            );
+            if (statusCode >= 400) {
+              logger.warn(
+                logData,
+                `[${statusCode}] ${request.method} ${request.url} - ${duration}ms`,
+              );
+            } else if (duration > 1000) {
+              logger.warn(
+                logData,
+                `[SLOW] ${request.method} ${request.url} - ${duration}ms`,
+              );
+            }
           }
         }
       }),
