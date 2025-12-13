@@ -33,6 +33,16 @@ import { RefundEntity } from '../payment/entity/refund.entity';
         password: configService.get('DB_PASSWORD'),
         sid: configService.get('DB_SID'),
         synchronize: false,
+        extra: {
+          // Oracle connection pool configuration to prevent NJS-040 timeout errors
+          // These settings control the oracledb driver's connection pool
+          poolMax: parseInt(configService.get('DB_POOL_MAX') || '20', 10), // Maximum connections in pool (default: 4, increased to 20)
+          poolMin: parseInt(configService.get('DB_POOL_MIN') || '5', 10), // Minimum connections in pool (default: 0, set to 5)
+          poolIncrement: parseInt(configService.get('DB_POOL_INCREMENT') || '2', 10), // Connections to add when pool grows (default: 1)
+          queueTimeout: parseInt(configService.get('DB_QUEUE_TIMEOUT') || '120000', 10), // Timeout for queued requests in ms (default: 60000, increased to 120s)
+          poolTimeout: parseInt(configService.get('DB_POOL_TIMEOUT') || '60', 10), // Seconds before idle connection is closed
+          enableStatistics: false,
+        },
         entities: [
           ClientEntity,
           CardEntity,

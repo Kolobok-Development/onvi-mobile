@@ -6,11 +6,8 @@ import { Repository } from 'typeorm';
 import { Injectable, Inject } from '@nestjs/common';
 import { MoreThanOrEqual } from 'typeorm';
 import { Logger } from 'nestjs-pino';
-import { Observable } from 'rxjs';
-import { SendSmsResponseDto } from '../../../application/usecases/auth/dto/send-sms.dto';
 import { map, catchError } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
-import { AxiosResponse } from 'axios';
 import { AuthentificationException } from '../../../domain/otp/exceptions/authentification.exception';
 import * as url from 'url';
 import { HttpService } from '@nestjs/axios';
@@ -61,46 +58,81 @@ export class OtpRepository implements IOtpRepository {
   }
 
   async send(otp: Otp): Promise<any> {
-    const header: any = this.setHeaders();   
-     
+    const header: any = this.setHeaders();
+    const startTime = Date.now();
+
     const params: string = this.setParams(
       '<#> Ваш код доступа: ' + otp.otp,
       otp.phone,
     );
     try {
       const result = await firstValueFrom(
-        this.httpService
-          .post(this.urlSms, params, header)
-          .pipe(
-            map(() => {
-              return { message: 'Success', to: otp.phone };
-            }),
-            catchError((error) => {
-              this.logger.error(
-                {
-                  error: error.message,
-                  phone: otp.phone,
-                  url: this.urlSms,
+        this.httpService.post(this.urlSms, params, header).pipe(
+          map(() => {
+            return { message: 'Success', to: otp.phone };
+          }),
+          catchError((error) => {
+            const duration = Date.now() - startTime;
+            this.logger.error(
+              {
+                context: 'OTP_SEND',
+                action: 'send_otp_failed',
+                phone: otp.phone,
+                duration: `${duration}ms`,
+                error: {
+                  message: error.message,
+                  code: error.code || null,
+                  status: error.response?.status || null,
+                  statusText: error.response?.statusText || null,
                 },
-                `Failed to send OTP to ${otp.phone}`,
-              );
-              throw new AuthentificationException([
-                `Error sending otp to ${otp.phone}: ${error.message}`,
-              ]);
-            }),
-          ),
+                smsProvider: {
+                  url: this.urlSms,
+                  login: this.loginSms,
+                },
+                timestamp: new Date().toISOString(),
+              },
+              `Failed to send OTP to ${otp.phone}: ${error.message}`,
+            );
+            throw new AuthentificationException([
+              `Error sending otp to ${otp.phone}: ${error.message}`,
+            ]);
+          }),
+        ),
       );
-      
+
+      const duration = Date.now() - startTime;
       this.logger.log(
-        { phone: otp.phone },
-        `OTP sent successfully to ${otp.phone}`,
+        {
+          context: 'OTP_SEND',
+          action: 'send_otp_success',
+          phone: otp.phone,
+          duration: `${duration}ms`,
+          timestamp: new Date().toISOString(),
+        },
+        `OTP sent successfully to ${otp.phone} in ${duration}ms`,
       );
-      
+
       return result;
     } catch (e) {
       if (e instanceof AuthentificationException) {
         throw e;
       }
+      const duration = Date.now() - startTime;
+      this.logger.error(
+        {
+          context: 'OTP_SEND',
+          action: 'send_otp_exception',
+          phone: otp.phone,
+          duration: `${duration}ms`,
+          error: {
+            message: e.message,
+            name: e.name || 'Error',
+            stack: e.stack || null,
+          },
+          timestamp: new Date().toISOString(),
+        },
+        `Unexpected error sending OTP to ${otp.phone}: ${e.message}`,
+      );
       throw new AuthentificationException([
         `Error sending otp to ${otp.phone}: ${e.message}`,
       ]);

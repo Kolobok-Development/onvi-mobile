@@ -69,30 +69,73 @@ import { TrustedHostsMiddleware } from './infrastructure/security/trusted-hosts.
           },
           serializers: {
             req(req) {
-              // req.body = req.raw;
-              // req.params = req.raw.params;
-              // req.query = req.raw.query;
-              // req.id = req.id || req.raw.id;
-              return req;
+              // Extract user context if available
+              const user = (req as any).user;
+              const userId = user?.clientId || user?.id || null;
+              const userPhone = user?.correctPhone || user?.phone || null;
+
+              // Extract IP address
+              const ipAddress =
+                req.headers['x-forwarded-for']?.toString() ||
+                req.ip ||
+                req.connection?.remoteAddress ||
+                'unknown';
+
+              return {
+                id: req.id || `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+                method: req.method,
+                url: req.url,
+                path: req.path,
+                route: req.route?.path || null,
+                query: req.query || {},
+                params: req.params || {},
+                headers: {
+                  'user-agent': req.headers['user-agent'] || null,
+                  'content-type': req.headers['content-type'] || null,
+                  'accept': req.headers['accept'] || null,
+                  'x-forwarded-for': req.headers['x-forwarded-for'] || null,
+                },
+                ip: ipAddress,
+                user: userId
+                  ? {
+                      id: userId,
+                      phone: userPhone,
+                    }
+                  : null,
+                timestamp: new Date().toISOString(),
+              };
             },
             res(res) {
               return {
                 statusCode: res.statusCode,
-                responseTime: res.responseTime,
-                headers: res.headers,
+                statusMessage: res.statusMessage,
+                responseTime: res.responseTime || null,
+                headers: {
+                  'content-type': res.headers?.['content-type'] || null,
+                  'content-length': res.headers?.['content-length'] || null,
+                },
               };
             },
             err(err) {
               return {
-                type: err.type || err.constructor.name,
-                message: err.message,
-                stack: err.stack,
-                code: err.code,
-                statusCode: err.statusCode,
-                cause: err.cause,
-                source: err.source,
-                details: err.details || err.originalError,
-                requestId: err.requestId,
+                type: err.type || err.constructor?.name || 'Error',
+                message: err.message || 'Unknown error',
+                stack: err.stack || null,
+                code: err.code || null,
+                statusCode: err.statusCode || null,
+                cause: err.cause || null,
+                source: err.source || 'unknown',
+                details: err.details || err.originalError || null,
+                requestId: err.requestId || null,
+                // Database-specific error details
+                ...(err.code?.startsWith('NJS-') && {
+                  databaseError: {
+                    code: err.code,
+                    message: err.message,
+                    ...(err.errorNum && { errorNum: err.errorNum }),
+                    ...(err.offset && { offset: err.offset }),
+                  },
+                }),
               };
             },
           },

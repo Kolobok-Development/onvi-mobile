@@ -156,30 +156,67 @@ export class AllExceptionFilter implements ExceptionFilter {
     // Attach requestId to the response
     responseData['requestId'] = requestId;
 
-    // Add the request ID to the error object for correlation
-    const errorObj = {
-      err: {
-        ...exception,
+    // Extract user context if available
+    const user = (request as any).user;
+    const userId = user?.clientId || user?.id || null;
+    const userPhone = user?.correctPhone || user?.phone || null;
+
+    // Extract IP address
+    const ipAddress =
+      request.headers['x-forwarded-for']?.toString() ||
+      request.ip ||
+      request.connection?.remoteAddress ||
+      'unknown';
+
+    // Calculate request duration if available
+    const requestStartTime = (request as any).startTime || Date.now();
+    const duration = Date.now() - requestStartTime;
+
+    // Build structured error log for Logtail
+    const errorLog = {
+      // Request context
+      request: {
+        id: requestId,
+        method: request.method,
+        url: request.url,
+        path: request.path,
+        route: request.route?.path || null,
+        query: request.query,
+        params: request.params,
+        ip: ipAddress,
+        userAgent: request.headers['user-agent'] || null,
+        referer: request.headers['referer'] || null,
+        duration: `${duration}ms`,
+      },
+      // User context
+      user: userId
+        ? {
+            id: userId,
+            phone: userPhone,
+          }
+        : null,
+      // Error details
+      error: {
         type: errorResponse.type,
         source: errorResponse.source,
-        details: errorResponse.details,
-        requestId,
+        code: errorResponse.innerCode,
+        message: errorResponse.message,
+        name: exception.name || 'Error',
+        stack: exception.stack || null,
+        ...errorResponse.details,
       },
-      req: {
-        id: requestId,
-        url: request.url,
-        method: request.method,
-        body: request.body,
-        params: request.params,
-        query: request.query,
-        headers: request.headers,
+      // Additional context
+      context: {
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'production',
+        service: 'onvi-mobile-api',
       },
     };
 
-    // Log the error to Logtail with rich context
+    // Log the error to Logtail with structured context
     this.logger.error(
-      errorObj,
-      `Exception caught: ${errorResponse.source} error during ${request.method} ${request.url}`,
+      errorLog,
+      `[${errorResponse.source}] ${request.method} ${request.url} - ${errorResponse.message}`,
     );
 
     response.status(status).json(responseData);
