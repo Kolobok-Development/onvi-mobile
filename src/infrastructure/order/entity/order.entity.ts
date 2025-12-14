@@ -1,6 +1,12 @@
-import {Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
-import {DeviceType} from "../../../domain/order/enum/device-type.enum";
-import {CardEntity} from "../../account/entity/card.entity";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { DeviceType } from '../../../domain/order/enum/device-type.enum';
+import { CardEntity } from '../../account/entity/card.entity';
 
 @Entity({ name: 'ONVI_ORDERS', synchronize: false })
 export class OrderEntity {
@@ -44,7 +50,7 @@ export class OrderEntity {
   @Column({ nullable: true, name: 'excecutionError' })
   excecutionError: string;
 
-  @Column({name: 'CASHBACK_AMOUNT'})
+  @Column({ name: 'CASHBACK_AMOUNT' })
   cashback: number;
 
   @Column({ name: 'bayType' })

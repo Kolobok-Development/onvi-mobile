@@ -220,7 +220,7 @@ describe('StartPosUseCase', () => {
       const updatedOrder = orderRepository.update.mock.calls[0][0];
       expect(updatedOrder.orderStatus).toBe(OrderStatus.FAILED);
       expect(updatedOrder.excecutionError).toEqual(
-        expect.stringMatching(/^Failed to start carwash/)
+        expect.stringMatching(/^Failed to start carwash/),
       );
 
       expect(logger.log).toHaveBeenCalledWith(

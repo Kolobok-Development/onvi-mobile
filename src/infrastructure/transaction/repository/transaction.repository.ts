@@ -65,15 +65,15 @@ export class TransactionRepository implements ITransactionRepository {
     userId?: string,
   ): Promise<any> {
     const addOperationQuery = `begin cwash.CARD_PKG.add_oper(:p1, :p2, :p3, :p4, :p5); end;`;
-  
+
     await this.dataSource.query(addOperationQuery, [
-      cardId,          // :p1
-      typeOperId,      // :p2
-      sum,             // :p3
+      cardId, // :p1
+      typeOperId, // :p2
+      sum, // :p3
       comment || null, // :p4
-      userId || null,  // :p5
+      userId || null, // :p5
     ]);
-  
+
     return { success: true };
   }
 }

@@ -7,14 +7,13 @@ import { Client } from '../../../domain/account/client/model/client';
 import { ClientMapper } from '../mapper/client.mapper';
 import { Logger } from 'nestjs-pino';
 
-
 @Injectable()
 export class ClientRepository implements IClientRepository {
   constructor(
     @InjectRepository(ClientEntity)
     private readonly clientRepository: Repository<ClientEntity>,
     @Inject(Logger) private readonly logger: Logger,
-  ) { }
+  ) {}
 
   async create(client: Client): Promise<Client> {
     const clientEntity = ClientMapper.toClientEntity(client);
@@ -32,9 +31,9 @@ export class ClientRepository implements IClientRepository {
     });
 
     this.logger.log({
-      message: "client",
-      client: client
-    })
+      message: 'client',
+      client: client,
+    });
 
     if (!client) return null;
 
@@ -59,14 +58,18 @@ export class ClientRepository implements IClientRepository {
   async findOneOldClientByPhone(phone: string): Promise<Client> {
     const client = await this.clientRepository
       .createQueryBuilder('client')
-      .leftJoinAndSelect('client.cards', 'cards') 
+      .leftJoinAndSelect('client.cards', 'cards')
       .where('client.correctPhone = :phone', { phone })
-      .andWhere(new Brackets(qb => {
-        qb.where('client.userOnvi IS NULL') 
-          .orWhere('client.userOnvi != :userOnvi', { userOnvi: 1 });
-      }))
-      .orderBy('client.INS_DATE', 'DESC') 
-      .getOne(); 
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('client.userOnvi IS NULL').orWhere(
+            'client.userOnvi != :userOnvi',
+            { userOnvi: 1 },
+          );
+        }),
+      )
+      .orderBy('client.INS_DATE', 'DESC')
+      .getOne();
 
     if (!client) return null;
     return ClientMapper.fromEntity(client);
@@ -88,10 +91,10 @@ export class ClientRepository implements IClientRepository {
     const { clientId, ...updatedData } = clientEntity;
 
     this.logger.log({
-      message: "Client repo update",
+      message: 'Client repo update',
       clientId: clientId,
-      updatedData: updatedData
-    })
+      updatedData: updatedData,
+    });
 
     const updatedClient = await this.clientRepository.update(
       {

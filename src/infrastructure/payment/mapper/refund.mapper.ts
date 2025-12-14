@@ -1,29 +1,13 @@
-import { Refund } from "src/domain/payment/model/refund";
-import { RefundEntity } from "../entity/refund.entity";
+import { Refund } from 'src/domain/payment/model/refund';
+import { RefundEntity } from '../entity/refund.entity';
 
 export class RefundMapper {
   static fromEntity(entity: RefundEntity): Refund {
-    const {
-      id,
-      orderId,
-      sum,
-      cardId,
-      refundId,
-      createdAt,
-      reason
-    } = entity;
+    const { id, orderId, sum, cardId, refundId, createdAt, reason } = entity;
 
-    return new Refund(
-      id,
-      orderId,
-      sum,
-      cardId,
-      refundId,
-      createdAt,
-      reason
-    );
+    return new Refund(id, orderId, sum, cardId, refundId, createdAt, reason);
   }
-  
+
   static toRefundEntity(refund: Refund): RefundEntity {
     const refundEntity = new RefundEntity();
 

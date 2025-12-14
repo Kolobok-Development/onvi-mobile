@@ -1,7 +1,7 @@
-import {IsNotEmpty, IsNumber} from "class-validator";
+import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export class AccountFavoritesDto {
-    @IsNumber()
-    @IsNotEmpty({ message: 'carwashId is required' })
-    carwashId: number;
+  @IsNumber()
+  @IsNotEmpty({ message: 'carwashId is required' })
+  carwashId: number;
 }

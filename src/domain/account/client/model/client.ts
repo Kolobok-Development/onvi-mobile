@@ -7,8 +7,8 @@ import { ClientEntity } from '../../../../infrastructure/account/entity/client.e
 import { CardEntity } from '../../../../infrastructure/account/entity/card.entity';
 import { AccountShortClientDto } from '../../../dto/account-short-client.dto';
 import { AvatarType } from '../enum/avatar.enum';
-import {OnviMeta} from "./onviMeta";
-import {CardMapper} from "../../../../infrastructure/account/mapper/card.mapper";
+import { OnviMeta } from './onviMeta';
+import { CardMapper } from '../../../../infrastructure/account/mapper/card.mapper';
 
 export class Client {
   clientId?: number;

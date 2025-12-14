@@ -31,7 +31,7 @@ export class RefundPaymentUseCase {
       throw new InvalidOrderStateException(
         order.id.toString(),
         order.orderStatus,
-        OrderStatus.PAYED
+        OrderStatus.PAYED,
       );
     }
 
@@ -43,7 +43,7 @@ export class RefundPaymentUseCase {
       const refundResult = await this.paymentUsecase.refund(
         order.transactionId,
         order.sum,
-        data.reason
+        data.reason,
       );
 
       const refundRecordId = await this.refundPaymentRepository.createRefund({
@@ -51,7 +51,7 @@ export class RefundPaymentUseCase {
         sum: order.sum,
         cardId: order.card.cardId,
         refundId: refundResult.id,
-        reason: data.reason
+        reason: data.reason,
       });
 
       this.logger.log(
@@ -62,7 +62,7 @@ export class RefundPaymentUseCase {
           amount: order.sum,
           reason: data.reason,
         },
-        `Refund successful for order ${order.id}. Refund record ID: ${refundRecordId}`
+        `Refund successful for order ${order.id}. Refund record ID: ${refundRecordId}`,
       );
 
       return {
@@ -81,9 +81,9 @@ export class RefundPaymentUseCase {
           errorResponse: error?.response?.data,
           reason: data.reason,
           transactionId: order.transactionId,
-          orderSum: order.sum
+          orderSum: order.sum,
         },
-        `Refund failed for order ${order.id}`
+        `Refund failed for order ${order.id}`,
       );
 
       let errorMessage = 'Unknown refund error';

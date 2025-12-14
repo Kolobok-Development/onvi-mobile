@@ -23,7 +23,7 @@ import { PromocodeModule } from '../promo-code/promocode.module';
     DateModule,
     EnvConfigModule,
     BcryptModule,
-    PromocodeModule
+    PromocodeModule,
   ],
   controllers: [AuthController],
   providers: [

@@ -1,8 +1,8 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CardEntity } from './card.entity';
-import {AvatarType} from "../../../domain/account/client/enum/avatar.enum";
-import {PromoCodeToUserEntity} from "../../promo-code/entity/promo-code-to-user.entity";
-import {PartnerClientEntity} from "../../partner/entity/partner-client.entity";
+import { AvatarType } from '../../../domain/account/client/enum/avatar.enum';
+import { PromoCodeToUserEntity } from '../../promo-code/entity/promo-code-to-user.entity';
+import { PartnerClientEntity } from '../../partner/entity/partner-client.entity';
 
 @Entity({ name: 'CRDCLIENT', synchronize: false })
 export class ClientEntity {
@@ -87,15 +87,15 @@ export class ClientEntity {
   @Column({ name: 'IS_NOTIFICATIONS', type: 'number' })
   isNotifications: number;
 
-  @Column({ name: 'AVATAR_ONVI', type: 'varchar2'})
+  @Column({ name: 'AVATAR_ONVI', type: 'varchar2' })
   avatarOnvi: AvatarType;
 
   @OneToMany(() => CardEntity, (card: CardEntity) => card.client)
   cards: CardEntity[];
 
-  @OneToMany(()=> PromoCodeToUserEntity, (promoCode) => promoCode.client)
+  @OneToMany(() => PromoCodeToUserEntity, (promoCode) => promoCode.client)
   promoCodes: PromoCodeToUserEntity[];
 
-  @OneToMany(()=> PartnerClientEntity, (partnerClient) => partnerClient.client)
+  @OneToMany(() => PartnerClientEntity, (partnerClient) => partnerClient.client)
   partners: PartnerClientEntity[];
 }

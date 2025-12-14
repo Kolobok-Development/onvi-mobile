@@ -13,11 +13,9 @@ export const Throttle = (limit: number, ttl: number) =>
 /**
  * Decorator that applies a specific throttle type to a route
  */
-export const ThrottleType = (type: string) =>
-  SetMetadata('throttleType', type);
+export const ThrottleType = (type: string) => SetMetadata('throttleType', type);
 
 /**
  * Decorator that skips throttling for a controller or a route
  */
-export const SkipThrottle = (skip = true) =>
-  SetMetadata(THROTTLER_SKIP, skip);
+export const SkipThrottle = (skip = true) => SetMetadata(THROTTLER_SKIP, skip);

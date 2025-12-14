@@ -23,7 +23,7 @@ export class AccountTransferUseCase {
     private readonly promoCodeUsecase: PromocodeUsecase,
     private readonly clientRepository: IClientRepository,
     @Inject(Logger) private readonly logger: Logger,
-  ) { }
+  ) {}
 
   async transferData(
     devNomer: string,
@@ -78,7 +78,10 @@ export class AccountTransferUseCase {
         },
         `Balance transfer failed for client ${client.clientId}: client phone number and old client did not happen`,
       );
-      throw new PhoneNumbersDoNotMatch(client.correctPhone, oldClient.correctPhone);
+      throw new PhoneNumbersDoNotMatch(
+        client.correctPhone,
+        oldClient.correctPhone,
+      );
     }
 
     if (!oldClient || oldClient.userOnvi === 1) {
@@ -188,27 +191,24 @@ export class AccountTransferUseCase {
         `Old card transaction added for balance transfer: ${extId}`,
       );
 
-
       const airBalance = input.airBalance;
 
-      this.logger.log(
-        {
-          message: `airBalance: ${airBalance}`
-        }
-      );
+      this.logger.log({
+        message: `airBalance: ${airBalance}`,
+      });
 
       if (airBalance === 0 || airBalance < 50) {
-        return ;
+        return;
       }
 
       const maxPromoCodeValue = 300;
       const numberOfFullPromoCodes = Math.floor(airBalance / maxPromoCodeValue);
       const remainder = airBalance % maxPromoCodeValue;
       const promoCodes = [];
-    
+
       const expirationDate = new Date();
       expirationDate.setMonth(expirationDate.getMonth() + 6);
-    
+
       // Создание полных промокодов по 300 рублей
       for (let i = 0; i < numberOfFullPromoCodes; i++) {
         const promoCodeData = new PromoCode(
@@ -224,10 +224,10 @@ export class AccountTransferUseCase {
             updatedAt: new Date(),
           },
         );
-    
+
         const promoCode = await this.promoCodeUsecase.create(promoCodeData);
         await this.promoCodeUsecase.bindClient(promoCode, client);
-    
+
         this.logger.log(
           {
             action: 'promo_code_created',
@@ -244,7 +244,7 @@ export class AccountTransferUseCase {
 
         promoCodes.push(promoCode);
       }
-    
+
       // Создание дополнительного промокода на остаток, если он есть
       if (remainder > 0) {
         const promoCodeData = new PromoCode(
@@ -260,15 +260,15 @@ export class AccountTransferUseCase {
             updatedAt: new Date(),
           },
         );
-    
+
         const promoCode = await this.promoCodeUsecase.create(promoCodeData);
         await this.promoCodeUsecase.bindClient(promoCode, client);
-    
+
         this.logger.log(
           {
             action: 'promo_code_created',
             timestamp: new Date(),
-            clientId:  client.clientId,
+            clientId: client.clientId,
             details: JSON.stringify({
               promoCode: promoCode.code,
               discount: remainder,

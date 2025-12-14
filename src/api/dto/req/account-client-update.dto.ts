@@ -1,5 +1,11 @@
-import {IsBoolean, IsEmail, IsNumber, IsOptional, IsString} from 'class-validator';
-import {AvatarType} from "../../../domain/account/client/enum/avatar.enum";
+import {
+  IsBoolean,
+  IsEmail,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { AvatarType } from '../../../domain/account/client/enum/avatar.enum';
 
 export class AccountClientUpdateDto {
   @IsOptional()
@@ -13,5 +19,5 @@ export class AccountClientUpdateDto {
   avatar?: number;
   @IsOptional()
   @IsBoolean()
-  notification?: boolean
+  notification?: boolean;
 }

@@ -50,7 +50,9 @@ describe('GetOrderByTransactionIdUseCase', () => {
       ],
     }).compile();
 
-    useCase = module.get<GetOrderByTransactionIdUseCase>(GetOrderByTransactionIdUseCase);
+    useCase = module.get<GetOrderByTransactionIdUseCase>(
+      GetOrderByTransactionIdUseCase,
+    );
     orderRepository = module.get<IOrderRepository>(IOrderRepository);
     logger = module.get<Logger>(Logger);
   });
@@ -61,11 +63,15 @@ describe('GetOrderByTransactionIdUseCase', () => {
 
   describe('execute', () => {
     it('should return order details when found by transaction ID', async () => {
-      jest.spyOn(orderRepository, 'findByTransactionId').mockResolvedValue(mockOrder as Order);
+      jest
+        .spyOn(orderRepository, 'findByTransactionId')
+        .mockResolvedValue(mockOrder as Order);
 
       const result = await useCase.execute('txn_12345');
 
-      expect(orderRepository.findByTransactionId).toHaveBeenCalledWith('txn_12345');
+      expect(orderRepository.findByTransactionId).toHaveBeenCalledWith(
+        'txn_12345',
+      );
       expect(result).toEqual({
         id: mockOrder.id,
         status: mockOrder.orderStatus,
@@ -89,10 +95,16 @@ describe('GetOrderByTransactionIdUseCase', () => {
     });
 
     it('should throw OrderNotFoundException when order not found', async () => {
-      jest.spyOn(orderRepository, 'findByTransactionId').mockResolvedValue(null);
+      jest
+        .spyOn(orderRepository, 'findByTransactionId')
+        .mockResolvedValue(null);
 
-      await expect(useCase.execute('non_existent_txn')).rejects.toThrow(OrderNotFoundException);
-      expect(orderRepository.findByTransactionId).toHaveBeenCalledWith('non_existent_txn');
+      await expect(useCase.execute('non_existent_txn')).rejects.toThrow(
+        OrderNotFoundException,
+      );
+      expect(orderRepository.findByTransactionId).toHaveBeenCalledWith(
+        'non_existent_txn',
+      );
     });
 
     it('should calculate estimated card balance when reward points are used', async () => {
@@ -100,11 +112,15 @@ describe('GetOrderByTransactionIdUseCase', () => {
         ...mockOrder,
         rewardPointsUsed: 200,
       };
-      jest.spyOn(orderRepository, 'findByTransactionId').mockResolvedValue(orderWithPoints as Order);
+      jest
+        .spyOn(orderRepository, 'findByTransactionId')
+        .mockResolvedValue(orderWithPoints as Order);
 
       const result = await useCase.execute('txn_12345');
 
-      expect(result.card.balance).toBe(orderWithPoints.card.balance - orderWithPoints.rewardPointsUsed);
+      expect(result.card.balance).toBe(
+        orderWithPoints.card.balance - orderWithPoints.rewardPointsUsed,
+      );
     });
 
     it('should handle null card information', async () => {
@@ -112,7 +128,9 @@ describe('GetOrderByTransactionIdUseCase', () => {
         ...mockOrder,
         card: null,
       };
-      jest.spyOn(orderRepository, 'findByTransactionId').mockResolvedValue(orderWithoutCard as Order);
+      jest
+        .spyOn(orderRepository, 'findByTransactionId')
+        .mockResolvedValue(orderWithoutCard as Order);
 
       const result = await useCase.execute('txn_12345');
 

@@ -35,26 +35,29 @@ describe('PromocodeUsecase', () => {
     beforeEach(() => {
       mockCard = new Card();
       mockCard.cardId = 123;
-      
+
       mockClient = new Client();
       mockClient.clientId = 1;
       mockClient.getCard = jest.fn().mockReturnValue(mockCard);
-      
-      mockActivePromoCodes = [
-        new PromoCode(),
-        new PromoCode(),
-      ];
+
+      mockActivePromoCodes = [new PromoCode(), new PromoCode()];
     });
 
     it('should return active promo codes for the client', async () => {
       // Arrange
-      promoCodeRepository.findByUserAndActive.mockResolvedValue(mockActivePromoCodes);
+      promoCodeRepository.findByUserAndActive.mockResolvedValue(
+        mockActivePromoCodes,
+      );
 
       // Act
-      const result = await promocodeUsecase.getActivePromotionHistoryForClient(mockClient);
+      const result = await promocodeUsecase.getActivePromotionHistoryForClient(
+        mockClient,
+      );
 
       // Assert
-      expect(promoCodeRepository.findByUserAndActive).toHaveBeenCalledWith(mockCard.cardId);
+      expect(promoCodeRepository.findByUserAndActive).toHaveBeenCalledWith(
+        mockCard.cardId,
+      );
       expect(result).toEqual(mockActivePromoCodes);
     });
 
@@ -63,10 +66,14 @@ describe('PromocodeUsecase', () => {
       promoCodeRepository.findByUserAndActive.mockResolvedValue([]);
 
       // Act
-      const result = await promocodeUsecase.getActivePromotionHistoryForClient(mockClient);
+      const result = await promocodeUsecase.getActivePromotionHistoryForClient(
+        mockClient,
+      );
 
       // Assert
-      expect(promoCodeRepository.findByUserAndActive).toHaveBeenCalledWith(mockCard.cardId);
+      expect(promoCodeRepository.findByUserAndActive).toHaveBeenCalledWith(
+        mockCard.cardId,
+      );
       expect(result).toEqual([]);
     });
 
@@ -75,10 +82,14 @@ describe('PromocodeUsecase', () => {
       promoCodeRepository.findByUserAndActive.mockResolvedValue(null);
 
       // Act
-      const result = await promocodeUsecase.getActivePromotionHistoryForClient(mockClient);
+      const result = await promocodeUsecase.getActivePromotionHistoryForClient(
+        mockClient,
+      );
 
       // Assert
-      expect(promoCodeRepository.findByUserAndActive).toHaveBeenCalledWith(mockCard.cardId);
+      expect(promoCodeRepository.findByUserAndActive).toHaveBeenCalledWith(
+        mockCard.cardId,
+      );
       expect(result).toBeNull();
     });
   });
@@ -112,7 +123,9 @@ describe('PromocodeUsecase', () => {
       promoCodeRepository.create.mockRejectedValue(error);
 
       // Act & Assert
-      await expect(promocodeUsecase.create(mockPromoCode)).rejects.toThrow(error);
+      await expect(promocodeUsecase.create(mockPromoCode)).rejects.toThrow(
+        error,
+      );
       expect(promoCodeRepository.create).toHaveBeenCalledWith(mockPromoCode);
     });
   });
@@ -124,7 +137,7 @@ describe('PromocodeUsecase', () => {
     beforeEach(() => {
       mockClient = new Client();
       mockClient.clientId = 1;
-      
+
       mockPromoCode = new PromoCode();
       mockPromoCode.id = 1;
       mockPromoCode.code = 'TESTCODE';
@@ -136,10 +149,16 @@ describe('PromocodeUsecase', () => {
       promoCodeRepository.bindClient.mockResolvedValue(bindResult);
 
       // Act
-      const result = await promocodeUsecase.bindClient(mockPromoCode, mockClient);
+      const result = await promocodeUsecase.bindClient(
+        mockPromoCode,
+        mockClient,
+      );
 
       // Assert
-      expect(promoCodeRepository.bindClient).toHaveBeenCalledWith(mockPromoCode, mockClient);
+      expect(promoCodeRepository.bindClient).toHaveBeenCalledWith(
+        mockPromoCode,
+        mockClient,
+      );
       expect(result).toEqual(bindResult);
     });
 
@@ -149,8 +168,13 @@ describe('PromocodeUsecase', () => {
       promoCodeRepository.bindClient.mockRejectedValue(error);
 
       // Act & Assert
-      await expect(promocodeUsecase.bindClient(mockPromoCode, mockClient)).rejects.toThrow(error);
-      expect(promoCodeRepository.bindClient).toHaveBeenCalledWith(mockPromoCode, mockClient);
+      await expect(
+        promocodeUsecase.bindClient(mockPromoCode, mockClient),
+      ).rejects.toThrow(error);
+      expect(promoCodeRepository.bindClient).toHaveBeenCalledWith(
+        mockPromoCode,
+        mockClient,
+      );
     });
   });
 });

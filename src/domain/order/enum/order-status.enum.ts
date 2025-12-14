@@ -8,5 +8,5 @@ export enum OrderStatus {
   COMPLETED = 'completed',
   CANCELED = 'canceled',
   REFUNDED = 'refunded',
-  FREE_PROCESSING = 'free_processing'
+  FREE_PROCESSING = 'free_processing',
 }

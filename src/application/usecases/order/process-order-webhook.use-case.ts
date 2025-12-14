@@ -2,15 +2,18 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import { IOrderRepository } from '../../../domain/order/order-repository.abstract';
 import {
-  CardForOrderNotFoundException, CashbackAccrualException, OrderNotFoundByTransactionIdException,
-  OrderNotFoundException, RewardPointsWithdrawalException
+  CardForOrderNotFoundException,
+  CashbackAccrualException,
+  OrderNotFoundByTransactionIdException,
+  OrderNotFoundException,
+  RewardPointsWithdrawalException,
 } from '../../../domain/order/exceptions/order-base.exceptions';
 import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
 import { PaymentStatusGatewayWebhookDto } from '../../../api/webhooks/dto/payment-gateway-webhook.dto';
-import {ITransactionRepository} from "../../../domain/transaction/transaction-repository.abstract";
-import {IPosService} from "../../../infrastructure/pos/interface/pos.interface";
+import { ITransactionRepository } from '../../../domain/transaction/transaction-repository.abstract';
+import { IPosService } from '../../../infrastructure/pos/interface/pos.interface';
 
 @Injectable()
 export class ProcessOrderWebhookUseCase {
@@ -27,7 +30,10 @@ export class ProcessOrderWebhookUseCase {
       data.object.id,
     );
 
-    if (!order) throw new OrderNotFoundByTransactionIdException(data.object.id.toString());
+    if (!order)
+      throw new OrderNotFoundByTransactionIdException(
+        data.object.id.toString(),
+      );
 
     this.logger.log(
       {
@@ -65,10 +71,10 @@ export class ProcessOrderWebhookUseCase {
       });
 
       const withdraw = await this.transactionRepository.withdraw(
-          bayDetails.id,
-          order.card.devNomer,
-          order.rewardPointsUsed.toString(),
-          '1',
+        bayDetails.id,
+        order.card.devNomer,
+        order.rewardPointsUsed.toString(),
+        '1',
       );
 
       if (!withdraw) {
@@ -91,7 +97,7 @@ export class ProcessOrderWebhookUseCase {
       if (!accrual) {
         throw new CashbackAccrualException(order.id.toString());
       }
-    } 
+    }
 
     //add to the task
     await this.dataQueue.add('pos-process', {
@@ -101,7 +107,7 @@ export class ProcessOrderWebhookUseCase {
 
   private generateUniqueExt(): string {
     const prefix = 'Transaction';
-    const uniqueId = Date.now(); 
+    const uniqueId = Date.now();
     return `${prefix}_${uniqueId}`;
   }
 }

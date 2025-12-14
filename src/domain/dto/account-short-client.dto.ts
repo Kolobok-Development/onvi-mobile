@@ -1,6 +1,6 @@
 import { Card } from '../account/card/model/card';
 import { AccountShortCardDto } from './account-short-card.dto';
-import {OnviMeta} from "../account/client/model/onviMeta";
+import { OnviMeta } from '../account/client/model/onviMeta';
 
 export interface AccountShortClientDto {
   id: number;

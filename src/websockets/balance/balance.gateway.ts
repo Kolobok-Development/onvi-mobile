@@ -23,11 +23,12 @@ import { Client } from '../../domain/account/client/model/client';
 })
 @UseFilters(WebsocketExceptionsFilter)
 export class BalanceGateway
-  implements OnGatewayConnection, OnGatewayDisconnect {
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   constructor(
     @Inject(Logger) private readonly logger: Logger,
     private readonly cardService: CardService,
-  ) { }
+  ) {}
 
   @WebSocketServer()
   server: Server;
@@ -61,7 +62,9 @@ export class BalanceGateway
     if (user) {
       this.associateUserWithSocket(client, user);
     } else {
-      this.logger.log(`No authenticated user found in handshake for client ${client.id}`);
+      this.logger.log(
+        `No authenticated user found in handshake for client ${client.id}`,
+      );
     }
   }
 
@@ -129,7 +132,6 @@ export class BalanceGateway
   // @UseGuards(WsAuthGuard)
   @SubscribeMessage('request_balance')
   async handleMessage(client: Socket, data: any): Promise<WsResponse<any>> {
-
     this.logger.log(`Received request_balance from ${client.id}`);
 
     const user = (client.handshake as any)?.user;
@@ -140,7 +142,9 @@ export class BalanceGateway
 
     try {
       // Защита на случай отсутствия пользователя в handshake
-      const authenticatedClient = (client?.handshake as any)?.user as Client | undefined;
+      const authenticatedClient = (client?.handshake as any)?.user as
+        | Client
+        | undefined;
 
       if (!authenticatedClient) {
         this.logger.log(`No user found in request for socket ${client.id}`);
@@ -155,7 +159,9 @@ export class BalanceGateway
       const card = authenticatedClient.getCard();
 
       if (!card) {
-        this.logger.log(`No card found for client ${authenticatedClient.clientId}`);
+        this.logger.log(
+          `No card found for client ${authenticatedClient.clientId}`,
+        );
         return {
           event: 'balance_update',
           data: { error: 'No card found' },
@@ -294,4 +300,3 @@ export class BalanceGateway
     }
   }
 }
-

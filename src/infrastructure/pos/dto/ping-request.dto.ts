@@ -1,4 +1,4 @@
-import {DeviceType} from "../../../domain/order/enum/device-type.enum";
+import { DeviceType } from '../../../domain/order/enum/device-type.enum';
 
 export class PingRequestDto {
   posId: number;

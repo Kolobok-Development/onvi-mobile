@@ -19,14 +19,11 @@ import { RefundPaymentUseCase } from './refund-payment.use-case';
 
 @Injectable()
 export class StartPosUseCase {
-
   constructor(
     private readonly orderRepository: IOrderRepository,
     @Inject(Logger) private readonly logger: Logger,
     private readonly posService: IPosService,
-    private readonly refundPaymentUseCase: RefundPaymentUseCase,
-    // private readonly gazpromRepository: IGazpromRepository,
-    // private readonly partnerRepository: IPartnerRepository,
+    private readonly refundPaymentUseCase: RefundPaymentUseCase, // private readonly gazpromRepository: IGazpromRepository, // private readonly partnerRepository: IPartnerRepository,
   ) {}
 
   async execute(orderId: number): Promise<any> {
@@ -72,7 +69,11 @@ export class StartPosUseCase {
       // Send start command to carwash
       const carWashResponse = await this.posService.send({
         cardNumber: order.card.devNomer,
-        sum: (order.sum + (order.rewardPointsUsed || 0) + (order.discountAmount || 0)).toString(),
+        sum: (
+          order.sum +
+          (order.rewardPointsUsed || 0) +
+          (order.discountAmount || 0)
+        ).toString(),
         deviceId: bayDetails.id,
       });
 
@@ -80,7 +81,7 @@ export class StartPosUseCase {
         if (!isFreeVacuum) {
           await this.refundPaymentUseCase.execute({
             orderId: order.id,
-            reason: `Ошибка отправки команды запуска: ${carWashResponse.errorMessage}`
+            reason: `Ошибка отправки команды запуска: ${carWashResponse.errorMessage}`,
           });
         }
         throw new CarwashStartFailedException(carWashResponse.errorMessage);
@@ -97,7 +98,7 @@ export class StartPosUseCase {
         if (!isFreeVacuum) {
           await this.refundPaymentUseCase.execute({
             orderId: order.id,
-            reason: 'Мойка не запустилась после всех попыток проверки'
+            reason: 'Мойка не запустилась после всех попыток проверки',
           });
         }
         throw new CarwashStartFailedException(
@@ -167,7 +168,6 @@ export class StartPosUseCase {
       return false;
     }
 
-
     // Try 4 ping attempts
     const pingResult = await this.performPingAttempts(order, cycle);
 
@@ -183,7 +183,11 @@ export class StartPosUseCase {
       try {
         await this.posService.send({
           cardNumber: order.card.devNomer,
-          sum: (order.sum + (order.rewardPointsUsed || 0) + (order.discountAmount || 0)).toString(),
+          sum: (
+            order.sum +
+            (order.rewardPointsUsed || 0) +
+            (order.discountAmount || 0)
+          ).toString(),
           deviceId: deviceId,
         });
 
@@ -211,7 +215,7 @@ export class StartPosUseCase {
     const bayNumber = order.bayNumber;
     const bayType = order.bayType;
     const MAX_PING_ATTEMPTS = 5;
-    const INITIAL_DELAY_MS = 2000; 
+    const INITIAL_DELAY_MS = 2000;
     const DELAY_INCREMENT_MS = 1000;
 
     for (let pingAttempt = 1; pingAttempt <= MAX_PING_ATTEMPTS; pingAttempt++) {

@@ -1,5 +1,5 @@
 export enum DeviceType {
-    BAY = 'BAY',
-    PORTAL = 'PORTAL',
-    VACUUME = 'VACUUME',
+  BAY = 'BAY',
+  PORTAL = 'PORTAL',
+  VACUUME = 'VACUUME',
 }

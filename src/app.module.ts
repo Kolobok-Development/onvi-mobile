@@ -22,6 +22,8 @@ import { BalanceWsModule } from './websockets/balance/balance-ws.module';
 import { BullModule } from '@nestjs/bullmq';
 import { ThrottlerConfigModule } from './infrastructure/throttler/throttler.module';
 import { TrustedHostsMiddleware } from './infrastructure/security/trusted-hosts.middleware';
+import { HttpMethodFilterMiddleware } from './infrastructure/common/middleware/http-method-filter.middleware';
+import { HealthController } from './api/health/health.controller';
 
 @Module({
   imports: [
@@ -53,6 +55,14 @@ import { TrustedHostsMiddleware } from './infrastructure/security/trusted-hosts.
           customErrorMessage(req, res, error) {
             return `${req.method} [${req.url}] || ${res.statusCode} ${error.message}`;
           },
+          // Skip logging for unsupported HTTP methods (PROPFIND, etc.) to reduce CPU usage
+          autoLogging: {
+            ignore: (req) => {
+              const method = req.method?.toUpperCase();
+              const unsupportedMethods = ['PROPFIND', 'TRACE', 'CONNECT'];
+              return unsupportedMethods.includes(method);
+            },
+          },
           level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
           redact: {
             paths: [
@@ -82,7 +92,11 @@ import { TrustedHostsMiddleware } from './infrastructure/security/trusted-hosts.
                 'unknown';
 
               return {
-                id: req.id || `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+                id:
+                  req.id ||
+                  `req_${Date.now()}_${Math.random()
+                    .toString(36)
+                    .substring(2, 15)}`,
                 method: req.method,
                 url: req.url,
                 path: req.path,
@@ -92,7 +106,7 @@ import { TrustedHostsMiddleware } from './infrastructure/security/trusted-hosts.
                 headers: {
                   'user-agent': req.headers['user-agent'] || null,
                   'content-type': req.headers['content-type'] || null,
-                  'accept': req.headers['accept'] || null,
+                  accept: req.headers['accept'] || null,
                   'x-forwarded-for': req.headers['x-forwarded-for'] || null,
                 },
                 ip: ipAddress,
@@ -193,11 +207,15 @@ import { TrustedHostsMiddleware } from './infrastructure/security/trusted-hosts.
     PosModule,
     BalanceWsModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
+    // Apply HTTP method filter FIRST to reject unsupported methods early (before routing)
+    // This prevents PROPFIND and other WebDAV methods from consuming CPU
+    consumer.apply(HttpMethodFilterMiddleware).forRoutes('*');
+
     // Apply the TrustedHosts middleware to webhook routes
     consumer
       .apply(TrustedHostsMiddleware)

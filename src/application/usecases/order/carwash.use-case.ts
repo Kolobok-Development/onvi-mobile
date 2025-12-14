@@ -7,19 +7,25 @@ import { Client } from 'src/domain/account/client/model/client';
 
 @Injectable()
 export class CarwashUseCase {
-  constructor(
-    private readonly orderRepository: IOrderRepository,
-  ) { }
+  constructor(private readonly orderRepository: IOrderRepository) {}
 
-  async getLatestCarwashByUser(user: Client, size: number, page: number): Promise<number[]> {
+  async getLatestCarwashByUser(
+    user: Client,
+    size: number,
+    page: number,
+  ): Promise<number[]> {
     const card = user.getCard();
 
-    const orders = await this.orderRepository.getOrdersByCardId(card.cardId, size, page);
-    
+    const orders = await this.orderRepository.getOrdersByCardId(
+      card.cardId,
+      size,
+      page,
+    );
+
     if (!orders || orders.length === 0) {
       return [];
     }
-    
-    return orders.map(order => order.carWashId);
+
+    return orders.map((order) => order.carWashId);
   }
 }

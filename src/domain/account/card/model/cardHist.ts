@@ -1,6 +1,6 @@
 import { CardHistEntity } from '../../../../infrastructure/account/entity/card-hist.enity';
-import {OrderStatus} from "../../../order/enum/order-status.enum";
-import {DeviceType} from "../../../order/enum/device-type.enum";
+import { OrderStatus } from '../../../order/enum/order-status.enum';
+import { DeviceType } from '../../../order/enum/device-type.enum';
 
 export class CardHist {
   unqCardNumber: string;

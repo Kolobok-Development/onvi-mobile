@@ -1,4 +1,4 @@
 export enum PartnerStatusEnum {
-    ACTIVE = 'ACTIVE',
-    FINISHED = 'FINISHED',
+  ACTIVE = 'ACTIVE',
+  FINISHED = 'FINISHED',
 }

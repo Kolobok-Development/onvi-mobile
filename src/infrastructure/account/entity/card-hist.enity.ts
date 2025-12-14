@@ -1,13 +1,12 @@
-import {Column, ViewColumn, ViewEntity} from 'typeorm';
+import { Column, ViewColumn, ViewEntity } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import {DeviceType} from "../../../domain/order/enum/device-type.enum";
+import { DeviceType } from '../../../domain/order/enum/device-type.enum';
 
 @ViewEntity({
   expression: 'select * from ONVI_MOBILE_ORDER_HIST',
   name: 'ONVI_MOBILE_ORDER_HIST',
 })
 export class CardHistEntity {
-
   @ViewColumn({ name: 'UNQCARD_NUMBER' })
   unqCardNumber: string;
 

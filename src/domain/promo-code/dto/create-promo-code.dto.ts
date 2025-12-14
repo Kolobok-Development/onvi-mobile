@@ -1,3 +1,1 @@
-export interface ICreatePromoCode {
-
-}
+export interface ICreatePromoCode {}

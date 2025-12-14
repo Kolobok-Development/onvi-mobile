@@ -17,8 +17,8 @@ import { PartnerCreateDto } from './dto/partner-create.dto';
 import { PartnerGuard } from '../../infrastructure/common/guards/partner.guard';
 import { GazpromClientUpdateDto } from './dto/gazprom-client-update.dto';
 import { NotFoundException } from '../../infrastructure/common/exceptions/base.exceptions';
-import {GazpromClientReferenceDto} from "./dto/gazprom-client-reference.dto";
-import {GazpromClientOperationDto} from "./dto/gazprom-client-operation";
+import { GazpromClientReferenceDto } from './dto/gazprom-client-reference.dto';
+import { GazpromClientOperationDto } from './dto/gazprom-client-operation';
 
 @Controller('partner')
 export class PartnerController {
@@ -44,7 +44,10 @@ export class PartnerController {
   @UseGuards(JwtGuard)
   @Post('2921/reference')
   @HttpCode(201)
-  async referenceGazprom(@Req() req: any, @Body() data: GazpromClientReferenceDto): Promise<any> {
+  async referenceGazprom(
+    @Req() req: any,
+    @Body() data: GazpromClientReferenceDto,
+  ): Promise<any> {
     try {
       const { user } = req;
       return await this.gazpromUsecase.reference(user, data.reference);
@@ -95,7 +98,7 @@ export class PartnerController {
   ): Promise<any> {
     try {
       const { user } = req;
-      return await this.gazpromUsecase.updatePartnerData(user, {meta: data});
+      return await this.gazpromUsecase.updatePartnerData(user, { meta: data });
     } catch (e) {
       throw new CustomHttpException({
         message: e.message,

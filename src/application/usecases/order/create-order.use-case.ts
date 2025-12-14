@@ -12,11 +12,11 @@ import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
 import { PromoCodeService } from '../../services/promocode-service';
 import { OrderCreationFailedException } from '../../../domain/order/exceptions/order-base.exceptions';
 import { Logger } from 'nestjs-pino';
-import { DeviceType } from "../../../domain/order/enum/device-type.enum";
-import { CardService } from "../../services/card-service";
-import { InsufficientFreeVacuumException } from "../../../domain/order/exceptions/insufficient-free-vacuum.exception";
-import { InjectQueue } from "@nestjs/bullmq";
-import { Queue } from "bullmq";
+import { DeviceType } from '../../../domain/order/enum/device-type.enum';
+import { CardService } from '../../services/card-service';
+import { InsufficientFreeVacuumException } from '../../../domain/order/exceptions/insufficient-free-vacuum.exception';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -28,11 +28,11 @@ export class CreateOrderUseCase {
     private readonly posService: IPosService,
     @Inject(Logger) private readonly logger: Logger,
     @InjectQueue('pos-process') private readonly dataQueue: Queue,
-  ) { }
+  ) {}
 
   async execute(request: CreateOrderDto, account: Client): Promise<any> {
-
-    const isFreeVacuum = request.sum === 0 && request.bayType === DeviceType.VACUUME;
+    const isFreeVacuum =
+      request.sum === 0 && request.bayType === DeviceType.VACUUME;
 
     if (request.err) {
       await this.simulateRandomError(request, account);
@@ -44,10 +44,12 @@ export class CreateOrderUseCase {
     // Step 2: Create order with initial CREATED status
     const card = account.getCard();
     const tariff = await this.tariffRepository.findCardTariff(card);
-    const cashback = ((request.sum * tariff.bonus) / 100) < 1 ? 0 : Math.ceil((request.sum * tariff.bonus) / 100);
-    
-    if (isFreeVacuum) {
+    const cashback =
+      (request.sum * tariff.bonus) / 100 < 1
+        ? 0
+        : Math.ceil((request.sum * tariff.bonus) / 100);
 
+    if (isFreeVacuum) {
       const vacuumInfo = await this.cardService.getFreeVacuum(account);
       if (vacuumInfo.remains <= 0) {
         throw new InsufficientFreeVacuumException();
@@ -140,8 +142,10 @@ export class CreateOrderUseCase {
     }
   }
 
-
-  private async simulateRandomError(request: CreateOrderDto, account: Client): Promise<void> {
+  private async simulateRandomError(
+    request: CreateOrderDto,
+    account: Client,
+  ): Promise<void> {
     // Список возможных ошибок для симуляцииAdd commentMore actions
     const errorScenarios = [
       {
@@ -149,30 +153,31 @@ export class CreateOrderUseCase {
         condition: () => Math.random() < 0.5, // 20% chance
         action: () => {
           throw new BayBusyException(request.bayNumber);
-        }
+        },
       },
       {
         name: 'CarwashUnavailable',
         condition: () => Math.random() < 0.5, // 20% chance
         action: () => {
           throw new CarwashUnavalibleException();
-        }
+        },
       },
       {
         name: 'InsufficientFreeVacuum',
-        condition: () => request.sum === 0 &&
+        condition: () =>
+          request.sum === 0 &&
           request.bayType === DeviceType.VACUUME &&
           Math.random() < 0.3, // 30% chance for free vacuum
         action: () => {
           throw new InsufficientFreeVacuumException();
-        }
+        },
       },
       {
         name: 'OrderCreationFailed',
         condition: () => Math.random() < 0.5,
         action: () => {
           throw new OrderCreationFailedException();
-        }
+        },
       },
     ];
 

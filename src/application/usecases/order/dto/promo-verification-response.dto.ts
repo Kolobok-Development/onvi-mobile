@@ -1,5 +1,3 @@
-
-
 export class PromoVerificationResponseDto {
   valid: boolean;
   id: number;

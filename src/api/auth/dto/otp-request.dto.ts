@@ -16,7 +16,10 @@ export class OtpRequestDto {
         value = '+' + value;
       }
       // Remove any spaces, dashes or other characters
-      return value.replace(/^\+/, '').replace(/[^0-9]/g, '').replace(/^/, '+');
+      return value
+        .replace(/^\+/, '')
+        .replace(/[^0-9]/g, '')
+        .replace(/^/, '+');
     }
     return value;
   })

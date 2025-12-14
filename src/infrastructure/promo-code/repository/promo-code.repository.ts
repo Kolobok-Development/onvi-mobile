@@ -126,7 +126,7 @@ export class PromoCodeRepository implements IPromoCodeRepository {
     location?: { latitude: number; longitude: number },
   ): Promise<PromoCode[]> {
     let regionCode: string | undefined;
-  
+
     if (location) {
       try {
         const geocodeResult = await this.geocodingService.reverseGeocode(
@@ -134,12 +134,11 @@ export class PromoCodeRepository implements IPromoCodeRepository {
           location.latitude,
         );
         regionCode = geocodeResult.regionCode;
-      } catch (error) {
-      }
+      } catch (error) {}
     }
-  
+
     const currentDate = new Date();
-  
+
     // Подзапрос для получения общего количества использований по промокоду и карте
     const usageSubQuery = this.promoCodeRepository
       .createQueryBuilder('promocode')
@@ -149,7 +148,7 @@ export class PromoCodeRepository implements IPromoCodeRepository {
       .where('usage.PROMO_CODE_ID = promocode.id')
       .andWhere('usage.CARD_ID = :cardId')
       .getQuery();
-  
+
     // Основной запрос
     const query = this.promoCodeRepository
       .createQueryBuilder('promocode')
@@ -157,14 +156,14 @@ export class PromoCodeRepository implements IPromoCodeRepository {
         PromoCodeToUserEntity,
         'user',
         'user.PROMO_CODE_ID = promocode.id AND user.USER_ID = :clientId',
-        { clientId }
+        { clientId },
       )
       .where('promocode.isActive = :isActive', { isActive: 1 })
       .andWhere('promocode.expiryDate > :currentDate', { currentDate })
       .andWhere('user.id IS NOT NULL')
       .andWhere(`(${usageSubQuery}) < promocode.usageAmount`)
       .setParameter('cardId', cardId);
-  
+
     // Only join cmnCity if regionCode is defined
     if (regionCode) {
       query.leftJoin(
@@ -174,9 +173,9 @@ export class PromoCodeRepository implements IPromoCodeRepository {
       );
       query.andWhere('cmn_city.regionCode = :regionCode', { regionCode });
     }
-  
+
     const promoCodes = await query.getMany();
-  
+
     // Return the mapped promo codes
     return promoCodes.map((promoCode) => PromoCode.fromEntity(promoCode));
   }

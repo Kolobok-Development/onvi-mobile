@@ -81,7 +81,7 @@ export class PromotionHist {
       promotionUsageId,
       expiryPeriodDate,
       usageDate,
-        {image,}
+      { image },
     );
   }
 }

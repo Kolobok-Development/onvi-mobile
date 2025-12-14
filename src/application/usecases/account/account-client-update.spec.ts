@@ -28,7 +28,7 @@ describe('UpdateClientUseCase', () => {
 
   describe('execute', () => {
     let mockClient: Client;
-    
+
     beforeEach(() => {
       mockClient = new Client();
       mockClient.clientId = 1;
@@ -46,7 +46,10 @@ describe('UpdateClientUseCase', () => {
       const updateDto: AccountClientUpdateDto = {
         name: 'New Name',
       };
-      clientRepository.update.mockResolvedValue({ ...mockClient, name: 'New Name' });
+      clientRepository.update.mockResolvedValue({
+        ...mockClient,
+        name: 'New Name',
+      });
 
       // Act
       const result = await updateClientUseCase.execute(updateDto, mockClient);
@@ -62,7 +65,10 @@ describe('UpdateClientUseCase', () => {
       const updateDto: AccountClientUpdateDto = {
         email: 'new@email.com',
       };
-      clientRepository.update.mockResolvedValue({ ...mockClient, email: 'new@email.com' });
+      clientRepository.update.mockResolvedValue({
+        ...mockClient,
+        email: 'new@email.com',
+      });
 
       // Act
       const result = await updateClientUseCase.execute(updateDto, mockClient);
@@ -78,7 +84,10 @@ describe('UpdateClientUseCase', () => {
       const updateDto: AccountClientUpdateDto = {
         avatar: 1,
       };
-      clientRepository.update.mockResolvedValue({ ...mockClient, avatarOnvi: AvatarType.ONE });
+      clientRepository.update.mockResolvedValue({
+        ...mockClient,
+        avatarOnvi: AvatarType.ONE,
+      });
 
       // Act
       const result = await updateClientUseCase.execute(updateDto, mockClient);
@@ -94,7 +103,10 @@ describe('UpdateClientUseCase', () => {
       const updateDto: AccountClientUpdateDto = {
         avatar: 2,
       };
-      clientRepository.update.mockResolvedValue({ ...mockClient, avatarOnvi: AvatarType.TWO });
+      clientRepository.update.mockResolvedValue({
+        ...mockClient,
+        avatarOnvi: AvatarType.TWO,
+      });
 
       // Act
       const result = await updateClientUseCase.execute(updateDto, mockClient);
@@ -110,7 +122,10 @@ describe('UpdateClientUseCase', () => {
       const updateDto: AccountClientUpdateDto = {
         avatar: 3,
       };
-      clientRepository.update.mockResolvedValue({ ...mockClient, avatarOnvi: AvatarType.THREE });
+      clientRepository.update.mockResolvedValue({
+        ...mockClient,
+        avatarOnvi: AvatarType.THREE,
+      });
 
       // Act
       const result = await updateClientUseCase.execute(updateDto, mockClient);
@@ -126,7 +141,10 @@ describe('UpdateClientUseCase', () => {
       const updateDto: AccountClientUpdateDto = {
         notification: true,
       };
-      clientRepository.update.mockResolvedValue({ ...mockClient, isNotifications: 1 });
+      clientRepository.update.mockResolvedValue({
+        ...mockClient,
+        isNotifications: 1,
+      });
 
       // Act
       const result = await updateClientUseCase.execute(updateDto, mockClient);
@@ -142,7 +160,10 @@ describe('UpdateClientUseCase', () => {
       const updateDto: AccountClientUpdateDto = {
         notification: false,
       };
-      clientRepository.update.mockResolvedValue({ ...mockClient, isNotifications: 0 });
+      clientRepository.update.mockResolvedValue({
+        ...mockClient,
+        isNotifications: 0,
+      });
 
       // Act
       const result = await updateClientUseCase.execute(updateDto, mockClient);
@@ -158,7 +179,10 @@ describe('UpdateClientUseCase', () => {
       const updateDto: AccountClientUpdateDto = {
         isActivated: 0,
       };
-      clientRepository.update.mockResolvedValue({ ...mockClient, isActivated: 0 });
+      clientRepository.update.mockResolvedValue({
+        ...mockClient,
+        isActivated: 0,
+      });
 
       // Act
       const result = await updateClientUseCase.execute(updateDto, mockClient);
@@ -212,9 +236,9 @@ describe('UpdateClientUseCase', () => {
       clientRepository.update.mockResolvedValue(null); // Simulating update failure
 
       // Act & Assert
-      await expect(updateClientUseCase.execute(updateDto, mockClient)).rejects.toThrow(
-        AccountNotFoundExceptions,
-      );
+      await expect(
+        updateClientUseCase.execute(updateDto, mockClient),
+      ).rejects.toThrow(AccountNotFoundExceptions);
       expect(clientRepository.update).toHaveBeenCalledWith(mockClient);
     });
 
@@ -223,12 +247,12 @@ describe('UpdateClientUseCase', () => {
       const updateDto: AccountClientUpdateDto = {
         name: 'New Name',
       };
-      
+
       const originalEmail = mockClient.email;
       const originalAvatar = mockClient.avatarOnvi;
       const originalNotifications = mockClient.isNotifications;
       const originalActivation = mockClient.isActivated;
-      
+
       clientRepository.update.mockResolvedValue({
         ...mockClient,
         name: 'New Name',

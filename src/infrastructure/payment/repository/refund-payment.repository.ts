@@ -9,7 +9,7 @@ export class RefundRepository implements IRefundPaymentRepository {
   constructor(
     @InjectRepository(RefundEntity)
     private readonly refundRepository: Repository<RefundEntity>,
-  ) { }
+  ) {}
 
   async createRefund(refundData: {
     orderId: number;
@@ -70,11 +70,15 @@ export class RefundRepository implements IRefundPaymentRepository {
     }
 
     if (params.startDate) {
-      query.andWhere('refund.createdAt >= :startDate', { startDate: params.startDate });
+      query.andWhere('refund.createdAt >= :startDate', {
+        startDate: params.startDate,
+      });
     }
 
     if (params.endDate) {
-      query.andWhere('refund.createdAt <= :endDate', { endDate: params.endDate });
+      query.andWhere('refund.createdAt <= :endDate', {
+        endDate: params.endDate,
+      });
     }
 
     query.orderBy('refund.createdAt', 'DESC');

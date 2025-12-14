@@ -2,7 +2,7 @@ import { Client } from '../../client/model/client';
 import { CardType } from '../enum/card-type.enum';
 import { ICreateCardDto } from '../../../dto/account-create-card.dto';
 import { CardEntity } from '../../../../infrastructure/account/entity/card.entity';
-import {VACUUM_FREE_LIMIT} from "../../../../infrastructure/common/constants/constants";
+import { VACUUM_FREE_LIMIT } from '../../../../infrastructure/common/constants/constants';
 
 export class Card {
   cardId?: number;

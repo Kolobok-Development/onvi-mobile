@@ -1,3 +1,3 @@
 export class GazpromSessionDto {
-    token: string;
+  token: string;
 }

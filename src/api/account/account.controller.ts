@@ -340,7 +340,7 @@ export class AccountController {
   async getFavorites(@Req() request: any): Promise<number[]> {
     try {
       const { user } = request;
-      
+
       return await this.favoritesUseCase.getFavoritesByClientId(user.clientId);
     } catch (e) {
       throw new CustomHttpException({
@@ -353,11 +353,17 @@ export class AccountController {
   @Post('/favorites')
   @UseGuards(JwtGuard)
   @HttpCode(201)
-  async addFavorites(@Body() body: AccountFavoritesDto, @Req() request: any): Promise<number[]> {
+  async addFavorites(
+    @Body() body: AccountFavoritesDto,
+    @Req() request: any,
+  ): Promise<number[]> {
     try {
       const { user } = request;
-      
-      return await this.favoritesUseCase.addFavoritesByClientId(body, user.clientId);
+
+      return await this.favoritesUseCase.addFavoritesByClientId(
+        body,
+        user.clientId,
+      );
     } catch (e) {
       throw new CustomHttpException({
         message: e.message,
@@ -369,11 +375,17 @@ export class AccountController {
   @Delete('/favorites')
   @UseGuards(JwtGuard)
   @HttpCode(200)
-  async removeFavorite(@Body() body: AccountFavoritesDto, @Req() request: any): Promise<number[]> {
+  async removeFavorite(
+    @Body() body: AccountFavoritesDto,
+    @Req() request: any,
+  ): Promise<number[]> {
     try {
       const { user } = request;
 
-      return await this.favoritesUseCase.removeFavoriteByClientId(body, user.clientId);
+      return await this.favoritesUseCase.removeFavoriteByClientId(
+        body,
+        user.clientId,
+      );
     } catch (e) {
       throw new CustomHttpException({
         message: e.message,
@@ -382,5 +394,3 @@ export class AccountController {
     }
   }
 }
-
-

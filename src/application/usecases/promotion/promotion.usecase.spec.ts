@@ -43,8 +43,14 @@ describe('PromotionUsecase', () => {
       providers: [
         PromotionUsecase,
         { provide: IPromotionRepository, useValue: mockPromotionRepository },
-        { provide: IPromotionHistoryRepository, useValue: mockPromotionHistoryRepository },
-        { provide: ITransactionRepository, useValue: mockTransactionRepository },
+        {
+          provide: IPromotionHistoryRepository,
+          useValue: mockPromotionHistoryRepository,
+        },
+        {
+          provide: ITransactionRepository,
+          useValue: mockTransactionRepository,
+        },
         { provide: ICardRepository, useValue: mockCardRepository },
       ],
     }).compile();
@@ -56,7 +62,9 @@ describe('PromotionUsecase', () => {
     cardRepository = module.get(ICardRepository);
 
     // Mock the generateUniqueExt method
-    jest.spyOn(promotionUsecase, 'generateUniqueExt').mockReturnValue('Promotion_1234567890');
+    jest
+      .spyOn(promotionUsecase, 'generateUniqueExt')
+      .mockReturnValue('Promotion_1234567890');
   });
 
   describe('apply', () => {
@@ -68,11 +76,11 @@ describe('PromotionUsecase', () => {
     beforeEach(() => {
       mockCard = new Card();
       mockCard.cardId = 123;
-      
+
       mockClient = new Client();
       mockClient.clientId = 1;
       mockClient.getCard = jest.fn().mockReturnValue(mockCard);
-      
+
       mockPromotion = new Promotion();
       mockPromotion.promotionId = 1;
       mockPromotion.code = 'PROMO123';
@@ -80,7 +88,7 @@ describe('PromotionUsecase', () => {
       mockPromotion.expiryDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // Tomorrow
       mockPromotion.periodUse = 30; // 30 days
       mockPromotion.point = 100;
-      
+
       applyPromotionDto = {
         code: 'PROMO123',
       };
@@ -91,10 +99,12 @@ describe('PromotionUsecase', () => {
       promotionRepository.findOneByCode.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(promotionUsecase.apply(applyPromotionDto, mockClient)).rejects.toThrow(
-        PromotionNotFoundException,
+      await expect(
+        promotionUsecase.apply(applyPromotionDto, mockClient),
+      ).rejects.toThrow(PromotionNotFoundException);
+      expect(promotionRepository.findOneByCode).toHaveBeenCalledWith(
+        applyPromotionDto.code,
       );
-      expect(promotionRepository.findOneByCode).toHaveBeenCalledWith(applyPromotionDto.code);
     });
 
     it('should throw InvalidPromotionException when promotion is not active', async () => {
@@ -103,9 +113,9 @@ describe('PromotionUsecase', () => {
       promotionRepository.findOneByCode.mockResolvedValue(mockPromotion);
 
       // Act & Assert
-      await expect(promotionUsecase.apply(applyPromotionDto, mockClient)).rejects.toThrow(
-        InvalidPromotionException,
-      );
+      await expect(
+        promotionUsecase.apply(applyPromotionDto, mockClient),
+      ).rejects.toThrow(InvalidPromotionException);
     });
 
     it('should throw InvalidPromotionException when promotion is expired', async () => {
@@ -114,9 +124,9 @@ describe('PromotionUsecase', () => {
       promotionRepository.findOneByCode.mockResolvedValue(mockPromotion);
 
       // Act & Assert
-      await expect(promotionUsecase.apply(applyPromotionDto, mockClient)).rejects.toThrow(
-        InvalidPromotionException,
-      );
+      await expect(
+        promotionUsecase.apply(applyPromotionDto, mockClient),
+      ).rejects.toThrow(InvalidPromotionException);
     });
 
     it('should throw InvalidPromotionException when promotion usage is invalid', async () => {
@@ -125,9 +135,9 @@ describe('PromotionUsecase', () => {
       promotionRepository.validateUsageByCard.mockResolvedValue(false);
 
       // Act & Assert
-      await expect(promotionUsecase.apply(applyPromotionDto, mockClient)).rejects.toThrow(
-        InvalidPromotionException,
-      );
+      await expect(
+        promotionUsecase.apply(applyPromotionDto, mockClient),
+      ).rejects.toThrow(InvalidPromotionException);
       expect(promotionRepository.validateUsageByCard).toHaveBeenCalledWith(
         mockCard.cardId,
         mockPromotion.promotionId,
@@ -143,7 +153,10 @@ describe('PromotionUsecase', () => {
       promotionRepository.apply.mockResolvedValue(undefined);
 
       // Act
-      const result = await promotionUsecase.apply(applyPromotionDto, mockClient);
+      const result = await promotionUsecase.apply(
+        applyPromotionDto,
+        mockClient,
+      );
 
       // Assert
       expect(transactionRepository.create).toHaveBeenCalledWith(
@@ -171,7 +184,10 @@ describe('PromotionUsecase', () => {
       promotionRepository.apply.mockResolvedValue(undefined);
 
       // Act
-      const result = await promotionUsecase.apply(applyPromotionDto, mockClient);
+      const result = await promotionUsecase.apply(
+        applyPromotionDto,
+        mockClient,
+      );
 
       // Assert
       expect(cardRepository.changeType).toHaveBeenCalledWith(
@@ -224,15 +240,12 @@ describe('PromotionUsecase', () => {
     beforeEach(() => {
       mockCard = new Card();
       mockCard.cardId = 123;
-      
+
       mockClient = new Client();
       mockClient.clientId = 1;
       mockClient.getCard = jest.fn().mockReturnValue(mockCard);
-      
-      mockPromotions = [
-        new Promotion(),
-        new Promotion(),
-      ];
+
+      mockPromotions = [new Promotion(), new Promotion()];
     });
 
     it('should return active promotions for the client', async () => {
@@ -243,7 +256,9 @@ describe('PromotionUsecase', () => {
       const result = await promotionUsecase.getActivePromotions(mockClient);
 
       // Assert
-      expect(promotionRepository.findActive).toHaveBeenCalledWith(mockCard.cardId);
+      expect(promotionRepository.findActive).toHaveBeenCalledWith(
+        mockCard.cardId,
+      );
       expect(result).toEqual(mockPromotions);
     });
 
@@ -252,10 +267,12 @@ describe('PromotionUsecase', () => {
       promotionRepository.findActive.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(promotionUsecase.getActivePromotions(mockClient)).rejects.toThrow(
-        PromotionNotFoundException,
+      await expect(
+        promotionUsecase.getActivePromotions(mockClient),
+      ).rejects.toThrow(PromotionNotFoundException);
+      expect(promotionRepository.findActive).toHaveBeenCalledWith(
+        mockCard.cardId,
       );
-      expect(promotionRepository.findActive).toHaveBeenCalledWith(mockCard.cardId);
     });
   });
 
@@ -267,26 +284,27 @@ describe('PromotionUsecase', () => {
     beforeEach(() => {
       mockCard = new Card();
       mockCard.cardId = 123;
-      
+
       mockClient = new Client();
       mockClient.clientId = 1;
       mockClient.getCard = jest.fn().mockReturnValue(mockCard);
-      
-      mockPromotionHistory = [
-        new PromotionHist(),
-        new PromotionHist(),
-      ];
+
+      mockPromotionHistory = [new PromotionHist(), new PromotionHist()];
     });
 
     it('should return promotion history for the client', async () => {
       // Arrange
-      promotionHistoryRepository.getPromotionHistory.mockResolvedValue(mockPromotionHistory);
+      promotionHistoryRepository.getPromotionHistory.mockResolvedValue(
+        mockPromotionHistory,
+      );
 
       // Act
       const result = await promotionUsecase.getPromotionHistory(mockClient);
 
       // Assert
-      expect(promotionHistoryRepository.getPromotionHistory).toHaveBeenCalledWith(mockCard);
+      expect(
+        promotionHistoryRepository.getPromotionHistory,
+      ).toHaveBeenCalledWith(mockCard);
       expect(result).toEqual(mockPromotionHistory);
     });
 
@@ -298,7 +316,9 @@ describe('PromotionUsecase', () => {
       const result = await promotionUsecase.getPromotionHistory(mockClient);
 
       // Assert
-      expect(promotionHistoryRepository.getPromotionHistory).toHaveBeenCalledWith(mockCard);
+      expect(
+        promotionHistoryRepository.getPromotionHistory,
+      ).toHaveBeenCalledWith(mockCard);
       expect(result).toEqual([]);
     });
   });
@@ -307,7 +327,7 @@ describe('PromotionUsecase', () => {
     it('should generate a unique extension ID with "Promotion" prefix', () => {
       // Restore the original implementation for this test
       jest.spyOn(promotionUsecase, 'generateUniqueExt').mockRestore();
-      
+
       // Mock Date.now to return a consistent value
       const nowMock = jest.spyOn(Date, 'now');
       const now = 1609459200000; // 2021-01-01
@@ -318,7 +338,7 @@ describe('PromotionUsecase', () => {
 
       // Assert
       expect(result).toBe('Promotion_1609459200000');
-      
+
       // Restore mock
       nowMock.mockRestore();
     });

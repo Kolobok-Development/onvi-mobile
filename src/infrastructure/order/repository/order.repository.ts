@@ -3,9 +3,9 @@ import { IOrderRepository } from '../../../domain/order/order-repository.abstrac
 import { Order } from '../../../domain/order/model/order';
 import { OrderEntity } from '../entity/order.entity';
 import { OrderStatus } from '../../../domain/order/enum/order-status.enum';
-import {Between, Repository} from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import {DeviceType} from "../../../domain/order/enum/device-type.enum";
+import { DeviceType } from '../../../domain/order/enum/device-type.enum';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -78,7 +78,11 @@ export class OrderRepository implements IOrderRepository {
     await this.orderRepository.save(order);
   }
 
-  async getOrdersByCardId(cardId: number, size: number, page: number): Promise<Order[]> {
+  async getOrdersByCardId(
+    cardId: number,
+    size: number,
+    page: number,
+  ): Promise<Order[]> {
     // 1. Получаем список {carWashId, maxCreatedAt}
     const latestOrders = await this.orderRepository
       .createQueryBuilder('order')
@@ -90,18 +94,18 @@ export class OrderRepository implements IOrderRepository {
       })
       .groupBy('order.carWashId')
       .getRawMany();
-  
+
     // Если нет последних заказов - сразу возвращаем пустой массив
     if (latestOrders.length === 0) {
       return [];
     }
-    
-  // 2. Формируем список условий для поиска точных заказов
+
+    // 2. Формируем список условий для поиска точных заказов
     const latestOrdersMap = new Map<number, Date>();
     latestOrders.forEach((row: any) => {
       latestOrdersMap.set(row.carWashId, new Date(row.maxCreatedAt));
     });
-  
+
     // 3. Ищем заказы, которые совпадают по carWashId и createdAt
     const result = await this.orderRepository
       .createQueryBuilder('order')
@@ -113,7 +117,7 @@ export class OrderRepository implements IOrderRepository {
         const ors = [];
         for (const [carWashId, maxCreatedAt] of latestOrdersMap.entries()) {
           ors.push(
-            `(order.carWashId = :carWashId${carWashId} AND order.createdAt = :maxCreatedAt${carWashId})`
+            `(order.carWashId = :carWashId${carWashId} AND order.createdAt = :maxCreatedAt${carWashId})`,
           );
           qb.setParameter(`carWashId${carWashId}`, carWashId);
           qb.setParameter(`maxCreatedAt${carWashId}`, maxCreatedAt);
@@ -124,7 +128,7 @@ export class OrderRepository implements IOrderRepository {
       .skip((page - 1) * size)
       .take(size)
       .getMany();
-  
+
     return result.map(Order.fromEntity);
   }
 

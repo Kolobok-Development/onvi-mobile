@@ -5,15 +5,15 @@ import { CardEntity } from '../entity/card.entity';
 import { In, Repository } from 'typeorm';
 import { Card } from '../../../domain/account/card/model/card';
 import { Client } from '../../../domain/account/client/model/client';
-import { CardMapper } from "../mapper/card.mapper";
-import { ClientMapper } from "../mapper/client.mapper";
+import { CardMapper } from '../mapper/card.mapper';
+import { ClientMapper } from '../mapper/client.mapper';
 
 @Injectable()
 export class CardRepository implements ICardRepository {
   constructor(
     @InjectRepository(CardEntity)
     private readonly cardRepository: Repository<CardEntity>,
-  ) { }
+  ) {}
   async create(card: Card, client: Client): Promise<Card> {
     const cardEntity = CardMapper.toCardEntity(card);
     const clientEntity = ClientMapper.toClientEntity(client);
@@ -54,14 +54,14 @@ export class CardRepository implements ICardRepository {
   async findOneByDevNomer(devNomer: string): Promise<Card> {
     const card = await this.cardRepository.findOne({
       where: {
-        devNomer: devNomer
+        devNomer: devNomer,
       },
     });
 
     if (!card) return null;
     return CardMapper.fromEntity(card);
   }
-  
+
   async findOneByDevNomerWithUserId(devNomer: string): Promise<Card> {
     const card = await this.cardRepository
       .createQueryBuilder('card')

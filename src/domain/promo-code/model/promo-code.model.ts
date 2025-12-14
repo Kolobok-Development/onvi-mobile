@@ -56,7 +56,6 @@ export class PromoCode {
     return false;
   }
 
-
   public static fromEntity(entity: PromoCodeEntity): PromoCode {
     let locations;
 

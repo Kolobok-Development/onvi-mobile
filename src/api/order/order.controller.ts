@@ -53,15 +53,12 @@ export class OrderController {
   @Post('create')
   @HttpCode(201)
   async create(@Body() data: CreateOrderDto, @Req() req: any): Promise<any> {
+    this.logger.log({
+      message: 'order create controller',
+      data: data,
+      request11: req,
+    });
 
-    this.logger.log(
-      {
-        message: 'order create controller',
-        data: data,
-        request11: req
-      }
-    );
-    
     try {
       const { user } = req;
       return await this.createOrderUsecase.execute(data, user);
@@ -152,7 +149,10 @@ export class OrderController {
   @Get('transaction/:transactionId')
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
-  async getOrderByTransactionId(@Param('transactionId') transactionId: string, @Req() req: any) {
+  async getOrderByTransactionId(
+    @Param('transactionId') transactionId: string,
+    @Req() req: any,
+  ) {
     try {
       return await this.getOrderByTransactionIdUseCase.execute(transactionId);
     } catch (e) {
@@ -183,13 +183,13 @@ export class OrderController {
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   async getLatestCarwash(
-    @Req() request: any, 
+    @Req() request: any,
     @Query() options: LatestOptionsDto,
   ): Promise<number[]> {
-    try {      
+    try {
       const { user } = request;
       const { size, page } = options;
-      
+
       return await this.carwashUseCase.getLatestCarwashByUser(user, size, page);
     } catch (e) {
       throw new CustomHttpException({
@@ -236,7 +236,7 @@ export class OrderController {
   async updateOrderStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body() data: UpdateOrderStatusDto,
-    @Req() req: any
+    @Req() req: any,
   ) {
     try {
       await this.updateOrderStatusUseCase.execute(id, data.status);

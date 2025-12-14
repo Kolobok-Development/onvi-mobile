@@ -10,7 +10,7 @@ import { AuthUsecase } from '../../../application/usecases/auth/auth.usecase';
 import { EnvConfigService } from '../../config/env-config/env-config.service';
 import { TokenPaload } from '../../../domain/auth/model/auth';
 import { InvalidRefreshException } from '../../../domain/auth/exceptions/invalid-refresh.exception';
-import {CustomHttpException} from "../exceptions/custom-http.exception";
+import { CustomHttpException } from '../exceptions/custom-http.exception';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(

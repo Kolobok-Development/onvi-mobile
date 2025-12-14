@@ -1,3 +1,3 @@
 export enum PartnerTypeEnum {
-    WIDGET = 'WIDGET'
+  WIDGET = 'WIDGET',
 }

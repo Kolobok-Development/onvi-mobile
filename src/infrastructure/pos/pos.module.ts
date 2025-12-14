@@ -5,10 +5,7 @@ import { EnvConfigModule } from '../config/env-config/env-config.module';
 import { BullModule } from '@nestjs/bullmq';
 
 @Module({
-  imports: [
-    HttpModule,
-    EnvConfigModule,
-  ],
+  imports: [HttpModule, EnvConfigModule],
   providers: [PosServiceProvider],
   exports: [PosServiceProvider],
 })

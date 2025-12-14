@@ -40,7 +40,9 @@ describe('BalanceGateway', () => {
       event: 'pong',
       data: 'pong',
     });
-    expect(mockLogger.log).toHaveBeenCalledWith(`Ping received from client id: ${mockSocket.id}`);
+    expect(mockLogger.log).toHaveBeenCalledWith(
+      `Ping received from client id: ${mockSocket.id}`,
+    );
   });
 
   it('should handle request_balance and return balance data', async () => {
@@ -74,7 +76,10 @@ describe('BalanceGateway', () => {
     Object.defineProperty(gateway, 'cardService', { value: cardServiceMock });
 
     // Test the handler
-    const response = await gateway.handleMessage(mockSocketWithAuth as unknown as Socket, {});
+    const response = await gateway.handleMessage(
+      mockSocketWithAuth as unknown as Socket,
+      {},
+    );
 
     expect(mockClient.getCard).toHaveBeenCalled();
     expect(cardServiceMock.getCardBalance).toHaveBeenCalledWith('test-card');

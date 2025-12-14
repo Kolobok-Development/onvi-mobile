@@ -56,7 +56,7 @@ export class AuthUsecase {
     private readonly bcryptService: IBcrypt,
     private readonly promoCodeUsecase: PromocodeUsecase,
     @Inject(Logger) private readonly logger: Logger,
-  ) { }
+  ) {}
 
   //public async isAuthenticated(phone: string) {}
 
@@ -74,7 +74,8 @@ export class AuthUsecase {
 
     //Check if user already exists
     const account: Client = await this.clientRepository.findOneByPhone(phone);
-    const oldClient: Client = await this.clientRepository.findOneOldClientByPhone(phone);
+    const oldClient: Client =
+      await this.clientRepository.findOneOldClientByPhone(phone);
 
     if (account && account.isActivated != 0 && account.getCard().isDel != 1) {
       throw new AccountExistsException(phone);

@@ -61,12 +61,12 @@ export class PaymentUsecase {
     return credentials;
   }
 
-  public async refund(
-    paymentId: string, 
-    amount: number,
-    reason: string
-  ) {    
-    const result = await this.paymentRepository.refund(paymentId, amount, reason);
+  public async refund(paymentId: string, amount: number, reason: string) {
+    const result = await this.paymentRepository.refund(
+      paymentId,
+      amount,
+      reason,
+    );
     return result;
   }
 }

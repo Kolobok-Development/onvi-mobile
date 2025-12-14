@@ -1,4 +1,4 @@
-import {Column, ViewColumn, ViewEntity} from 'typeorm';
+import { Column, ViewColumn, ViewEntity } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
 @ViewEntity({

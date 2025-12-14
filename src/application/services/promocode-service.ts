@@ -16,7 +16,12 @@ export class PromoCodeService {
 
     if (!promoCode) throw new OrderProcessingException();
 
-    const discountAmount = this.calculateDiscount(order.originalSum, order.sum, promoCode, order.rewardPointsUsed);
+    const discountAmount = this.calculateDiscount(
+      order.originalSum,
+      order.sum,
+      promoCode,
+      order.rewardPointsUsed,
+    );
     order.discountAmount = discountAmount;
 
     const usageAmount = await this.incrementUsage(card, promoCode);
@@ -30,7 +35,12 @@ export class PromoCodeService {
     return discountAmount;
   }
 
-  private calculateDiscount(originalSum: number, sum: number, promoCode: PromoCode, rewardPointsUsed: number): number {
+  private calculateDiscount(
+    originalSum: number,
+    sum: number,
+    promoCode: PromoCode,
+    rewardPointsUsed: number,
+  ): number {
     if (promoCode.discountType === 1) {
       return originalSum - sum - rewardPointsUsed;
     } else if (promoCode.discountType === 2) {

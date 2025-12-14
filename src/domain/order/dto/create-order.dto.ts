@@ -1,6 +1,6 @@
 import { Card } from '../../account/card/model/card';
 import { OrderStatus } from '../enum/order-status.enum';
-import {DeviceType} from "../enum/device-type.enum";
+import { DeviceType } from '../enum/device-type.enum';
 
 export interface ICreateOrderDto {
   card: Card;

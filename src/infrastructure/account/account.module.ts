@@ -76,6 +76,11 @@ const favoritesUseCase: Provider[] = [FavoritesUseCase];
     ...accountUseCase,
     ...favoritesUseCase,
   ],
-  exports: [...repositories, ...metaUseCase, ...cardUseCase, ...favoritesUseCase],
+  exports: [
+    ...repositories,
+    ...metaUseCase,
+    ...cardUseCase,
+    ...favoritesUseCase,
+  ],
 })
 export class AccountModule {}

@@ -22,13 +22,27 @@ export class AllExceptionFilter implements ExceptionFilter {
   constructor(@Inject(Logger) private readonly logger: Logger) {}
 
   private identifyErrorSource(exception: any): string {
+    // Check for network-related database errors (common with Russia -> AWS connectivity issues)
+    if (
+      exception.code?.startsWith('NJS-') ||
+      exception.message?.includes('connection request timeout') ||
+      exception.message?.includes('queueTimeout') ||
+      exception.message?.includes('ECONNREFUSED') ||
+      exception.message?.includes('ENOTFOUND') ||
+      exception.message?.includes('ETIMEDOUT') ||
+      exception.message?.includes('network')
+    ) {
+      return 'database_network';
+    }
+
     // Check for common database errors
     if (
       exception.name?.includes('Database') ||
       exception.name?.includes('Sequelize') ||
       exception.name?.includes('SQL') ||
       exception.name?.includes('Postgres') ||
-      exception.name?.includes('TypeORM')
+      exception.name?.includes('TypeORM') ||
+      exception.name?.includes('Oracle')
     ) {
       return 'database';
     }
@@ -94,6 +108,9 @@ export class AllExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request: any = ctx.getRequest();
+
+    // Skip detailed logging for harmless monitoring/health check requests
+    const isHarmlessRequest = this.isHarmlessRequest(request, exception);
 
     const status =
       exception instanceof HttpException
@@ -204,6 +221,16 @@ export class AllExceptionFilter implements ExceptionFilter {
         name: exception.name || 'Error',
         stack: exception.stack || null,
         ...errorResponse.details,
+        // Add network-specific diagnostics for database_network errors
+        ...(errorResponse.source === 'database_network' && {
+          networkDiagnostics: {
+            host: request.headers?.host || 'unknown',
+            userAgent: request.headers['user-agent'] || null,
+            connectionIssue:
+              'Possible network blocking/throttling between Russia and AWS',
+            recommendation: 'Consider using VPN/proxy or AWS Direct Connect',
+          },
+        }),
       },
       // Additional context
       context: {
@@ -213,12 +240,57 @@ export class AllExceptionFilter implements ExceptionFilter {
       },
     };
 
-    // Log the error to Logtail with structured context
-    this.logger.error(
-      errorLog,
-      `[${errorResponse.source}] ${request.method} ${request.url} - ${errorResponse.message}`,
-    );
+    // Only log detailed errors for non-harmless requests to reduce noise and CPU usage
+    if (!isHarmlessRequest) {
+      this.logger.error(
+        errorLog,
+        `[${errorResponse.source}] ${request.method} ${request.url} - ${errorResponse.message}`,
+      );
+    } else {
+      // Completely skip logging for harmless requests (PROPFIND, etc.) to reduce CPU usage
+      // These are likely automated scanners/probes and don't need any logging
+      // No logging at all - not even debug level
+    }
 
     response.status(status).json(responseData);
+  }
+
+  /**
+   * Check if this is a harmless request that shouldn't be logged in detail
+   * (e.g., health checks, monitoring probes, unsupported HTTP methods)
+   */
+  private isHarmlessRequest(request: any, exception: any): boolean {
+    const method = request.method?.toUpperCase();
+    const path = request.path || request.url;
+
+    // Skip logging for:
+    // 1. PROPFIND, OPTIONS, HEAD, TRACE - WebDAV/monitoring methods
+    // 2. 404s on root path - health check probes
+    // 3. 404s on common monitoring paths
+    const harmlessMethods = ['PROPFIND', 'OPTIONS', 'HEAD', 'TRACE', 'CONNECT'];
+    const harmlessPaths = [
+      '/',
+      '/health',
+      '/healthz',
+      '/ping',
+      '/status',
+      '/metrics',
+    ];
+    const is404 = exception.status === 404 || exception.statusCode === 404;
+
+    if (harmlessMethods.includes(method)) {
+      return true;
+    }
+
+    if (is404 && (harmlessPaths.includes(path) || path === '/')) {
+      return true;
+    }
+
+    // Skip 404s for favicon and robots.txt
+    if (is404 && (path.includes('favicon') || path.includes('robots.txt'))) {
+      return true;
+    }
+
+    return false;
   }
 }

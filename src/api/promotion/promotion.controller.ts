@@ -18,7 +18,7 @@ import { PromotionNotFoundException } from '../../domain/promotion/exceptions/pr
 import { InvalidPromotionException } from '../../domain/promotion/exceptions/invalid-promotion.exception';
 import { PromotionResponseDto } from './dto/response/promotion-response.dto';
 import { PromotionStatus } from '../../domain/promotion/enums/promotion-status.enum';
-import {AccountNotFoundExceptions} from "../../domain/account/exceptions/account-not-found.exceptions";
+import { AccountNotFoundExceptions } from '../../domain/account/exceptions/account-not-found.exceptions';
 import { use } from 'passport';
 
 @Controller('promotion')
@@ -32,7 +32,7 @@ export class PromotionController {
     try {
       const { user } = req;
       const promotion = await this.promotionUsecase.apply(data, user);
-      return new PromotionResponseDto({ 
+      return new PromotionResponseDto({
         status: PromotionStatus.ACTIVATION_SUCCESS,
         code: promotion.code,
         totalPoints: promotion.totalPoints,

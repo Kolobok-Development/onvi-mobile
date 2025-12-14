@@ -59,7 +59,9 @@ export class ResponseInterceptor implements NestInterceptor {
       'unknown';
 
     // Get request ID
-    const requestId = request.id || `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    const requestId =
+      request.id ||
+      `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
     request.id = requestId;
 
     return next.handle().pipe(

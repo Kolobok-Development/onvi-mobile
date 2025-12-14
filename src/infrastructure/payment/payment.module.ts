@@ -11,10 +11,7 @@ import { RefundRepositoryProvider } from './provider/refund-payment.provider';
 import { RefundEntity } from './entity/refund.entity';
 
 @Module({
-  imports: [
-    EnvConfigModule,
-    TypeOrmModule.forFeature([RefundEntity]),
-  ],
+  imports: [EnvConfigModule, TypeOrmModule.forFeature([RefundEntity])],
   providers: [
     PaymentGatewayProvider,
     PaymentRepository,
@@ -24,9 +21,6 @@ import { RefundEntity } from './entity/refund.entity';
     RefundRepositoryProvider,
   ],
   controllers: [PaymentController],
-  exports: [
-    PaymentUsecase,
-    RefundRepositoryProvider,
-  ],
+  exports: [PaymentUsecase, RefundRepositoryProvider],
 })
 export class PaymentModule {}

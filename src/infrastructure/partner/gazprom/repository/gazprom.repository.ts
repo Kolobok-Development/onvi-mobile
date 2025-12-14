@@ -55,9 +55,9 @@ export class GazpromRepository implements IGazpromRepository {
   }
 
   async reference(
-      reference:string,
-      partnerClientId: string,
-      phoneNumber: string,
+    reference: string,
+    partnerClientId: string,
+    phoneNumber: string,
   ): Promise<GazpromSessionDto | GazpromErrorDto> {
     const config = this.setHeaders();
     const body = {
@@ -65,31 +65,31 @@ export class GazpromRepository implements IGazpromRepository {
       params: {
         partner_user_id: partnerClientId,
         phone_number: phoneNumber,
-      }
+      },
     };
 
     try {
       const request: AxiosResponse = await firstValueFrom(
-          this.httpService.post(
-              `${this.baseUrl}/v1/partners/${this.partnerId}/reference/client`,
-              body,
-              config,
-          ),
+        this.httpService.post(
+          `${this.baseUrl}/v1/partners/${this.partnerId}/reference/client`,
+          body,
+          config,
+        ),
       );
       return { token: request.data.token };
     } catch (err) {
       const { response } = err;
       return new GazpromErrorDto(
-          response.data.code,
-          response.data.message,
-          response.data.correlation_id,
-          response.data.details,
+        response.data.code,
+        response.data.message,
+        response.data.correlation_id,
+        response.data.details,
       );
     }
   }
 
   async getSubscriptionData(
-      partnerClientId: string,
+    partnerClientId: string,
   ): Promise<GazpromSubscriptionResponseDto | GazpromErrorDto> {
     const config = this.setHeaders();
 
@@ -116,7 +116,7 @@ export class GazpromRepository implements IGazpromRepository {
   }
 
   async getSession(
-      partnerClientId: string,
+    partnerClientId: string,
   ): Promise<GazpromSessionDto | GazpromErrorDto> {
     const config = this.setHeaders();
 
@@ -141,7 +141,7 @@ export class GazpromRepository implements IGazpromRepository {
   }
 
   async updateData(
-      partnerClientId: string,
+    partnerClientId: string,
     meta: GazpromUpdateOperDto,
   ): Promise<GazpromUpdateResponseDto | GazpromErrorDto> {
     const config = this.setHeaders();

@@ -112,13 +112,13 @@ export class PartnerRepository implements IPartnerRepository {
   }
 
   async findPartnerClientByPartnerUserIdAndPartnerId(
-      partnerUserId: string,
-      partnerId: number,
+    partnerUserId: string,
+    partnerId: number,
   ): Promise<PartnerClient> {
     const partnerClient = await this.partnerClientRepository.findOne({
       where: {
         partner: { id: partnerId },
-        partnerUserId
+        partnerUserId,
       },
     });
 

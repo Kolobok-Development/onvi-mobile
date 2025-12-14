@@ -11,5 +11,9 @@ export abstract class IOrderRepository {
   abstract update(order: Order): Promise<void>;
   abstract updateOrderStatus(id: number, status: OrderStatus): Promise<void>;
   abstract setExcecutionError(id: number, error: string): Promise<void>;
-  abstract getOrdersByCardId(cardId: number, size: number, page: number): Promise<Order[]>;
+  abstract getOrdersByCardId(
+    cardId: number,
+    size: number,
+    page: number,
+  ): Promise<Order[]>;
 }

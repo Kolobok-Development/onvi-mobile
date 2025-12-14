@@ -1,4 +1,4 @@
-export class PartnerClientCreateDto{
-    metaData: string;
-    partnerUserId?: string;
+export class PartnerClientCreateDto {
+  metaData: string;
+  partnerUserId?: string;
 }
