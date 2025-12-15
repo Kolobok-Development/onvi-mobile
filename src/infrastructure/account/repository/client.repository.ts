@@ -31,8 +31,9 @@ export class ClientRepository implements IClientRepository {
     });
 
     this.logger.log({
-      message: 'client',
-      client: client,
+      message: 'client found',
+      clientId: client?.clientId || null,
+      phone: client?.correctPhone || null,
     });
 
     if (!client) return null;

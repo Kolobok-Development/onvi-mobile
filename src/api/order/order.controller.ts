@@ -56,7 +56,9 @@ export class OrderController {
     this.logger.log({
       message: 'order create controller',
       data: data,
-      request11: req,
+      requestId: req.id,
+      method: req.method,
+      path: req.path,
     });
 
     try {
