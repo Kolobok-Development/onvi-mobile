@@ -12,9 +12,6 @@ import { SendStatus } from '../../../infrastructure/order/enum/send-status.enum'
 import { CarwashStartFailedException } from '../../../domain/order/exceptions/pos-start-faild.exception';
 import { DeviceType } from '../../../domain/order/enum/device-type.enum';
 import { Order } from '../../../domain/order/model/order';
-import { IGazpromRepository } from '../../../domain/partner/gazprom/gazprom-repository.abstract';
-import { IPartnerRepository } from '../../../domain/partner/partner-repository.abstract';
-import { PartnerOfferStatusEnum } from '../../../infrastructure/partner/enum/partner-offer-status.enum';
 import { RefundPaymentUseCase } from './refund-payment.use-case';
 
 @Injectable()
@@ -23,7 +20,7 @@ export class StartPosUseCase {
     private readonly orderRepository: IOrderRepository,
     @Inject(Logger) private readonly logger: Logger,
     private readonly posService: IPosService,
-    private readonly refundPaymentUseCase: RefundPaymentUseCase, // private readonly gazpromRepository: IGazpromRepository, // private readonly partnerRepository: IPartnerRepository,
+    private readonly refundPaymentUseCase: RefundPaymentUseCase,
   ) {}
 
   async execute(orderId: number): Promise<any> {
@@ -108,7 +105,6 @@ export class StartPosUseCase {
 
       order.orderStatus = OrderStatus.COMPLETED;
       await this.orderRepository.update(order);
-      // await this.sendGazprom(order, PartnerOfferStatusEnum.ACTIVE);
 
       this.logger.log(
         {
@@ -129,7 +125,6 @@ export class StartPosUseCase {
       order.orderStatus = OrderStatus.FAILED;
       order.excecutionError = error.message;
       await this.orderRepository.update(order);
-      // await this.sendGazprom(order, PartnerOfferStatusEnum.FAILED);
 
       this.logger.log(
         {
@@ -255,25 +250,4 @@ export class StartPosUseCase {
   private async sleep(ms: number): Promise<unknown> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
-
-  // private async sendGazprom(
-  //   order: Order,
-  //   status: PartnerOfferStatusEnum,
-  // ): Promise<void> {
-  //   const clientPartner =
-  //     await this.partnerRepository.findPartnerClientByClientIdAndPartnerId(
-  //       order.card.clientId,
-  //       2921,
-  //     );
-  //   if (clientPartner) {
-  //     console.log('start send Gazprom: ' + clientPartner.id);
-  //     await this.gazpromRepository.updateData(clientPartner.partnerUserId, {
-  //       meta: {
-  //         bonus_points: order.cashback.toString(),
-  //         last_visit: order.createdAt,
-  //         offer_status: status,
-  //       },
-  //     });
-  //   }
-  // }
 }

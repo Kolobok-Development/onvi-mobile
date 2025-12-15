@@ -12,7 +12,6 @@ import { OrderModule } from './infrastructure/order/order.module';
 import { PromocodeModule } from './infrastructure/promo-code/promocode.module';
 import { PaymentModule } from './infrastructure/payment/payment.module';
 import { PromotionModule } from './infrastructure/promotion/promotion.module';
-import { PartnerModule } from './infrastructure/partner/partner.module';
 import { HttpModule } from '@nestjs/axios';
 import { TransactionModule } from './infrastructure/transaction/transaction.module';
 import { PosModule } from './infrastructure/pos/pos.module';
@@ -202,7 +201,6 @@ import { HealthController } from './api/health/health.controller';
     PromocodeModule,
     PaymentModule,
     PromotionModule,
-    PartnerModule,
     TransactionModule,
     PosModule,
     BalanceWsModule,
