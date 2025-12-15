@@ -42,12 +42,10 @@ import { RefundEntity } from '../payment/entity/refund.entity';
             configService.get('DB_POOL_INCREMENT') || '2',
             10,
           ), // Connections to add when pool grows
-          // Reduced queueTimeout to fail faster and prevent CPU buildup from queued requests
-          // If connections are slow, better to fail fast than queue up and consume CPU
           queueTimeout: parseInt(
-            configService.get('DB_QUEUE_TIMEOUT') || '60000',
+            configService.get('DB_QUEUE_TIMEOUT') || '10000',
             10,
-          ), // 60 seconds - fail faster to prevent CPU buildup
+          ), 
           poolTimeout: parseInt(
             configService.get('DB_POOL_TIMEOUT') || '300',
             10,
