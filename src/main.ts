@@ -45,5 +45,16 @@ async function bootstrap() {
     maxAge: 86400, // 24 hours in seconds
   });*/
   await app.listen(process.env.PORT);
+
+  // Enable graceful shutdown
+  process.on('SIGTERM', async () => {
+    logger.log('SIGTERM signal received: closing HTTP server');
+    await app.close();
+  });
+
+  process.on('SIGINT', async () => {
+    logger.log('SIGINT signal received: closing HTTP server');
+    await app.close();
+  });
 }
 bootstrap();
