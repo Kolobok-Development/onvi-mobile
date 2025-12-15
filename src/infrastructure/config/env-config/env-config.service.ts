@@ -51,15 +51,6 @@ export class EnvConfigService implements IJwtConfig {
   getLogtailGatwayRunTimeToken(): string {
     return this.configService.get<string>('LOGTAIL_ERROR_SOURCE_TOKEN');
   }
-  getGazpromAuthToken(): string {
-    return this.configService.get<string>('GAZPROM_API_KEY');
-  }
-  getGazpromBaseUrl(): string {
-    return this.configService.get<string>('GAZPROM_BASE_URL');
-  }
-  getGazpromPartnerId(): number {
-    return this.configService.get<number>('GAZPROM_PARTNER_ID');
-  }
 
   getWebhookSecret(): string {
     return this.configService.get<string>('WEBHOOK_SECRET');

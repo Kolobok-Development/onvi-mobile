@@ -15,8 +15,6 @@ import { PromotionUsageEntity } from '../promotion/entity/promotion-usage.entity
 import { PromotionHistEntity } from '../promotion/entity/promotion-hist.entity';
 import { MetadataEntity } from '../account/entity/metadata.entity';
 import { PromoCodeToUserEntity } from '../promo-code/entity/promo-code-to-user.entity';
-import { PartnerEntity } from '../partner/entity/partner.entity';
-import { PartnerClientEntity } from '../partner/entity/partner-client.entity';
 import { CmnCityEntity } from '../cmn-city/entity/cmn-city.entity';
 import { FavoritesEntity } from '../account/entity/favorites.entity';
 import { RefundEntity } from '../payment/entity/refund.entity';
@@ -90,8 +88,6 @@ import { RefundEntity } from '../payment/entity/refund.entity';
           TariffEntity,
           MetadataEntity,
           PromoCodeToUserEntity,
-          PartnerEntity,
-          PartnerClientEntity,
           CmnCityEntity,
           FavoritesEntity,
           RefundEntity,
