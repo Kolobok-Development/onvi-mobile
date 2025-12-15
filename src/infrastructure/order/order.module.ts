@@ -42,6 +42,10 @@ import { RefundPaymentUseCase } from 'src/application/usecases/order/refund-paym
         removeOnComplete: true,
         removeOnFail: true,
         attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000, 
+        },
       },
     }),
   ],
