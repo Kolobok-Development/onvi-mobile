@@ -14,7 +14,8 @@ import { InvalidOtpException } from '../../../domain/auth/exceptions/invalid-otp
 import { AccountExistsException } from '../../../domain/account/exceptions/account-exists.exception';
 import { OtpInternalExceptions } from '../../../domain/otp/exceptions/otp-internal.exceptions';
 import { InvalidRefreshException } from '../../../domain/auth/exceptions/invalid-refresh.exception';
-import ms, { StringValue } from 'ms';
+import * as ms from 'ms';
+import type { StringValue } from 'ms';
 import { ICreateClientDto } from '../../../domain/dto/account-create-client.dto';
 import { ICreateCardDto } from '../../../domain/dto/account-create-card.dto';
 import { CardType } from '../../../domain/account/card/enum/card-type.enum';
