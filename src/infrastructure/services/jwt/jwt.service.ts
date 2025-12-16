@@ -4,6 +4,7 @@ import {
 } from '../../../domain/auth/adapters/jwt.interface';
 import { JwtService } from '@nestjs/jwt';
 import { Injectable } from '@nestjs/common';
+import { StringValue } from 'ms';
 
 @Injectable()
 export class JwtTokenService implements IJwtService {
@@ -16,7 +17,7 @@ export class JwtTokenService implements IJwtService {
   ): string {
     return this.jwtService.sign(payload, {
       secret: secret,
-      expiresIn: expiresIn,
+      expiresIn: expiresIn as StringValue,
     });
   }
 

@@ -14,7 +14,7 @@ import { InvalidOtpException } from '../../../domain/auth/exceptions/invalid-otp
 import { AccountExistsException } from '../../../domain/account/exceptions/account-exists.exception';
 import { OtpInternalExceptions } from '../../../domain/otp/exceptions/otp-internal.exceptions';
 import { InvalidRefreshException } from '../../../domain/auth/exceptions/invalid-refresh.exception';
-import * as ms from 'ms';
+import ms, { StringValue } from 'ms';
 import { ICreateClientDto } from '../../../domain/dto/account-create-client.dto';
 import { ICreateCardDto } from '../../../domain/dto/account-create-card.dto';
 import { CardType } from '../../../domain/account/card/enum/card-type.enum';
@@ -182,7 +182,7 @@ export class AuthUsecase {
     const expiresIn = this.jwtConfig.getJwtExpirationTime();
     const token = this.jwtService.signToken(payload, secret, expiresIn);
     const expirationDate = new Date(
-      new Date().getTime() + Math.floor(ms(expiresIn) / 1000) * 1000,
+      new Date().getTime() + Math.floor(ms(expiresIn as StringValue) / 1000) * 1000,
     ).toISOString();
     return { token, expirationDate };
   }
@@ -193,7 +193,7 @@ export class AuthUsecase {
     const expiresIn = this.jwtConfig.getJwtRefreshExpirationTime();
     const token = this.jwtService.signToken(payload, secret, expiresIn);
     const expirationDate = new Date(
-      new Date().getTime() + Math.floor(ms(expiresIn) / 1000) * 1000,
+      new Date().getTime() + Math.floor(ms(expiresIn as StringValue) / 1000) * 1000,
     ).toISOString();
 
     return { token, expirationDate };
