@@ -23,6 +23,7 @@ import { ThrottlerConfigModule } from './infrastructure/throttler/throttler.modu
 import { TrustedHostsMiddleware } from './infrastructure/security/trusted-hosts.middleware';
 import { HttpMethodFilterMiddleware } from './infrastructure/common/middleware/http-method-filter.middleware';
 import { HealthController } from './api/health/health.controller';
+import { PachcaModule } from './infrastructure/services/pachca/pachca.module';
 
 @Module({
   imports: [
@@ -42,6 +43,9 @@ import { HealthController } from './api/health/health.controller';
         },
       }),
       inject: [EnvConfigService],
+    }),
+    BullModule.registerQueue({
+      name: 'pos-process',
     }),
     LoggerModule.forRootAsync({
       imports: [EnvConfigModule],
@@ -204,6 +208,7 @@ import { HealthController } from './api/health/health.controller';
     TransactionModule,
     PosModule,
     BalanceWsModule,
+    PachcaModule,
   ],
   controllers: [HealthController],
   providers: [],

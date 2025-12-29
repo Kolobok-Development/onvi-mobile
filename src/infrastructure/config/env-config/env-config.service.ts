@@ -70,4 +70,24 @@ export class EnvConfigService implements IJwtConfig {
   getCacheRedisString(): string {
     return this.configService.get<string>('CACHE_REDIS_URL');
   }
+
+  getTelegramBotToken(): string {
+    return this.configService.get<string>('TELEGRAM_BOT_TOKEN');
+  }
+
+  getTelegramChatId(): string {
+    return this.configService.get<string>('TELEGRAM_CHAT_ID');
+  }
+
+  getPachcaAccessToken(): string {
+    return this.configService.get<string>('PACHCA_API_ACCESS_TOKEN');
+  }
+
+  getPachcaChatId(): string {
+    return this.configService.get<string>('PACHCA_CHAT_ID');
+  }
+
+  getHealthCheckToken(): string {
+    return this.configService.get<string>('HEALTH_CHECK_TOKEN');
+  }
 }
