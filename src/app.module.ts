@@ -23,7 +23,7 @@ import { ThrottlerConfigModule } from './infrastructure/throttler/throttler.modu
 import { TrustedHostsMiddleware } from './infrastructure/security/trusted-hosts.middleware';
 import { HttpMethodFilterMiddleware } from './infrastructure/common/middleware/http-method-filter.middleware';
 import { HealthController } from './api/health/health.controller';
-import { PachcaModule } from './infrastructure/services/pachca/pachca.module';
+import { HealthUseCaseModule } from './application/usecases/health/health.module';
 
 @Module({
   imports: [
@@ -208,7 +208,7 @@ import { PachcaModule } from './infrastructure/services/pachca/pachca.module';
     TransactionModule,
     PosModule,
     BalanceWsModule,
-    PachcaModule,
+    HealthUseCaseModule,
   ],
   controllers: [HealthController],
   providers: [],

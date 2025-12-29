@@ -3,9 +3,10 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { Logger } from 'nestjs-pino';
 import { EnvConfigService } from '../../config/env-config/env-config.service';
+import { INotificationService } from '../../../domain/health/adapter/notification-service.interface';
 
 @Injectable()
-export class PachcaService {
+export class PachcaService implements INotificationService {
   private readonly accessToken: string;
   private readonly chatId: string;
   private readonly apiUrl: string;
