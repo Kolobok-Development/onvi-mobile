@@ -90,4 +90,44 @@ export class EnvConfigService implements IJwtConfig {
   getHealthCheckToken(): string {
     return this.configService.get<string>('HEALTH_CHECK_TOKEN');
   }
+
+  // OTP defense: resend cooldown (Redis key TTL), default 60s
+  getOtpCooldownSeconds(): number {
+    return this.configService.get<number>('OTP_COOLDOWN_SECONDS') ?? 60;
+  }
+
+  // Rate limits: phone
+  getRlPhonePer60S(): number {
+    return this.configService.get<number>('RL_PHONE_PER_60S') ?? 1;
+  }
+  getRlPhonePer15M(): number {
+    return this.configService.get<number>('RL_PHONE_PER_15M') ?? 3;
+  }
+  getRlPhonePerDay(): number {
+    return this.configService.get<number>('RL_PHONE_PER_DAY') ?? 10;
+  }
+  getRlIpPer10M(): number {
+    return this.configService.get<number>('RL_IP_PER_10M') ?? 10;
+  }
+  getRlGlobalPerMinute(): number {
+    return this.configService.get<number>('RL_GLOBAL_PER_MINUTE') ?? 200;
+  }
+
+  getOtpLockTtlMs(): number {
+    return this.configService.get<number>('OTP_LOCK_TTL_MS') ?? 5000;
+  }
+
+  getSmsAttackMode(): boolean {
+    const v = this.configService.get<string>('SMS_ATTACK_MODE');
+    return v === '1' || v === 'true';
+  }
+
+  getTrustProxy(): boolean | number {
+    const v = this.configService.get<string>('TRUST_PROXY');
+    if (v === '0' || v === 'false') return false;
+    if (v === '1' || v === 'true') return true;
+    const n = parseInt(v ?? '', 10);
+    if (!Number.isNaN(n)) return n;
+    return false;
+  }
 }

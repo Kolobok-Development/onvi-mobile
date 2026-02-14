@@ -28,7 +28,11 @@ import { Client } from '../../domain/account/client/model/client';
 })
 @UseFilters(WebsocketExceptionsFilter)
 export class BalanceGateway
-  implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit, OnModuleDestroy
+  implements
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    OnModuleInit,
+    OnModuleDestroy
 {
   constructor(
     @Inject(Logger) private readonly logger: Logger,

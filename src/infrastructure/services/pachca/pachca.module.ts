@@ -15,4 +15,3 @@ import { INotificationService } from '../../../domain/health/adapter/notificatio
   exports: [INotificationService],
 })
 export class PachcaModule {}
-

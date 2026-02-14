@@ -24,9 +24,11 @@ import { TrustedHostsMiddleware } from './infrastructure/security/trusted-hosts.
 import { HttpMethodFilterMiddleware } from './infrastructure/common/middleware/http-method-filter.middleware';
 import { HealthController } from './api/health/health.controller';
 import { HealthUseCaseModule } from './application/usecases/health/health.module';
+import { CacheRedisModule } from './infrastructure/redis/cache-redis.module';
 
 @Module({
   imports: [
+    CacheRedisModule,
     PassportModule.register({}),
     //ThrottlerConfigModule,
     BullModule.forRootAsync({

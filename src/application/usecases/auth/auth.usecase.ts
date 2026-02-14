@@ -12,7 +12,6 @@ import { ClientType } from '../../../domain/account/client/enum/clinet-type.enum
 import { Otp } from '../../../domain/otp/model/otp';
 import { InvalidOtpException } from '../../../domain/auth/exceptions/invalid-otp.exception';
 import { AccountExistsException } from '../../../domain/account/exceptions/account-exists.exception';
-import { OtpInternalExceptions } from '../../../domain/otp/exceptions/otp-internal.exceptions';
 import { InvalidRefreshException } from '../../../domain/auth/exceptions/invalid-refresh.exception';
 import * as ms from 'ms';
 import type { StringValue } from 'ms';
@@ -33,6 +32,15 @@ import { ICardRepository } from '../../../domain/account/card/card-repository.ab
 import { PromoCode } from '../../../domain/promo-code/model/promo-code.model';
 import { PromocodeUsecase } from '../promocode/promocode.usecase';
 import { Logger } from 'nestjs-pino';
+import { EnvConfigService } from '../../../infrastructure/config/env-config/env-config.service';
+import { RateLimiterService } from '../../../infrastructure/otp-defense/rate-limiter.service';
+import { OtpDefenseService } from '../../../infrastructure/otp-defense/otp-defense.service';
+import { AuthentificationException } from '../../../domain/otp/exceptions/authentification.exception';
+
+export interface SendOtpResult {
+  sent: boolean;
+  phone: string;
+}
 
 @Injectable()
 export class AuthUsecase {
@@ -56,6 +64,9 @@ export class AuthUsecase {
     private readonly jwtConfig: IJwtConfig,
     private readonly bcryptService: IBcrypt,
     private readonly promoCodeUsecase: PromocodeUsecase,
+    private readonly env: EnvConfigService,
+    private readonly rateLimiter: RateLimiterService,
+    private readonly otpDefense: OtpDefenseService,
     @Inject(Logger) private readonly logger: Logger,
   ) {}
 
@@ -146,7 +157,7 @@ export class AuthUsecase {
     otp: string,
   ): Promise<any> {
     const isTestAccount = phone === '+79999999999' && otp === '0000';
-    
+
     if (!isTestAccount) {
       const currentOtp = await this.otpRepository.findOne(phone);
       if (
@@ -187,7 +198,8 @@ export class AuthUsecase {
     const expiresIn = this.jwtConfig.getJwtExpirationTime();
     const token = this.jwtService.signToken(payload, secret, expiresIn);
     const expirationDate = new Date(
-      new Date().getTime() + Math.floor(ms(expiresIn as StringValue) / 1000) * 1000,
+      new Date().getTime() +
+        Math.floor(ms(expiresIn as StringValue) / 1000) * 1000,
     ).toISOString();
     return { token, expirationDate };
   }
@@ -198,7 +210,8 @@ export class AuthUsecase {
     const expiresIn = this.jwtConfig.getJwtRefreshExpirationTime();
     const token = this.jwtService.signToken(payload, secret, expiresIn);
     const expirationDate = new Date(
-      new Date().getTime() + Math.floor(ms(expiresIn as StringValue) / 1000) * 1000,
+      new Date().getTime() +
+        Math.floor(ms(expiresIn as StringValue) / 1000) * 1000,
     ).toISOString();
 
     return { token, expirationDate };
@@ -234,40 +247,176 @@ export class AuthUsecase {
     return phone.replace(/^\s*\+|\s*/g, '');
   }
 
-  public async sendOtp(phone: string, ipAddress = 'unknown'): Promise<any> {
-    // First check if this phone is allowed to request OTP (throttling/tracking)
+  private maskPhone(phone: string): string {
+    if (!phone || phone.length < 4) return '****';
+    return '*'.repeat(phone.length - 4) + phone.slice(-4);
+  }
 
-    // Generate expiry time
-    const otpTime = this.dateService.generateOtpTime();
+  public async sendOtp(
+    phone: string,
+    ipAddress = 'unknown',
+  ): Promise<SendOtpResult> {
+    const normalized = this.formatPhone(phone);
+    const cooldownMs = this.env.getOtpCooldownSeconds() * 1000;
+    let lockHeld = false;
+    const startMs = Date.now();
 
-    // Generate OTP code
-    let otpCode = this.generateOtp();
+    try {
+      const acquired = await this.otpDefense.acquireLock(normalized);
+      if (!acquired) {
+        this.logger.log(
+          {
+            context: 'OTP_DEFENSE',
+            decision: 'skipped_concurrent',
+            phone_masked: this.maskPhone(normalized),
+            duration_ms: Date.now() - startMs,
+          },
+          'sendOtp skipped: lock not acquired',
+        );
+        return { sent: false, phone: normalized };
+      }
+      lockHeld = true;
 
-    // Test account bypass - ONLY FOR DEVELOPMENT
-    if (phone === '+79999999999') {
-      otpCode = '0000';
+      const inRedisCooldown = await this.otpDefense.inCooldown(normalized);
+      if (inRedisCooldown) {
+        this.logger.log(
+          {
+            context: 'OTP_DEFENSE',
+            decision: 'skipped_cooldown',
+            phone_masked: this.maskPhone(normalized),
+            duration_ms: Date.now() - startMs,
+          },
+          'sendOtp skipped: Redis cooldown',
+        );
+        return { sent: false, phone: normalized };
+      }
+
+      const lastSentAt = await this.otpRepository.getLastSentAt(normalized);
+      if (lastSentAt && Date.now() - lastSentAt.getTime() < cooldownMs) {
+        this.logger.log(
+          {
+            context: 'OTP_DEFENSE',
+            decision: 'skipped_cooldown_db',
+            phone_masked: this.maskPhone(normalized),
+            duration_ms: Date.now() - startMs,
+          },
+          'sendOtp skipped: DB cooldown fallback',
+        );
+        return { sent: false, phone: normalized };
+      }
+
+      const phoneLimit = await this.rateLimiter.checkPhone(normalized);
+      if (!phoneLimit.allowed) {
+        this.logger.log(
+          {
+            context: 'OTP_DEFENSE',
+            decision: 'limited_phone',
+            phone_masked: this.maskPhone(normalized),
+            duration_ms: Date.now() - startMs,
+          },
+          'sendOtp skipped: phone rate limit',
+        );
+        return { sent: false, phone: normalized };
+      }
+      const ipLimit = await this.rateLimiter.checkIp(ipAddress);
+      if (!ipLimit.allowed) {
+        this.logger.log(
+          {
+            context: 'OTP_DEFENSE',
+            decision: 'limited_ip',
+            phone_masked: this.maskPhone(normalized),
+            duration_ms: Date.now() - startMs,
+          },
+          'sendOtp skipped: IP rate limit',
+        );
+        return { sent: false, phone: normalized };
+      }
+      const globalLimit = await this.rateLimiter.checkGlobal();
+      if (!globalLimit.allowed) {
+        this.logger.log(
+          {
+            context: 'OTP_DEFENSE',
+            decision: 'limited_global',
+            phone_masked: this.maskPhone(normalized),
+            duration_ms: Date.now() - startMs,
+          },
+          'sendOtp skipped: global rate limit',
+        );
+        return { sent: false, phone: normalized };
+      }
+
+      if (this.env.getSmsAttackMode()) {
+        const existingUser = await this.clientRepository.findOneByPhone(
+          normalized,
+        );
+        if (!existingUser) {
+          this.logger.log(
+            {
+              context: 'OTP_DEFENSE',
+              decision: 'attack_mode_unknown_phone',
+              phone_masked: this.maskPhone(normalized),
+              duration_ms: Date.now() - startMs,
+            },
+            'sendOtp skipped: attack mode, unknown phone',
+          );
+          return { sent: false, phone: normalized };
+        }
+      }
+
+      const otpTime = this.dateService.generateOtpTime();
+      let otpCode = this.generateOtp();
+      if (phone === '+79999999999') {
+        otpCode = '0000';
+      }
+
+      const otp = new Otp(null, normalized, otpCode, otpTime);
+      otp.ipAddress = ipAddress;
+
+      await this.otpRepository.removeOne(normalized);
+      const newOtp = await this.otpRepository.create(otp);
+
+      await this.otpRepository.send(newOtp);
+      await this.otpDefense.setCooldown(normalized);
+
+      this.logger.log(
+        {
+          context: 'OTP_DEFENSE',
+          decision: 'sent',
+          phone_masked: this.maskPhone(normalized),
+          duration_ms: Date.now() - startMs,
+        },
+        'sendOtp sent',
+      );
+      return { sent: true, phone: normalized };
+    } catch (e) {
+      if (e instanceof AuthentificationException) {
+        this.logger.log(
+          {
+            context: 'OTP_DEFENSE',
+            decision: 'provider_error',
+            phone_masked: this.maskPhone(normalized),
+            duration_ms: Date.now() - startMs,
+          },
+          `sendOtp provider error: ${e.message}`,
+        );
+        return { sent: false, phone: normalized };
+      }
+      this.logger.error(
+        {
+          context: 'OTP_DEFENSE',
+          decision: 'error',
+          phone_masked: this.maskPhone(normalized),
+          duration_ms: Date.now() - startMs,
+          error: e?.message,
+        },
+        `sendOtp error: ${e?.message ?? e}`,
+      );
+      return { sent: false, phone: normalized };
+    } finally {
+      if (lockHeld) {
+        await this.otpDefense.releaseLock(normalized);
+      }
     }
-
-    // Create new OTP model
-    const otp = new Otp(null, phone, otpCode, otpTime);
-    otp.ipAddress = ipAddress;
-
-    // Remove any existing OTP
-    await this.otpRepository.removeOne(phone);
-
-    // Save new OTP and return
-    const newOtp = await this.otpRepository.create(otp);
-
-    // Track this request
-
-    // Send the OTP
-    await this.otpRepository.send(newOtp);
-
-    if (!newOtp) {
-      throw new OtpInternalExceptions(phone, otp.otp);
-    }
-
-    return newOtp;
   }
 
   private generateOtp() {

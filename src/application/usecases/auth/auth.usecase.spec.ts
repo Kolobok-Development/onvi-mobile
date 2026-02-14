@@ -17,6 +17,11 @@ import { ClientType } from '../../../domain/account/client/enum/clinet-type.enum
 import { CardType } from '../../../domain/account/card/enum/card-type.enum';
 import { AccountNotFoundExceptions } from '../../../domain/account/exceptions/account-not-found.exceptions';
 import { InvalidAccessException } from '../../../domain/auth/exceptions/invalida-token.excpetion';
+import { EnvConfigService } from '../../../infrastructure/config/env-config/env-config.service';
+import { RateLimiterService } from '../../../infrastructure/otp-defense/rate-limiter.service';
+import { OtpDefenseService } from '../../../infrastructure/otp-defense/otp-defense.service';
+import { PromocodeUsecase } from '../promocode/promocode.usecase';
+import { Logger } from 'nestjs-pino';
 
 describe('AuthUsecase', () => {
   let authUsecase: AuthUsecase;
@@ -27,10 +32,14 @@ describe('AuthUsecase', () => {
   let dateService: jest.Mocked<IDate>;
   let jwtConfig: jest.Mocked<IJwtConfig>;
   let bcryptService: jest.Mocked<IBcrypt>;
+  let env: jest.Mocked<EnvConfigService>;
+  let rateLimiter: jest.Mocked<RateLimiterService>;
+  let otpDefense: jest.Mocked<OtpDefenseService>;
 
   beforeEach(async () => {
     const mockClientRepository = {
       findOneByPhone: jest.fn(),
+      findOneOldClientByPhone: jest.fn(),
       update: jest.fn(),
       create: jest.fn(),
       setRefreshToken: jest.fn(),
@@ -52,6 +61,8 @@ describe('AuthUsecase', () => {
       create: jest.fn(),
       removeOne: jest.fn(),
       send: jest.fn(),
+      getRecentAttempts: jest.fn(),
+      getLastSentAt: jest.fn().mockResolvedValue(null),
     };
 
     const mockDateService = {
@@ -71,6 +82,27 @@ describe('AuthUsecase', () => {
       compare: jest.fn(),
     };
 
+    const mockEnv = {
+      getOtpCooldownSeconds: jest.fn().mockReturnValue(60),
+      getSmsAttackMode: jest.fn().mockReturnValue(false),
+    };
+
+    const mockRateLimiter = {
+      checkPhone: jest.fn().mockResolvedValue({ allowed: true }),
+      checkIp: jest.fn().mockResolvedValue({ allowed: true }),
+      checkGlobal: jest.fn().mockResolvedValue({ allowed: true }),
+    };
+
+    const mockOtpDefense = {
+      acquireLock: jest.fn().mockResolvedValue(true),
+      releaseLock: jest.fn().mockResolvedValue(undefined),
+      inCooldown: jest.fn().mockResolvedValue(false),
+      setCooldown: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const mockPromocodeUsecase = { getByCode: jest.fn() };
+    const mockLogger = { log: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthUsecase,
@@ -81,6 +113,11 @@ describe('AuthUsecase', () => {
         { provide: IDate, useValue: mockDateService },
         { provide: IJwtConfig, useValue: mockJwtConfig },
         { provide: IBcrypt, useValue: mockBcryptService },
+        { provide: EnvConfigService, useValue: mockEnv },
+        { provide: RateLimiterService, useValue: mockRateLimiter },
+        { provide: OtpDefenseService, useValue: mockOtpDefense },
+        { provide: PromocodeUsecase, useValue: mockPromocodeUsecase },
+        { provide: Logger, useValue: mockLogger },
       ],
     }).compile();
 
@@ -92,6 +129,9 @@ describe('AuthUsecase', () => {
     dateService = module.get(IDate);
     jwtConfig = module.get(IJwtConfig);
     bcryptService = module.get(IBcrypt);
+    env = module.get(EnvConfigService);
+    rateLimiter = module.get(RateLimiterService);
+    otpDefense = module.get(OtpDefenseService);
   });
 
   describe('register', () => {
@@ -205,7 +245,7 @@ describe('AuthUsecase', () => {
       expect(cardRepository.reActivate).toHaveBeenCalledWith(mockCard.cardId);
       expect(result.accessToken).toEqual(mockAccessToken);
       expect(result.refreshToken).toEqual(mockRefreshToken);
-      expect(result.registeredAccount).toEqual(mockClient);
+      expect(result.newClient).toEqual(mockClient);
       expect(mockClient.isActivated).toBe(1);
       expect(mockCard.isDel).toBe(0);
       expect(mockClient.refreshToken).toBe(mockRefreshToken.token);
@@ -482,39 +522,82 @@ describe('AuthUsecase', () => {
     beforeEach(() => {
       dateService.generateOtpTime.mockReturnValue(mockOtpTime);
       jest.spyOn(authUsecase as any, 'generateOtp').mockReturnValue('1234');
+      otpDefense.acquireLock.mockResolvedValue(true);
+      otpDefense.inCooldown.mockResolvedValue(false);
+      otpRepository.getLastSentAt.mockResolvedValue(null);
+      rateLimiter.checkPhone.mockResolvedValue({ allowed: true });
+      rateLimiter.checkIp.mockResolvedValue({ allowed: true });
+      rateLimiter.checkGlobal.mockResolvedValue({ allowed: true });
+      env.getSmsAttackMode.mockReturnValue(false);
     });
 
-    it('should create and send a new OTP', async () => {
-      // Arrange
-      // Use an actual Otp instance since it's a simple data class
-      const mockOtp = new Otp(1, phone, '1234', mockOtpTime);
+    const normalizedPhone = '79123456789'; // formatPhone('+79123456789')
+
+    it('should create and send a new OTP and return sent true', async () => {
+      const mockOtp = new Otp(1, normalizedPhone, '1234', mockOtpTime);
       otpRepository.create.mockResolvedValue(mockOtp);
       otpRepository.removeOne.mockResolvedValue(undefined);
       otpRepository.send.mockResolvedValue(undefined);
 
-      // Act
       const result = await authUsecase.sendOtp(phone);
 
-      // Assert
-      expect(otpRepository.removeOne).toHaveBeenCalledWith(phone);
+      expect(otpDefense.acquireLock).toHaveBeenCalledWith(normalizedPhone);
+      expect(otpRepository.removeOne).toHaveBeenCalledWith(normalizedPhone);
       expect(otpRepository.create).toHaveBeenCalled();
-      expect(otpRepository.send).toHaveBeenCalledWith(mockOtp);
-      expect(result).toEqual(mockOtp);
+      expect(otpRepository.send).toHaveBeenCalled();
+      expect(otpDefense.setCooldown).toHaveBeenCalledWith(normalizedPhone);
+      expect(result).toEqual({ sent: true, phone: normalizedPhone });
     });
 
-    it('should use 0000 as OTP for test phone number', async () => {
-      // Arrange
-      const testPhone = '+79999999999';
-      const mockOtp = new Otp(1, testPhone, '0000', mockOtpTime);
+    it('should not send when in cooldown (Redis)', async () => {
+      otpDefense.inCooldown.mockResolvedValue(true);
+
+      const result = await authUsecase.sendOtp(phone);
+
+      expect(result).toEqual({ sent: false, phone: normalizedPhone });
+      expect(otpRepository.send).not.toHaveBeenCalled();
+    });
+
+    it('should not send when phone rate limit exceeded', async () => {
+      rateLimiter.checkPhone.mockResolvedValue({ allowed: false });
+
+      const result = await authUsecase.sendOtp(phone);
+
+      expect(result).toEqual({ sent: false, phone: normalizedPhone });
+      expect(otpRepository.send).not.toHaveBeenCalled();
+    });
+
+    it('should not send when attack mode and unknown phone', async () => {
+      env.getSmsAttackMode.mockReturnValue(true);
+      clientRepository.findOneByPhone.mockResolvedValue(null as any);
+
+      const result = await authUsecase.sendOtp(phone);
+
+      expect(result).toEqual({ sent: false, phone: normalizedPhone });
+      expect(otpRepository.send).not.toHaveBeenCalled();
+    });
+
+    it('should send when attack mode and known phone', async () => {
+      env.getSmsAttackMode.mockReturnValue(true);
+      const mockClient = {} as Client;
+      clientRepository.findOneByPhone.mockResolvedValue(mockClient);
+      const mockOtp = new Otp(1, normalizedPhone, '1234', mockOtpTime);
       otpRepository.create.mockResolvedValue(mockOtp);
-      otpRepository.removeOne.mockResolvedValue(undefined);
       otpRepository.send.mockResolvedValue(undefined);
 
-      // Act
-      const result = await authUsecase.sendOtp(testPhone);
+      const result = await authUsecase.sendOtp(phone);
 
-      // Assert
-      expect(result.otp).toEqual('0000');
+      expect(result.sent).toBe(true);
+      expect(otpRepository.send).toHaveBeenCalled();
+    });
+
+    it('should not send when lock not acquired', async () => {
+      otpDefense.acquireLock.mockResolvedValue(false);
+
+      const result = await authUsecase.sendOtp(phone);
+
+      expect(result).toEqual({ sent: false, phone: normalizedPhone });
+      expect(otpRepository.send).not.toHaveBeenCalled();
     });
   });
 });

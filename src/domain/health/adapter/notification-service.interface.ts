@@ -5,4 +5,3 @@ export abstract class INotificationService {
     details: any,
   ): Promise<boolean>;
 }
-

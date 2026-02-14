@@ -4,7 +4,7 @@ import { StartPosUseCase } from '../start-pos.use-case';
 import { Injectable } from '@nestjs/common';
 
 @Processor('pos-process', {
-  concurrency: 5, 
+  concurrency: 5,
 })
 @Injectable()
 export class StartPosProcess extends WorkerHost {

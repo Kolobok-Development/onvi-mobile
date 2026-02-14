@@ -54,4 +54,3 @@ export class HealthCheckGuard implements CanActivate {
     return true;
   }
 }
-

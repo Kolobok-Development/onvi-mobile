@@ -54,7 +54,9 @@ export class PachcaService implements INotificationService {
         return true;
       } else {
         this.logger.error(
-          `Failed to send PACHCA notification: ${response.statusText || 'Unknown error'}`,
+          `Failed to send PACHCA notification: ${
+            response.statusText || 'Unknown error'
+          }`,
         );
         return false;
       }
@@ -62,7 +64,7 @@ export class PachcaService implements INotificationService {
       const errorResponse = error.response?.data || null;
       const errorStatus = error.response?.status || null;
       const requestUrl = `${this.apiUrl}/messages`;
-      
+
       this.logger.error(
         {
           error: {
@@ -76,7 +78,7 @@ export class PachcaService implements INotificationService {
         },
         `Error sending PACHCA notification: ${error.message}`,
       );
-      
+
       if (errorStatus === 404) {
         this.logger.error(
           `PACHCA API endpoint not found. Tried: ${requestUrl}. Please verify the API endpoint and entity ID.`,
@@ -91,10 +93,12 @@ export class PachcaService implements INotificationService {
         );
       } else if (errorStatus === 422) {
         this.logger.error(
-          `PACHCA API validation error. Response: ${JSON.stringify(errorResponse)}`,
+          `PACHCA API validation error. Response: ${JSON.stringify(
+            errorResponse,
+          )}`,
         );
       }
-      
+
       return false;
     }
   }
@@ -123,4 +127,3 @@ ${JSON.stringify(details, null, 2)}
     return this.sendMessage(message);
   }
 }
-

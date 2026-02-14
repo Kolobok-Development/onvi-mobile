@@ -8,7 +8,9 @@ import { StringValue } from 'ms';
   imports: [
     Jwt.register({
       secret: process.env.JWT_SCRET,
-      signOptions: { expiresIn: (process.env.JWT_EXPIRE_TIME || '1h') as StringValue },
+      signOptions: {
+        expiresIn: (process.env.JWT_EXPIRE_TIME || '1h') as StringValue,
+      },
     }),
   ],
   providers: [JwtProvider],

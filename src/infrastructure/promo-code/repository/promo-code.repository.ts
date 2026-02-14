@@ -171,7 +171,10 @@ export class PromoCodeRepository implements IPromoCodeRepository {
         'cmn_city',
         'promocode.CMNCITY_ID = cmn_city.CMNCITY_ID',
       );
-      query.andWhere('(cmn_city.regionCode = :regionCode OR promocode.CMNCITY_ID IS NULL)', { regionCode });
+      query.andWhere(
+        '(cmn_city.regionCode = :regionCode OR promocode.CMNCITY_ID IS NULL)',
+        { regionCode },
+      );
     }
 
     const promoCodes = await query.getMany();

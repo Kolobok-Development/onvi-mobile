@@ -42,10 +42,7 @@ export class HealthCheckUseCase {
       this.notificationService
         .sendHealthCheckAlert('general', overallStatus, checks)
         .catch((error) => {
-          this.logger.error(
-            'Failed to send health check notification',
-            error,
-          );
+          this.logger.error('Failed to send health check notification', error);
         });
     }
 
@@ -57,4 +54,3 @@ export class HealthCheckUseCase {
     };
   }
 }
-

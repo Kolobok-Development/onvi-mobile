@@ -23,13 +23,14 @@ export class OtpHealthCheckUseCase {
       testPhone: string;
       otpCode?: string;
       error?: string;
+      sent?: boolean;
     };
     timestamp: string;
   }> {
     const startTime = Date.now();
 
     try {
-      const otp = await this.authUsecase.sendOtp(
+      const result = await this.authUsecase.sendOtp(
         this.testPhone,
         'health-check',
       );
@@ -40,10 +41,10 @@ export class OtpHealthCheckUseCase {
         service: 'onvi-mobile-api',
         check: {
           type: 'otp_send',
-          status: 'healthy',
+          status: result.sent ? 'healthy' : 'throttled',
           latency,
           testPhone: this.testPhone,
-          otpCode: otp.otp,
+          sent: result.sent,
         },
         timestamp: new Date().toISOString(),
       };
@@ -74,4 +75,3 @@ export class OtpHealthCheckUseCase {
     }
   }
 }
-

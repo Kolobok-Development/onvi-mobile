@@ -14,6 +14,7 @@ import { JwtStrategy } from '../common/strategies/jwt.strategy';
 import { WsJwtStrategy } from '../common/strategies/jwt-ws.strategy';
 import { WsAuthGuard } from '../common/guards/jws-ws.guard';
 import { PromocodeModule } from '../promo-code/promocode.module';
+import { OtpDefenseModule } from '../otp-defense/otp-defense.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PromocodeModule } from '../promo-code/promocode.module';
     EnvConfigModule,
     BcryptModule,
     PromocodeModule,
+    OtpDefenseModule,
   ],
   controllers: [AuthController],
   providers: [

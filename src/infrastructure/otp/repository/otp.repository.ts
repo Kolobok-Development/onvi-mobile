@@ -57,6 +57,14 @@ export class OtpRepository implements IOtpRepository {
     });
   }
 
+  async getLastSentAt(phone: string): Promise<Date | null> {
+    const last = await this.otpRepository.findOne({
+      where: { phone },
+      order: { createDate: 'DESC' },
+    });
+    return last?.createDate ?? null;
+  }
+
   async send(otp: Otp): Promise<any> {
     const header: any = this.setHeaders();
     const startTime = Date.now();

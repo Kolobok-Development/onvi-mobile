@@ -20,4 +20,3 @@ import { BullModule } from '@nestjs/bullmq';
   exports: [IHealthCheckRepository],
 })
 export class HealthModule {}
-

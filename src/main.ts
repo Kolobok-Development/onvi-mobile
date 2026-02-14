@@ -30,6 +30,16 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionFilter(logger));
   app.setGlobalPrefix('/api/v2');
 
+  // Trust proxy: when off (default), use socket.remoteAddress only; when on, use req.ip from proxy
+  const trustProxyRaw = process.env.TRUST_PROXY;
+  let trustProxy: boolean | number = false;
+  if (trustProxyRaw === '1' || trustProxyRaw === 'true') trustProxy = true;
+  else if (trustProxyRaw !== undefined && trustProxyRaw !== '') {
+    const n = Number(trustProxyRaw);
+    if (!Number.isNaN(n)) trustProxy = n;
+  }
+  app.set('trust proxy', trustProxy);
+
   // Apply Helmet security middleware with custom config
   //app.use(helmet.default(helmetConfig));
 

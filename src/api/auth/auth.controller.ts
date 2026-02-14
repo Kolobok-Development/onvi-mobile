@@ -26,13 +26,14 @@ import { OtpStatus } from '../../domain/otp/enums/otp-status.enum';
 import { RegisterRequestDto } from './dto/register-request.dto';
 import { InvalidOtpException } from '../../domain/auth/exceptions/invalid-otp.exception';
 import { AccountNotFoundExceptions } from '../../domain/account/exceptions/account-not-found.exceptions';
-import { OtpInternalExceptions } from '../../domain/otp/exceptions/otp-internal.exceptions';
 import { RefreshGuard } from '../../infrastructure/common/guards/refresh.guard';
 import { RefreshRequestDto } from './dto/refresh-request.dto';
 import { RefreshResponseDto } from './dto/response/refresh-response.dto';
 import { use } from 'passport';
 import { CustomHttpException } from '../../infrastructure/common/exceptions/custom-http.exception';
 import { FindMethodsMetaUseCase } from '../../application/usecases/account/account-meta-find-methods';
+import { EnvConfigService } from '../../infrastructure/config/env-config/env-config.service';
+import { getClientIp } from '../../infrastructure/common/utils/client-ip.util';
 //import { ThrottleType } from '../../infrastructure/common/decorators/throttler.decorator';
 
 @Controller('auth')
@@ -41,6 +42,7 @@ export class AuthController {
   constructor(
     private readonly authUsecase: AuthUsecase,
     private readonly findMethodsMetaUseCase: FindMethodsMetaUseCase,
+    private readonly env: EnvConfigService,
   ) {}
 
   @UseGuards(LocalGuard)
@@ -139,34 +141,18 @@ export class AuthController {
   @Post('/send/otp')
   //@ThrottleType('otp')
   async sendOtp(@Body() otpRequest: OtpRequestDto, @Request() req: any) {
-    // Extract IP address from request
-    const ipAddress =
-      req.headers['x-forwarded-for']?.toString() ||
-      req.ip ||
-      req.connection.remoteAddress ||
-      'unknown';
+    const trustProxy = this.env.getTrustProxy();
+    const clientIp = getClientIp(req, trustProxy);
+    const phone = otpRequest.phone;
     try {
-      const phone = otpRequest.phone;
-      const otp = await this.authUsecase.sendOtp(phone, ipAddress);
-      return new OtpResponseDto({
-        status: OtpStatus.SENT_SUCCESS,
-        target: otp.phone,
-      });
-    } catch (e) {
-      if (e instanceof OtpInternalExceptions) {
-        throw new CustomHttpException({
-          type: e.type,
-          innerCode: e.innerCode,
-          message: e.message,
-          code: HttpStatus.INTERNAL_SERVER_ERROR,
-        });
-      } else {
-        throw new CustomHttpException({
-          message: e.message,
-          code: HttpStatus.INTERNAL_SERVER_ERROR,
-        });
-      }
+      await this.authUsecase.sendOtp(phone, clientIp);
+    } catch {
+      // Do not leak errors to client; always return same success shape
     }
+    return new OtpResponseDto({
+      status: OtpStatus.SENT_SUCCESS,
+      target: phone,
+    });
   }
 
   @HttpCode(200)

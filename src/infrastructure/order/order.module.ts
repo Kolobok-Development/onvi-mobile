@@ -42,7 +42,7 @@ import { RefundPaymentUseCase } from 'src/application/usecases/order/refund-paym
         attempts: 3,
         backoff: {
           type: 'exponential',
-          delay: 2000, 
+          delay: 2000,
         },
       },
     }),

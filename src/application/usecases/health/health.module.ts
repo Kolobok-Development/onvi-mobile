@@ -11,4 +11,3 @@ import { AuthModule } from '../../../infrastructure/auth/auth.module';
   exports: [HealthCheckUseCase, OtpHealthCheckUseCase],
 })
 export class HealthUseCaseModule {}
-
