@@ -7,8 +7,8 @@ import { AllExceptionFilter } from './infrastructure/common/filters/exception.fi
 import { ValidationException } from './infrastructure/common/exceptions/validation.exception';
 import { Logger } from 'nestjs-pino';
 import * as process from 'node:process';
-//import * as helmet from 'helmet';
-//import { helmetConfig } from './infrastructure/security/helmet.config';
+import helmet from 'helmet';
+import { helmetConfig } from './infrastructure/security/helmet.config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -41,7 +41,7 @@ async function bootstrap() {
   app.set('trust proxy', trustProxy);
 
   // Apply Helmet security middleware with custom config
-  //app.use(helmet.default(helmetConfig));
+  app.use(helmet(helmetConfig));
 
   // Enable CORS for mobile app domains
   /*app.enableCors({
