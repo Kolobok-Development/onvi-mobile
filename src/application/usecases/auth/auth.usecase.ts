@@ -328,7 +328,13 @@ export class AuthUsecase {
       }
 
       const lastSentAt = await this.otpRepository.getLastSentAt(normalized);
-      if (lastSentAt && Date.now() - lastSentAt.getTime() < cooldownMs) {
+      const lastSentAtMs =
+        lastSentAt instanceof Date
+          ? lastSentAt.getTime()
+          : lastSentAt
+            ? new Date(lastSentAt as string | number).getTime()
+            : 0;
+      if (lastSentAt && Number.isFinite(lastSentAtMs) && Date.now() - lastSentAtMs < cooldownMs) {
         this.logger.log(
           {
             flow_id: flowId,
