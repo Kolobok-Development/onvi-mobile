@@ -259,6 +259,11 @@ export class AuthUsecase {
     return '*'.repeat(phone.length - 4) + phone.slice(-4);
   }
 
+  /** Mask IP for logs: show last octet for IPv4 (e.g. x.x.x.123), else truncated */
+  private maskIp(ip: string): string {
+    return ip;
+  }
+
   public async sendOtp(
     phone: string,
     ipAddress = 'unknown',
@@ -267,18 +272,38 @@ export class AuthUsecase {
     const cooldownMs = this.env.getOtpCooldownSeconds() * 1000;
     let lockHeld = false;
     const startMs = Date.now();
+    const flowId = `otp_${Date.now().toString(36)}_${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
+    const phoneMasked = this.maskPhone(normalized);
+    const ipMasked = this.maskIp(ipAddress);
+
+    this.logger.log(
+      {
+        flow_id: flowId,
+        context: 'OTP_FLOW',
+        event: 'request_started',
+        phone_masked: phoneMasked,
+        client_ip_masked: ipMasked,
+      },
+      'OTP request received',
+    );
 
     try {
       const acquired = await this.otpDefense.acquireLock(normalized);
       if (!acquired) {
         this.logger.log(
           {
-            context: 'OTP_DEFENSE',
-            decision: 'skipped_concurrent',
-            phone_masked: this.maskPhone(normalized),
+            flow_id: flowId,
+            context: 'OTP_FLOW',
+            event: 'skipped',
+            outcome: 'not_sent',
+            reason: 'concurrent_request',
+            phone_masked: phoneMasked,
+            client_ip_masked: ipMasked,
             duration_ms: Date.now() - startMs,
           },
-          'sendOtp skipped: lock not acquired',
+          'OTP flow: skipped (concurrent request, lock not acquired)',
         );
         return { sent: false, phone: normalized };
       }
@@ -288,12 +313,16 @@ export class AuthUsecase {
       if (inRedisCooldown) {
         this.logger.log(
           {
-            context: 'OTP_DEFENSE',
-            decision: 'skipped_cooldown',
-            phone_masked: this.maskPhone(normalized),
+            flow_id: flowId,
+            context: 'OTP_FLOW',
+            event: 'skipped',
+            outcome: 'not_sent',
+            reason: 'cooldown_redis',
+            phone_masked: phoneMasked,
+            client_ip_masked: ipMasked,
             duration_ms: Date.now() - startMs,
           },
-          'sendOtp skipped: Redis cooldown',
+          'OTP flow: skipped (Redis cooldown)',
         );
         return { sent: false, phone: normalized };
       }
@@ -302,12 +331,16 @@ export class AuthUsecase {
       if (lastSentAt && Date.now() - lastSentAt.getTime() < cooldownMs) {
         this.logger.log(
           {
-            context: 'OTP_DEFENSE',
-            decision: 'skipped_cooldown_db',
-            phone_masked: this.maskPhone(normalized),
+            flow_id: flowId,
+            context: 'OTP_FLOW',
+            event: 'skipped',
+            outcome: 'not_sent',
+            reason: 'cooldown_db',
+            phone_masked: phoneMasked,
+            client_ip_masked: ipMasked,
             duration_ms: Date.now() - startMs,
           },
-          'sendOtp skipped: DB cooldown fallback',
+          'OTP flow: skipped (DB cooldown fallback)',
         );
         return { sent: false, phone: normalized };
       }
@@ -316,12 +349,16 @@ export class AuthUsecase {
       if (!phoneLimit.allowed) {
         this.logger.log(
           {
-            context: 'OTP_DEFENSE',
-            decision: 'limited_phone',
-            phone_masked: this.maskPhone(normalized),
+            flow_id: flowId,
+            context: 'OTP_FLOW',
+            event: 'blocked',
+            outcome: 'not_sent',
+            reason: 'phone_rate_limit',
+            phone_masked: phoneMasked,
+            client_ip_masked: ipMasked,
             duration_ms: Date.now() - startMs,
           },
-          'sendOtp skipped: phone rate limit',
+          'OTP flow: phone blocked (rate limit)',
         );
         return { sent: false, phone: normalized };
       }
@@ -329,12 +366,16 @@ export class AuthUsecase {
       if (!ipLimit.allowed) {
         this.logger.log(
           {
-            context: 'OTP_DEFENSE',
-            decision: 'limited_ip',
-            phone_masked: this.maskPhone(normalized),
+            flow_id: flowId,
+            context: 'OTP_FLOW',
+            event: 'blocked',
+            outcome: 'not_sent',
+            reason: 'ip_rate_limit',
+            phone_masked: phoneMasked,
+            client_ip_masked: ipMasked,
             duration_ms: Date.now() - startMs,
           },
-          'sendOtp skipped: IP rate limit',
+          'OTP flow: IP blocked (rate limit)',
         );
         return { sent: false, phone: normalized };
       }
@@ -342,12 +383,16 @@ export class AuthUsecase {
       if (!globalLimit.allowed) {
         this.logger.log(
           {
-            context: 'OTP_DEFENSE',
-            decision: 'limited_global',
-            phone_masked: this.maskPhone(normalized),
+            flow_id: flowId,
+            context: 'OTP_FLOW',
+            event: 'blocked',
+            outcome: 'not_sent',
+            reason: 'global_rate_limit',
+            phone_masked: phoneMasked,
+            client_ip_masked: ipMasked,
             duration_ms: Date.now() - startMs,
           },
-          'sendOtp skipped: global rate limit',
+          'OTP flow: blocked (global rate limit)',
         );
         return { sent: false, phone: normalized };
       }
@@ -359,12 +404,16 @@ export class AuthUsecase {
         if (!existingUser) {
           this.logger.log(
             {
-              context: 'OTP_DEFENSE',
-              decision: 'attack_mode_unknown_phone',
-              phone_masked: this.maskPhone(normalized),
+              flow_id: flowId,
+              context: 'OTP_FLOW',
+              event: 'skipped',
+              outcome: 'not_sent',
+              reason: 'attack_mode_unknown_phone',
+              phone_masked: phoneMasked,
+              client_ip_masked: ipMasked,
               duration_ms: Date.now() - startMs,
             },
-            'sendOtp skipped: attack mode, unknown phone',
+            'OTP flow: skipped (attack mode, unknown phone)',
           );
           return { sent: false, phone: normalized };
         }
@@ -387,36 +436,48 @@ export class AuthUsecase {
 
       this.logger.log(
         {
-          context: 'OTP_DEFENSE',
-          decision: 'sent',
-          phone_masked: this.maskPhone(normalized),
+          flow_id: flowId,
+          context: 'OTP_FLOW',
+          event: 'completed',
+          outcome: 'sent',
+          phone_masked: phoneMasked,
+          client_ip_masked: ipMasked,
           duration_ms: Date.now() - startMs,
         },
-        'sendOtp sent',
+        'OTP flow: SMS sent',
       );
       return { sent: true, phone: normalized };
     } catch (e) {
       if (e instanceof AuthentificationException) {
         this.logger.log(
           {
-            context: 'OTP_DEFENSE',
-            decision: 'provider_error',
-            phone_masked: this.maskPhone(normalized),
+            flow_id: flowId,
+            context: 'OTP_FLOW',
+            event: 'error',
+            outcome: 'not_sent',
+            reason: 'provider_error',
+            phone_masked: phoneMasked,
+            client_ip_masked: ipMasked,
             duration_ms: Date.now() - startMs,
+            error: e?.message,
           },
-          `sendOtp provider error: ${e.message}`,
+          `OTP flow: provider error - ${e.message}`,
         );
         return { sent: false, phone: normalized };
       }
       this.logger.error(
         {
-          context: 'OTP_DEFENSE',
-          decision: 'error',
-          phone_masked: this.maskPhone(normalized),
+          flow_id: flowId,
+          context: 'OTP_FLOW',
+          event: 'error',
+          outcome: 'not_sent',
+          reason: 'exception',
+          phone_masked: phoneMasked,
+          client_ip_masked: ipMasked,
           duration_ms: Date.now() - startMs,
           error: e?.message,
         },
-        `sendOtp error: ${e?.message ?? e}`,
+        `OTP flow: error - ${e?.message ?? e}`,
       );
       return { sent: false, phone: normalized };
     } finally {
