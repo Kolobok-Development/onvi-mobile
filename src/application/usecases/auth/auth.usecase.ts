@@ -332,9 +332,13 @@ export class AuthUsecase {
         lastSentAt instanceof Date
           ? lastSentAt.getTime()
           : lastSentAt
-            ? new Date(lastSentAt as string | number).getTime()
-            : 0;
-      if (lastSentAt && Number.isFinite(lastSentAtMs) && Date.now() - lastSentAtMs < cooldownMs) {
+          ? new Date(lastSentAt as string | number).getTime()
+          : 0;
+      if (
+        lastSentAt &&
+        Number.isFinite(lastSentAtMs) &&
+        Date.now() - lastSentAtMs < cooldownMs
+      ) {
         this.logger.log(
           {
             flow_id: flowId,
