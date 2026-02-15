@@ -56,6 +56,14 @@ export class ClientRepository implements IClientRepository {
     return ClientMapper.fromEntity(client);
   }
 
+  async existsOnviUserByPhone(phone: string): Promise<boolean> {
+    const count = await this.clientRepository
+      .createQueryBuilder('client')
+      .where('client.correctPhone = :phone', { phone })
+      .getCount();
+    return count > 0;
+  }
+
   async findOneOldClientByPhone(phone: string): Promise<Client> {
     const client = await this.clientRepository
       .createQueryBuilder('client')

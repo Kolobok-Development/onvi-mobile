@@ -39,6 +39,7 @@ describe('AuthUsecase', () => {
   beforeEach(async () => {
     const mockClientRepository = {
       findOneByPhone: jest.fn(),
+      existsOnviUserByPhone: jest.fn(),
       findOneOldClientByPhone: jest.fn(),
       update: jest.fn(),
       create: jest.fn(),
@@ -569,7 +570,7 @@ describe('AuthUsecase', () => {
 
     it('should not send when attack mode and unknown phone', async () => {
       env.getSmsAttackMode.mockReturnValue(true);
-      clientRepository.findOneByPhone.mockResolvedValue(null as any);
+      clientRepository.existsOnviUserByPhone.mockResolvedValue(false);
 
       const result = await authUsecase.sendOtp(phone);
 
@@ -579,8 +580,7 @@ describe('AuthUsecase', () => {
 
     it('should send when attack mode and known phone', async () => {
       env.getSmsAttackMode.mockReturnValue(true);
-      const mockClient = {} as Client;
-      clientRepository.findOneByPhone.mockResolvedValue(mockClient);
+      clientRepository.existsOnviUserByPhone.mockResolvedValue(true);
       const mockOtp = new Otp(1, normalizedPhone, '1234', mockOtpTime);
       otpRepository.create.mockResolvedValue(mockOtp);
       otpRepository.send.mockResolvedValue(undefined);
@@ -598,6 +598,27 @@ describe('AuthUsecase', () => {
 
       expect(result).toEqual({ sent: false, phone: normalizedPhone });
       expect(otpRepository.send).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('checkOnviUser', () => {
+    it('should return isOnviUser true when phone exists as ONVI user', async () => {
+      clientRepository.existsOnviUserByPhone.mockResolvedValue(true);
+
+      const result = await authUsecase.checkOnviUser('+79123456789');
+
+      expect(result).toEqual({ isOnviUser: true });
+      expect(clientRepository.existsOnviUserByPhone).toHaveBeenCalledWith(
+        '+79123456789',
+      );
+    });
+
+    it('should return isOnviUser false when phone is not ONVI user', async () => {
+      clientRepository.existsOnviUserByPhone.mockResolvedValue(false);
+
+      const result = await authUsecase.checkOnviUser('+79123456789');
+
+      expect(result).toEqual({ isOnviUser: false });
     });
   });
 });

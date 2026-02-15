@@ -244,7 +244,14 @@ export class AuthUsecase {
   }
 
   private formatPhone(phone): string {
-    return phone.replace(/^\s*\+|\s*/g, '');
+    const digits = (phone ?? '').replace(/\D/g, '');
+    const normalized =
+      digits.startsWith('8') && digits.length === 11
+        ? '7' + digits.slice(1)
+        : digits.startsWith('9') && digits.length === 10
+        ? '7' + digits
+        : digits;
+    return normalized ? '+' + normalized : phone?.trim() || '';
   }
 
   private maskPhone(phone: string): string {
@@ -346,7 +353,7 @@ export class AuthUsecase {
       }
 
       if (this.env.getSmsAttackMode()) {
-        const existingUser = await this.clientRepository.findOneByPhone(
+        const existingUser = await this.clientRepository.existsOnviUserByPhone(
           normalized,
         );
         if (!existingUser) {

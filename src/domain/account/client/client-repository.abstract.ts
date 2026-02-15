@@ -6,6 +6,7 @@ export abstract class IClientRepository {
   abstract findOneById(id: number): Promise<Client>;
   abstract update(client: Client): Promise<Client>;
   abstract findOneByPhone(phone: string): Promise<Client>;
+  abstract existsOnviUserByPhone(phone: string): Promise<boolean>;
   abstract findOneOldClientByPhone(phone: string): Promise<Client>;
   abstract setRefreshToken(phone: string, token: string): Promise<void>;
 }
