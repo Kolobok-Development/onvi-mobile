@@ -13,6 +13,7 @@ import { JwtRefreshStrategy } from '../common/strategies/jwt-refresh.strategy';
 import { JwtStrategy } from '../common/strategies/jwt.strategy';
 import { WsJwtStrategy } from '../common/strategies/jwt-ws.strategy';
 import { WsAuthGuard } from '../common/guards/jws-ws.guard';
+import { BlockSubnetGuard } from '../common/guards/block-subnet.guard';
 import { PromocodeModule } from '../promo-code/promocode.module';
 import { OtpDefenseModule } from '../otp-defense/otp-defense.module';
 
@@ -36,6 +37,7 @@ import { OtpDefenseModule } from '../otp-defense/otp-defense.module';
     JwtStrategy,
     WsJwtStrategy,
     WsAuthGuard,
+    BlockSubnetGuard,
   ],
   exports: [AuthUsecase, WsAuthGuard],
 })

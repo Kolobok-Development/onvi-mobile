@@ -34,6 +34,7 @@ import { CustomHttpException } from '../../infrastructure/common/exceptions/cust
 import { FindMethodsMetaUseCase } from '../../application/usecases/account/account-meta-find-methods';
 import { EnvConfigService } from '../../infrastructure/config/env-config/env-config.service';
 import { getClientIp } from '../../infrastructure/common/utils/client-ip.util';
+import { BlockSubnetGuard } from '../../infrastructure/common/guards/block-subnet.guard';
 //import { ThrottleType } from '../../infrastructure/common/decorators/throttler.decorator';
 
 @Controller('auth')
@@ -139,6 +140,7 @@ export class AuthController {
 
   @HttpCode(201)
   @Post('/send/otp')
+  @UseGuards(BlockSubnetGuard)
   //@ThrottleType('otp')
   async sendOtp(@Body() otpRequest: OtpRequestDto, @Request() req: any) {
     const trustProxy = this.env.getTrustProxy();
