@@ -33,5 +33,20 @@ describe('ip-subnet.util', () => {
       expect(isIpInCidr('10.0.1.0', '10.0.0.0/24')).toBe(false);
       expect(isIpInCidr('192.168.1.1', '192.168.1.0/24')).toBe(true);
     });
+
+    it('matches IPs inside 72.56.144.0/20 (new attack range)', () => {
+      const newCidr = '72.56.144.0/20';
+      expect(isIpInCidr('72.56.144.0', newCidr)).toBe(true);
+      expect(isIpInCidr('72.56.145.188', newCidr)).toBe(true);
+      expect(isIpInCidr('72.56.152.207', newCidr)).toBe(true);
+      expect(isIpInCidr('72.56.159.255', newCidr)).toBe(true);
+    });
+
+    it('rejects IPs outside 72.56.144.0/20', () => {
+      const newCidr = '72.56.144.0/20';
+      expect(isIpInCidr('72.56.143.255', newCidr)).toBe(false);
+      expect(isIpInCidr('72.56.160.0', newCidr)).toBe(false);
+      expect(isIpInCidr('72.56.92.68', newCidr)).toBe(false);
+    });
   });
 });

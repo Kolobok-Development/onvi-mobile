@@ -22,7 +22,9 @@ describe('BlockSubnetGuard', () => {
   beforeEach(() => {
     subnetConfig = {
       isEnabled: jest.fn(),
-      getBlockedSubnets: jest.fn().mockReturnValue(['72.56.188.0/22']),
+      getBlockedSubnets: jest
+        .fn()
+        .mockReturnValue(['72.56.188.0/22', '72.56.144.0/20']),
     } as any;
     envConfig = {
       getTrustProxy: jest.fn().mockReturnValue(true),
@@ -55,6 +57,28 @@ describe('BlockSubnetGuard', () => {
     for (const ip of ['72.56.189.0', '72.56.190.100', '72.56.191.255']) {
       const ctx = createMockContext(ip);
       expect(() => guard.canActivate(ctx)).toThrow(ForbiddenException);
+    }
+  });
+
+  it('blocks IPs in new 72.56.144.0/20 range', () => {
+    subnetConfig.isEnabled.mockReturnValue(true);
+    for (const ip of [
+      '72.56.144.12',
+      '72.56.145.188',
+      '72.56.152.207',
+      '72.56.159.203',
+      '72.56.159.255',
+    ]) {
+      const ctx = createMockContext(ip);
+      expect(() => guard.canActivate(ctx)).toThrow(ForbiddenException);
+    }
+  });
+
+  it('allows IPs outside both blocked ranges', () => {
+    subnetConfig.isEnabled.mockReturnValue(true);
+    for (const ip of ['72.56.92.68', '72.56.128.1', '72.56.160.1']) {
+      const ctx = createMockContext(ip);
+      expect(guard.canActivate(ctx)).toBe(true);
     }
   });
 });
