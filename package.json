@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@a2seven/yoo-checkout": "^1.1.4",
+    "@aws-sdk/client-s3": "^3.996.0",
     "@logtail/node": "^0.5.2",
     "@logtail/pino": "^0.5.2",
     "@nest-lab/throttler-storage-redis": "^1.1.0",

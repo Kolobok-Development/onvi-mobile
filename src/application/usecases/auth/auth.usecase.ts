@@ -290,6 +290,26 @@ export class AuthUsecase {
     );
 
     try {
+      const autoBanned = await this.otpDefense.registerOtpIpAndMaybeBan(
+        ipAddress,
+      );
+      if (autoBanned) {
+        this.logger.log(
+          {
+            flow_id: flowId,
+            context: 'OTP_FLOW',
+            event: 'blocked',
+            outcome: 'not_sent',
+            reason: 'autoban_ip_threshold',
+            phone_masked: phoneMasked,
+            client_ip_masked: ipMasked,
+            duration_ms: Date.now() - startMs,
+          },
+          'OTP flow: blocked (autoban IP threshold)',
+        );
+        return { sent: false, phone: normalized };
+      }
+
       const acquired = await this.otpDefense.acquireLock(normalized);
       if (!acquired) {
         this.logger.log(
