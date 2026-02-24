@@ -122,6 +122,46 @@ export class EnvConfigService implements IJwtConfig {
     return v === '1' || v === 'true';
   }
 
+  getSubnetConfigRefreshSeconds(): number {
+    return this.configService.get<number>('SUBNET_CONFIG_REFRESH_SECONDS') ?? 30;
+  }
+
+  getSubnetBlockS3Endpoint(): string {
+    return this.configService.get<string>('SUBNET_BLOCK_S3_ENDPOINT');
+  }
+
+  getSubnetBlockS3Region(): string {
+    return this.configService.get<string>('SUBNET_BLOCK_S3_REGION') ?? 'us-east-1';
+  }
+
+  getSubnetBlockS3Bucket(): string {
+    return this.configService.get<string>('SUBNET_BLOCK_S3_BUCKET');
+  }
+
+  getSubnetBlockS3Key(): string {
+    return (
+      this.configService.get<string>('SUBNET_BLOCK_S3_KEY') ||
+      'blocked-subnets.json'
+    );
+  }
+
+  getSubnetBlockS3AccessKeyId(): string {
+    return this.configService.get<string>('SUBNET_BLOCK_S3_ACCESS_KEY_ID');
+  }
+
+  getSubnetBlockS3SecretAccessKey(): string {
+    return this.configService.get<string>('SUBNET_BLOCK_S3_SECRET_ACCESS_KEY');
+  }
+
+  getOtpAutobanEnabled(): boolean {
+    const v = this.configService.get<string>('OTP_AUTOBAN_ENABLED');
+    return v === '1' || v === 'true';
+  }
+
+  getOtpAutobanIpPer15M(): number {
+    return this.configService.get<number>('OTP_AUTOBAN_IP_PER_15M') ?? 5;
+  }
+
   getTrustProxy(): boolean | number {
     const v = this.configService.get<string>('TRUST_PROXY');
     if (v === '0' || v === 'false') return false;

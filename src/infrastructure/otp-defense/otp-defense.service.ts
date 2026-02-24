@@ -2,6 +2,7 @@ import { Injectable, Inject, Optional } from '@nestjs/common';
 import Redis from 'ioredis';
 import { CACHE_REDIS_CLIENT } from '../redis/cache-redis.module';
 import { EnvConfigService } from '../config/env-config/env-config.service';
+import { SubnetBlockConfigService } from './subnet-block-config.service';
 
 const LOCK_PREFIX = 'lock:otp:';
 const COOLDOWN_PREFIX = 'otp:cooldown:';
@@ -13,6 +14,7 @@ export class OtpDefenseService {
     @Inject(CACHE_REDIS_CLIENT)
     private readonly redis: Redis | null,
     private readonly env: EnvConfigService,
+    private readonly subnetBlockConfig: SubnetBlockConfigService,
   ) {}
 
   /**
@@ -70,5 +72,9 @@ export class OtpDefenseService {
 
   private normalize(phone: string): string {
     return (phone ?? '').replace(/\s/g, '').slice(-32) || 'unknown';
+  }
+
+  async registerOtpIpAndMaybeBan(ip: string): Promise<boolean> {
+    return this.subnetBlockConfig.registerOtpIpAndMaybeBan(ip);
   }
 }
