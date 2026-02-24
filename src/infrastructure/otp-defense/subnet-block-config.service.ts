@@ -1,6 +1,4 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import * as fs from 'fs';
-import * as path from 'path';
 import Redis from 'ioredis';
 import { Inject, Optional } from '@nestjs/common';
 import { CACHE_REDIS_CLIENT } from '../redis/cache-redis.module';
@@ -48,16 +46,12 @@ export class SubnetBlockConfigService implements OnModuleInit, OnModuleDestroy {
 
   async reload(): Promise<void> {
     const fromS3 = await this.reloadFromS3();
-    if (fromS3) return;
-
-    const configPath =
-      process.env.SUBNET_BLOCK_CONFIG_PATH ||
-      path.join(process.cwd(), 'blocked-subnets.json');
-    try {
-      const raw = fs.readFileSync(configPath, 'utf-8');
-      this.setConfigFromRaw(raw);
-    } catch {
-      this.config = { enabled: false, subnets: [] };
+    if (!fromS3) {
+      // S3-only mode: keep last known config if S3 is temporarily unavailable.
+      // If config is still empty, fail closed (blocking disabled).
+      if (!this.config.subnets.length) {
+        this.config = { enabled: false, subnets: [] };
+      }
     }
   }
 
